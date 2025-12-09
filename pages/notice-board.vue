@@ -1,8 +1,16 @@
 <template>
     <div class="notice-board-page">
+      <!-- Mobile Back Button -->
+      <div class="mobile-back-button">
+        <a-button type="text" @click="goHome" class="back-btn">
+          <ArrowLeftOutlined />
+          Înapoi la pagina principală
+        </a-button>
+      </div>
+
       <div class="page-header">
-        <h1>📋 Notice Board</h1>
-        <p>Latest updates, photos and videos from our activities</p>
+        <h1>📋 Anunțuri</h1>
+        <p>Ultimele actualizări, fotografii și videouri din activitățile noastre</p>
       </div>
 
       <div class="notices-grid">
@@ -21,7 +29,7 @@
                   <template #description>
                     <p v-if="notice.content">{{ notice.content }}</p>
                     <div v-if="notice.videos && notice.videos.length > 0" class="notice-videos">
-                      <a-tag color="red">Video Available</a-tag>
+                      <a-tag color="red">Video Disponibil</a-tag>
                     </div>
                   </template>
                 </a-card-meta>
@@ -34,8 +42,16 @@
   </template>
 
 <script setup lang="ts">
+import { ArrowLeftOutlined } from '@ant-design/icons-vue'
+
+const router = useRouter()
+
 const loading = ref(false)
 const notices = ref<any[]>([])
+
+const goHome = () => {
+  router.push('/')
+}
 
 const loadNotices = async () => {
   loading.value = true
@@ -120,7 +136,23 @@ onMounted(() => {
   margin-top: 12px;
 }
 
+.mobile-back-button {
+  display: none;
+}
+
 @media (max-width: 768px) {
+  .mobile-back-button {
+    display: block;
+    margin-bottom: 16px;
+  }
+
+  .back-btn {
+    width: 100%;
+    text-align: left;
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
   .page-header {
     padding: 30px 20px;
     margin: 0 -16px 30px -16px;

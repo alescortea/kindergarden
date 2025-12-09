@@ -1,8 +1,16 @@
 <template>
     <div class="camps-page">
+      <!-- Mobile Back Button -->
+      <div class="mobile-back-button">
+        <a-button type="text" @click="goHome" class="back-btn">
+          <ArrowLeftOutlined />
+          Înapoi la pagina principală
+        </a-button>
+      </div>
+
       <div class="page-header">
-        <h1>🏕️ Our Camps</h1>
-        <p>Adventure camps for children in beautiful locations across Romania</p>
+        <h1>🏕️ Taberele Noastre</h1>
+        <p>Tabere de aventură pentru copii în locații frumoase din România</p>
       </div>
 
       <!-- Filters -->
@@ -11,11 +19,11 @@
           <a-col :xs="24" :sm="8" :md="6">
             <a-select
               v-model:value="filters.year"
-              placeholder="Select Year"
+              placeholder="Selectează Anul"
               style="width: 100%"
               @change="loadCamps"
             >
-              <a-select-option value="">All Years</a-select-option>
+              <a-select-option value="">Toți Anii</a-select-option>
               <a-select-option value="2024">2024</a-select-option>
               <a-select-option value="2025">2025</a-select-option>
               <a-select-option value="2026">2026</a-select-option>
@@ -23,16 +31,17 @@
           </a-col>
           <a-col :xs="24" :sm="8" :md="6">
             <a-select
-              v-model:value="filters.location"
-              placeholder="Select Location"
+              v-model:value="filters.county"
+              placeholder="Selectează Județul"
               style="width: 100%"
               @change="loadCamps"
+              show-search
+              :filter-option="true"
             >
-              <a-select-option value="">All Locations</a-select-option>
-              <a-select-option value="straja">Straja</a-select-option>
-              <a-select-option value="rafting">Rafting</a-select-option>
-              <a-select-option value="danube_delta">Danube Delta</a-select-option>
-              <a-select-option value="colibita">Colibita</a-select-option>
+              <a-select-option value="">Toate Județele</a-select-option>
+              <a-select-option v-for="county in allCounties" :key="county.id" :value="county.id">
+                {{ county.name }}
+              </a-select-option>
             </a-select>
           </a-col>
         </a-row>
@@ -57,10 +66,10 @@
                   </template>
                   <template #description>
                     <div class="camp-details">
-                      <p><strong>Location:</strong> {{ getLocationLabel(camp.location) }}</p>
-                      <p><strong>Period:</strong> {{ camp.startDate }} - {{ camp.endDate }}</p>
-                      <p><strong>Price:</strong> {{ camp.price }} RON</p>
-                      <p><strong>Participants:</strong> {{ camp.currentParticipants }}/{{ camp.maxParticipants }}</p>
+                      <p><strong>Locația:</strong> {{ getLocationLabel(camp) }}</p>
+                      <p><strong>Perioada:</strong> {{ camp.startDate }} - {{ camp.endDate }}</p>
+                      <p><strong>Preț:</strong> {{ camp.price }} RON</p>
+                      <p><strong>Participanți:</strong> {{ camp.currentParticipants }}/{{ camp.maxParticipants }}</p>
                     </div>
                     <p class="camp-description">{{ camp.description }}</p>
                   </template>
@@ -69,11 +78,11 @@
                 <template #actions>
                   <a-button type="primary" @click="navigateToRegistration('camp', camp.id)">
                     <FormOutlined />
-                    Register
+                    Înscriere
                   </a-button>
                   <a-button @click="viewCampDetails(camp)">
                     <EyeOutlined />
-                    Details
+                    Detalii
                   </a-button>
                 </template>
               </a-card>
@@ -98,13 +107,13 @@
             <p class="modal-description">{{ selectedCamp.description }}</p>
             
             <div class="modal-details">
-              <h4>Camp Information:</h4>
+              <h4>Informații Tabără:</h4>
               <ul>
-                <li><strong>Location:</strong> {{ getLocationLabel(selectedCamp.location) }}</li>
-                <li><strong>Period:</strong> {{ selectedCamp.startDate }} - {{ selectedCamp.endDate }}</li>
-                <li><strong>Price:</strong> {{ selectedCamp.price }} RON</li>
-                <li><strong>Max Participants:</strong> {{ selectedCamp.maxParticipants }}</li>
-                <li><strong>Current Participants:</strong> {{ selectedCamp.currentParticipants }}</li>
+                <li><strong>Locația:</strong> {{ getLocationLabel(selectedCamp) }}</li>
+                <li><strong>Perioada:</strong> {{ selectedCamp.startDate }} - {{ selectedCamp.endDate }}</li>
+                <li><strong>Preț:</strong> {{ selectedCamp.price }} RON</li>
+                <li><strong>Participanți Maxim:</strong> {{ selectedCamp.maxParticipants }}</li>
+                <li><strong>Participanți Curenți:</strong> {{ selectedCamp.currentParticipants }}</li>
               </ul>
             </div>
 
@@ -114,14 +123,14 @@
             </div>
 
             <div v-if="selectedCamp.details" class="modal-details-text">
-              <h4>Additional Details:</h4>
+              <h4>Detalii Suplimentare:</h4>
               <p>{{ selectedCamp.details }}</p>
             </div>
 
             <div class="modal-actions">
               <a-button type="primary" size="large" @click="navigateToRegistration('camp', selectedCamp.id)">
                 <FormOutlined />
-                Register for this Camp
+                Înscriere la Această Tabără
               </a-button>
             </div>
           </div>
@@ -131,29 +140,48 @@
   </template>
 
 <script setup lang="ts">
-import { TeamOutlined, FormOutlined, EyeOutlined } from '@ant-design/icons-vue'
+import { TeamOutlined, FormOutlined, EyeOutlined, ArrowLeftOutlined } from '@ant-design/icons-vue'
 
 const router = useRouter()
 
 const loading = ref(false)
 const camps = ref<any[]>([])
+const allCounties = ref<any[]>([])
 const filters = ref({
   year: '',
-  location: ''
+  county: ''
 })
 const detailsModalVisible = ref(false)
 const selectedCamp = ref<any>(null)
+
+const goHome = () => {
+  router.push('/')
+}
+
+const loadAllCounties = async () => {
+  try {
+    const response = await $fetch('/api/counties')
+    allCounties.value = Array.isArray(response) ? response : []
+  } catch (error) {
+    console.error('Failed to load counties:', error)
+    allCounties.value = []
+  }
+}
 
 const loadCamps = async () => {
   loading.value = true
   try {
     const query: any = {}
-    if (filters.value.year) query.year = filters.value.year
-    if (filters.value.location) query.location = filters.value.location
+    if (filters.value.year && filters.value.year !== '') {
+      query.year = filters.value.year
+    }
+    if (filters.value.county && filters.value.county !== '') {
+      query.countyId = filters.value.county
+    }
 
     const response = await $fetch('/api/camps', { query })
     camps.value = Array.isArray(response) ? response : []
-    console.log('Loaded camps:', camps.value.length)
+    console.log('Loaded camps:', camps.value.length, 'with filters:', query)
   } catch (error) {
     console.error('Failed to load camps:', error)
     camps.value = []
@@ -162,14 +190,22 @@ const loadCamps = async () => {
   }
 }
 
-const getLocationLabel = (location: string) => {
-  const labels: Record<string, string> = {
-    'straja': 'Straja',
-    'rafting': 'Rafting',
-    'danube_delta': 'Danube Delta',
-    'colibita': 'Colibita'
+const getLocationLabel = (camp: any) => {
+  // Support for new location structure (county only)
+  if (camp.countyName) {
+    return camp.countyName
   }
-  return labels[location] || location
+  // Fallback for old location structure
+  if (camp.location) {
+    const labels: Record<string, string> = {
+      'straja': 'Straja',
+      'rafting': 'Rafting',
+      'danube_delta': 'Delta Dunării',
+      'colibita': 'Colibița'
+    }
+    return labels[camp.location] || camp.location
+  }
+  return 'Nespecificat'
 }
 
 const viewCampDetails = (camp: any) => {
@@ -186,12 +222,31 @@ const navigateToRegistration = (activityType: string, activityId: string) => {
 
 onMounted(() => {
   loadCamps()
+  loadAllCounties()
 })
 </script>
 
 <style scoped>
 .camps-page {
   min-height: 100vh;
+  position: relative;
+}
+
+.mobile-back-button {
+  display: none;
+  margin-bottom: 16px;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #667eea;
+  font-weight: 500;
+}
+
+.back-btn:hover {
+  color: #764ba2;
 }
 
 .page-header {
@@ -329,6 +384,10 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
+  .mobile-back-button {
+    display: block;
+  }
+
   .page-header {
     padding: 30px 20px;
     margin: 0 -16px 30px -16px;

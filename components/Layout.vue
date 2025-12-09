@@ -226,6 +226,8 @@ const handleMobileMenuClick = ({ key }: { key: string }) => {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 24px;
+  padding-left: var(--app-margin-desktop, 24px);
+  padding-right: var(--app-margin-desktop, 24px);
   height: 100%;
   position: relative;
 }
@@ -290,6 +292,8 @@ const handleMobileMenuClick = ({ key }: { key: string }) => {
   max-width: 1200px;
   margin: 0 auto;
   padding: 24px;
+  padding-left: var(--app-margin-desktop, 24px);
+  padding-right: var(--app-margin-desktop, 24px);
 }
 
 .footer {
@@ -303,6 +307,8 @@ const handleMobileMenuClick = ({ key }: { key: string }) => {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 24px;
+  padding-left: var(--app-margin-desktop, 24px);
+  padding-right: var(--app-margin-desktop, 24px);
 }
 
 .footer-content p {
@@ -319,14 +325,27 @@ const handleMobileMenuClick = ({ key }: { key: string }) => {
     display: none;
   }
   
+  .header-content {
+    padding-left: var(--app-margin-tablet, 16px);
+    padding-right: var(--app-margin-tablet, 16px);
+  }
+
   .content-wrapper {
     padding: 16px;
+    padding-left: var(--app-margin-tablet, 16px);
+    padding-right: var(--app-margin-tablet, 16px);
+  }
+
+  .footer-content {
+    padding-left: var(--app-margin-tablet, 16px);
+    padding-right: var(--app-margin-tablet, 16px);
   }
 }
 
 @media (max-width: 768px) {
   .header-content {
-    padding: 0 16px;
+    padding-left: var(--app-margin-mobile, 12px);
+    padding-right: var(--app-margin-mobile, 12px);
   }
   
   .logo h2 {
@@ -335,6 +354,13 @@ const handleMobileMenuClick = ({ key }: { key: string }) => {
   
   .content-wrapper {
     padding: 12px;
+    padding-left: var(--app-margin-mobile, 12px);
+    padding-right: var(--app-margin-mobile, 12px);
+  }
+
+  .footer-content {
+    padding-left: var(--app-margin-mobile, 12px);
+    padding-right: var(--app-margin-mobile, 12px);
   }
 }
 </style>

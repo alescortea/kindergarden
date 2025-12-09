@@ -1,8 +1,16 @@
 <template>
     <div class="swimming-page">
+      <!-- Mobile Back Button -->
+      <div class="mobile-back-button">
+        <a-button type="text" @click="goHome" class="back-btn">
+          <ArrowLeftOutlined />
+          Înapoi la pagina principală
+        </a-button>
+      </div>
+
       <div class="page-header">
-        <h1>🏊 Swimming Lessons</h1>
-        <p>Swimming lessons at Paradisul Acvatic location</p>
+        <h1>🏊 Lecții de Înot</h1>
+        <p>Lecții de înot individuale și de grup pentru toate nivelurile</p>
       </div>
 
       <div class="lessons-grid">
@@ -23,10 +31,10 @@
                   </template>
                   <template #description>
                     <div class="lesson-details">
-                      <p><strong>Location:</strong> {{ lesson.location }}</p>
-                      <p><strong>Duration:</strong> {{ lesson.duration }}</p>
-                      <p><strong>Price:</strong> {{ lesson.price }} RON</p>
-                      <p v-if="lesson.maxParticipants"><strong>Max Participants:</strong> {{ lesson.maxParticipants }}</p>
+                      <p><strong>Județ:</strong> {{ getLocationDisplay(lesson) }}</p>
+                      <p><strong>Durata:</strong> {{ lesson.duration }}</p>
+                      <p><strong>Preț:</strong> {{ lesson.price }} RON</p>
+                      <p v-if="lesson.maxParticipants"><strong>Participanți Maxim:</strong> {{ lesson.maxParticipants }}</p>
                     </div>
                     <p class="lesson-description">{{ lesson.description }}</p>
                   </template>
@@ -35,7 +43,7 @@
                 <template #actions>
                   <a-button type="primary" @click="navigateToRegistration('swimming', lesson.id)">
                     <FormOutlined />
-                    Register
+                    Înscrie-te
                   </a-button>
                 </template>
               </a-card>
@@ -47,12 +55,16 @@
   </template>
 
 <script setup lang="ts">
-import { PlayCircleOutlined, FormOutlined } from '@ant-design/icons-vue'
+import { PlayCircleOutlined, FormOutlined, ArrowLeftOutlined } from '@ant-design/icons-vue'
 
 const router = useRouter()
 
 const loading = ref(false)
 const lessons = ref<any[]>([])
+
+const goHome = () => {
+  router.push('/')
+}
 
 const loadLessons = async () => {
   loading.value = true
@@ -67,7 +79,17 @@ const loadLessons = async () => {
 }
 
 const getTypeLabel = (type: string) => {
-  return type === 'individual' ? 'Individual' : 'Group'
+  return type === 'individual' ? 'Individuală' : 'Grup'
+}
+
+const getLocationDisplay = (lesson: any) => {
+  if (lesson.countyName) {
+    return lesson.countyName
+  }
+  if (lesson.location) {
+    return lesson.location
+  }
+  return 'Nespecificat'
 }
 
 const navigateToRegistration = (activityType: string, activityId: string) => {
@@ -162,7 +184,23 @@ onMounted(() => {
   line-height: 1.6;
 }
 
+.mobile-back-button {
+  display: none;
+}
+
 @media (max-width: 768px) {
+  .mobile-back-button {
+    display: block;
+    margin-bottom: 16px;
+  }
+
+  .back-btn {
+    width: 100%;
+    text-align: left;
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
   .page-header {
     padding: 30px 20px;
     margin: 0 -16px 30px -16px;

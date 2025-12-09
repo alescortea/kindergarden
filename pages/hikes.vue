@@ -1,8 +1,16 @@
 <template>
     <div class="hikes-page">
+      <!-- Mobile Back Button -->
+      <div class="mobile-back-button">
+        <a-button type="text" @click="goHome" class="back-btn">
+          <ArrowLeftOutlined />
+          Înapoi la pagina principală
+        </a-button>
+      </div>
+
       <div class="page-header">
-        <h1>🥾 Hikes & Adventures</h1>
-        <p>Discover nature through exciting hikes in the Carpathian Mountains</p>
+        <h1>🥾 Drumeții & Aventuri</h1>
+        <p>Descoperă natura prin drumeții captivante în Munții Carpați</p>
       </div>
 
       <div class="hikes-grid">
@@ -23,11 +31,11 @@
                   </template>
                   <template #description>
                     <div class="hike-details">
-                      <p><strong>Location:</strong> {{ hike.location }}</p>
-                      <p><strong>Difficulty:</strong> {{ getDifficultyLabel(hike.difficulty) }}</p>
-                      <p><strong>Duration:</strong> {{ hike.duration }}</p>
-                      <p v-if="hike.distance"><strong>Distance:</strong> {{ hike.distance }}</p>
-                      <p><strong>Price:</strong> {{ hike.price }} RON</p>
+                      <p><strong>Locația:</strong> {{ hike.location }}</p>
+                      <p><strong>Dificultate:</strong> {{ getDifficultyLabel(hike.difficulty) }}</p>
+                      <p><strong>Durata:</strong> {{ hike.duration }}</p>
+                      <p v-if="hike.distance"><strong>Distanță:</strong> {{ hike.distance }}</p>
+                      <p><strong>Preț:</strong> {{ hike.price }} RON</p>
                     </div>
                     <p class="hike-description">{{ hike.description }}</p>
                   </template>
@@ -36,11 +44,11 @@
                 <template #actions>
                   <a-button type="primary" @click="navigateToRegistration('hike', hike.id)">
                     <FormOutlined />
-                    Register
+                    Înscriere
                   </a-button>
                   <a-button @click="viewHikeDetails(hike)">
                     <EyeOutlined />
-                    Details
+                    Detalii
                   </a-button>
                 </template>
               </a-card>
@@ -65,15 +73,15 @@
             <p class="modal-description">{{ selectedHike.description }}</p>
             
             <div class="modal-details">
-              <h4>Hike Information:</h4>
+              <h4>Informații Drumeție:</h4>
               <ul>
-                <li><strong>Location:</strong> {{ selectedHike.location }}</li>
-                <li><strong>Difficulty:</strong> {{ getDifficultyLabel(selectedHike.difficulty) }}</li>
-                <li><strong>Duration:</strong> {{ selectedHike.duration }}</li>
-                <li v-if="selectedHike.distance"><strong>Distance:</strong> {{ selectedHike.distance }}</li>
-                <li v-if="selectedHike.elevation"><strong>Elevation:</strong> {{ selectedHike.elevation }}</li>
-                <li><strong>Price:</strong> {{ selectedHike.price }} RON</li>
-                <li v-if="selectedHike.meetingPoint"><strong>Meeting Point:</strong> {{ selectedHike.meetingPoint }}</li>
+                <li><strong>Locația:</strong> {{ selectedHike.location }}</li>
+                <li><strong>Dificultate:</strong> {{ getDifficultyLabel(selectedHike.difficulty) }}</li>
+                <li><strong>Durata:</strong> {{ selectedHike.duration }}</li>
+                <li v-if="selectedHike.distance"><strong>Distanță:</strong> {{ selectedHike.distance }}</li>
+                <li v-if="selectedHike.elevation"><strong>Altitudine:</strong> {{ selectedHike.elevation }}</li>
+                <li><strong>Preț:</strong> {{ selectedHike.price }} RON</li>
+                <li v-if="selectedHike.meetingPoint"><strong>Punct de Întâlnire:</strong> {{ selectedHike.meetingPoint }}</li>
               </ul>
             </div>
 
@@ -85,7 +93,7 @@
             <div class="modal-actions">
               <a-button type="primary" size="large" @click="navigateToRegistration('hike', selectedHike.id)">
                 <FormOutlined />
-                Register for this Hike
+                Înscriere la Această Drumeție
               </a-button>
             </div>
           </div>
@@ -95,7 +103,7 @@
   </template>
 
 <script setup lang="ts">
-import { EnvironmentOutlined, FormOutlined, EyeOutlined } from '@ant-design/icons-vue'
+import { EnvironmentOutlined, FormOutlined, EyeOutlined, ArrowLeftOutlined } from '@ant-design/icons-vue'
 
 const router = useRouter()
 
@@ -103,6 +111,10 @@ const loading = ref(false)
 const hikes = ref<any[]>([])
 const detailsModalVisible = ref(false)
 const selectedHike = ref<any>(null)
+
+const goHome = () => {
+  router.push('/')
+}
 
 const loadHikes = async () => {
   loading.value = true
@@ -118,9 +130,9 @@ const loadHikes = async () => {
 
 const getDifficultyLabel = (difficulty: string) => {
   const labels: Record<string, string> = {
-    'easy': 'Easy',
-    'medium': 'Medium',
-    'hard': 'Hard'
+    'easy': 'Ușor',
+    'medium': 'Mediu',
+    'hard': 'Greu'
   }
   return labels[difficulty] || difficulty
 }
@@ -145,6 +157,24 @@ onMounted(() => {
 <style scoped>
 .hikes-page {
   min-height: 100vh;
+  position: relative;
+}
+
+.mobile-back-button {
+  display: none;
+  margin-bottom: 16px;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #667eea;
+  font-weight: 500;
+}
+
+.back-btn:hover {
+  color: #764ba2;
 }
 
 .page-header {
@@ -272,6 +302,10 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
+  .mobile-back-button {
+    display: block;
+  }
+
   .page-header {
     padding: 30px 20px;
     margin: 0 -16px 30px -16px;

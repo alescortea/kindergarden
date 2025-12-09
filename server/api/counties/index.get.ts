@@ -3,15 +3,49 @@ import { orderBy } from 'firebase/firestore'
 
 export default defineEventHandler(async (event) => {
   try {
-    // Try to get counties from Firestore cache
+    // Try to get counties from Firestore cache first
     const counties = await getCollection('counties', [orderBy('name', 'asc')])
     
     if (counties.length > 0) {
       return counties
     }
 
-    // If no counties in Firestore, return static list
-    // This can be populated later from an external API
+    // If no counties in Firestore, fetch from INAP API
+    try {
+      const response = await $fetch('https://api.inap.ro/nomenclator/judete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: {}
+      })
+
+      // Transform INAP response to our format
+      if (response && Array.isArray(response.data)) {
+        const transformedCounties = response.data.map((county: any) => ({
+          id: county.cod || county.code || county.id,
+          name: county.denumire || county.name || county.nume,
+          code: county.cod || county.code || county.id
+        })).sort((a: any, b: any) => a.name.localeCompare(b.name))
+
+        return transformedCounties
+      }
+
+      // If response format is different, try to handle it
+      if (response && Array.isArray(response)) {
+        const transformedCounties = response.map((county: any) => ({
+          id: county.cod || county.code || county.id,
+          name: county.denumire || county.name || county.nume,
+          code: county.cod || county.code || county.id
+        })).sort((a: any, b: any) => a.name.localeCompare(b.name))
+
+        return transformedCounties
+      }
+    } catch (inapError: any) {
+      console.warn('Failed to fetch from INAP API, using static list:', inapError.message)
+    }
+
+    // Fallback to static list if INAP API fails
     const staticCounties = [
       { id: 'AB', name: 'Alba', code: 'AB' },
       { id: 'AR', name: 'Arad', code: 'AR' },
@@ -59,6 +93,7 @@ export default defineEventHandler(async (event) => {
 
     return staticCounties
   } catch (error) {
+    console.error('Counties API Error:', error)
     throw createError({
       statusCode: 500,
       statusMessage: 'Failed to fetch counties'

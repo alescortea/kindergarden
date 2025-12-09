@@ -6,36 +6,36 @@
         <a-col :xs="24" :sm="8" :md="6">
           <a-select
             v-model:value="filters.activityType"
-            placeholder="Filter by activity type"
+            placeholder="Filtrează după tip activitate"
             allow-clear
             @change="loadRegistrations"
           >
-            <a-select-option value="">All Types</a-select-option>
-            <a-select-option value="camp">Camp</a-select-option>
-            <a-select-option value="hike">Hike</a-select-option>
-            <a-select-option value="trip">Trip</a-select-option>
+            <a-select-option value="">Toate Tipurile</a-select-option>
+            <a-select-option value="camp">Tabără</a-select-option>
+            <a-select-option value="hike">Drumeție</a-select-option>
+            <a-select-option value="trip">Excursie</a-select-option>
             <a-select-option value="ski">Ski</a-select-option>
-            <a-select-option value="swimming">Swimming</a-select-option>
-            <a-select-option value="afterschool">Afterschool</a-select-option>
+            <a-select-option value="swimming">Înot</a-select-option>
+            <a-select-option value="afterschool">După școală</a-select-option>
           </a-select>
         </a-col>
         <a-col :xs="24" :sm="8" :md="6">
           <a-select
             v-model:value="filters.status"
-            placeholder="Filter by status"
+            placeholder="Filtrează după status"
             allow-clear
             @change="loadRegistrations"
           >
-            <a-select-option value="">All Statuses</a-select-option>
-            <a-select-option value="pending">Pending</a-select-option>
-            <a-select-option value="confirmed">Confirmed</a-select-option>
-            <a-select-option value="cancelled">Cancelled</a-select-option>
+            <a-select-option value="">Toate Statusurile</a-select-option>
+            <a-select-option value="pending">În așteptare</a-select-option>
+            <a-select-option value="confirmed">Confirmat</a-select-option>
+            <a-select-option value="cancelled">Anulat</a-select-option>
           </a-select>
         </a-col>
         <a-col :xs="24" :sm="8" :md="6">
           <a-input
             v-model:value="filters.search"
-            placeholder="Search by name..."
+            placeholder="Caută după nume..."
             @input="loadRegistrations"
           >
             <template #prefix>
@@ -46,96 +46,169 @@
         <a-col :xs="24" :sm="12" :md="6">
           <a-button type="primary" @click="exportToExcel">
             <DownloadOutlined />
-            Export Excel
+            Exportă Excel
           </a-button>
         </a-col>
       </a-row>
     </div>
 
-    <!-- Table -->
-    <div class="table-section">
+    <!-- Desktop Table -->
+    <div class="table-section desktop-table">
       <a-spin :spinning="loading">
-        <a-table
-          :columns="columns"
-          :data-source="filteredRegistrations"
-          :pagination="{
-            pageSize: 10,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} registrations`
-          }"
-          row-key="id"
-        >
-          <template #bodyCell="{ column, record }">
-            <template v-if="column.key === 'childName'">
-              {{ record.child.firstName }} {{ record.child.lastName }}
+        <div class="table-wrapper">
+          <a-table
+            :columns="columns"
+            :data-source="filteredRegistrations"
+            :pagination="{
+              pageSize: 10,
+              showSizeChanger: true,
+              showQuickJumper: true,
+              showTotal: (total, range) => `${range[0]}-${range[1]} din ${total} înscrieri`
+            }"
+            :scroll="{ x: 'max-content' }"
+            row-key="id"
+          >
+            <template #bodyCell="{ column, record }">
+              <template v-if="column.key === 'childName'">
+                {{ record.child.firstName }} {{ record.child.lastName }}
+              </template>
+              <template v-if="column.key === 'parentName'">
+                {{ record.parent.firstName }} {{ record.parent.lastName }}
+              </template>
+              <template v-if="column.key === 'activityType'">
+                {{ getActivityTypeLabel(record.activityType) }}
+              </template>
+              <template v-if="column.key === 'status'">
+                <a-tag :color="getStatusColor(record.status)">
+                  {{ getStatusLabel(record.status) }}
+                </a-tag>
+              </template>
+              <template v-if="column.key === 'actions'">
+                <a-space>
+                  <a-button size="small" @click="viewRegistration(record)">
+                    <EyeOutlined />
+                  </a-button>
+                  <a-button size="small" @click="editRegistration(record)">
+                    <EditOutlined />
+                  </a-button>
+                  <a-popconfirm
+                    title="Ești sigur că vrei să ștergi această înscriere?"
+                    @confirm="deleteRegistration(record.id)"
+                  >
+                    <a-button size="small" danger>
+                      <DeleteOutlined />
+                    </a-button>
+                  </a-popconfirm>
+                </a-space>
+              </template>
             </template>
-            <template v-if="column.key === 'parentName'">
-              {{ record.parent.firstName }} {{ record.parent.lastName }}
-            </template>
-            <template v-if="column.key === 'status'">
-              <a-tag :color="getStatusColor(record.status)">
-                {{ record.status }}
-              </a-tag>
-            </template>
-            <template v-if="column.key === 'actions'">
-              <a-space>
+          </a-table>
+        </div>
+      </a-spin>
+    </div>
+
+    <!-- Mobile Cards -->
+    <div class="mobile-cards">
+      <a-spin :spinning="loading">
+        <div v-if="filteredRegistrations.length === 0" class="empty-state">
+          <p>Nu există înscrieri</p>
+        </div>
+        <div v-else>
+          <a-pagination
+            v-model:current="mobilePage"
+            :total="filteredRegistrations.length"
+            :page-size="mobilePageSize"
+            :show-size-changer="false"
+            simple
+            class="mobile-pagination"
+          />
+          <div class="cards-list">
+            <a-card
+              v-for="record in paginatedMobileRegistrations"
+              :key="record.id"
+              class="registration-card"
+            >
+              <div class="card-header">
+                <h3>{{ record.child.firstName }} {{ record.child.lastName }}</h3>
+                <a-tag :color="getStatusColor(record.status)">
+                  {{ getStatusLabel(record.status) }}
+                </a-tag>
+              </div>
+              <div class="card-content">
+                <div class="card-item">
+                  <strong>Vârstă:</strong> {{ record.child.age }} ani
+                </div>
+                <div class="card-item">
+                  <strong>Părinte:</strong> {{ record.parent.firstName }} {{ record.parent.lastName }}
+                </div>
+                <div class="card-item">
+                  <strong>Telefon:</strong> 
+                  <a :href="`tel:${record.parent.phone}`">{{ record.parent.phone }}</a>
+                </div>
+                <div class="card-item">
+                  <strong>Tip Activitate:</strong> {{ getActivityTypeLabel(record.activityType) }}
+                </div>
+              </div>
+              <div class="card-actions">
                 <a-button size="small" @click="viewRegistration(record)">
                   <EyeOutlined />
+                  Vezi
                 </a-button>
                 <a-button size="small" @click="editRegistration(record)">
                   <EditOutlined />
+                  Editează
                 </a-button>
                 <a-popconfirm
-                  title="Are you sure you want to delete this registration?"
+                  title="Ești sigur că vrei să ștergi?"
                   @confirm="deleteRegistration(record.id)"
                 >
                   <a-button size="small" danger>
                     <DeleteOutlined />
+                    Șterge
                   </a-button>
                 </a-popconfirm>
-              </a-space>
-            </template>
-          </template>
-        </a-table>
+              </div>
+            </a-card>
+          </div>
+        </div>
       </a-spin>
     </div>
 
     <!-- View/Edit Modal -->
     <a-modal
       v-model:open="modalVisible"
-      :title="isEditing ? 'Edit Registration' : 'View Registration'"
+      :title="isEditing ? 'Editează Înscrierea' : 'Vezi Înscrierea'"
       :width="800"
       :footer="null"
     >
       <div v-if="selectedRegistration" class="registration-details">
         <a-descriptions :column="2" bordered>
-          <a-descriptions-item label="Child">
+          <a-descriptions-item label="Copil">
             {{ selectedRegistration.child.firstName }} {{ selectedRegistration.child.lastName }}
           </a-descriptions-item>
-          <a-descriptions-item label="Age">
-            {{ selectedRegistration.child.age }} years
+          <a-descriptions-item label="Vârstă">
+            {{ selectedRegistration.child.age }} ani
           </a-descriptions-item>
-          <a-descriptions-item label="Parent">
+          <a-descriptions-item label="Părinte">
             {{ selectedRegistration.parent.firstName }} {{ selectedRegistration.parent.lastName }}
           </a-descriptions-item>
-          <a-descriptions-item label="Phone">
-            {{ selectedRegistration.parent.phone }}
+          <a-descriptions-item label="Telefon">
+            <a :href="`tel:${selectedRegistration.parent.phone}`">{{ selectedRegistration.parent.phone }}</a>
           </a-descriptions-item>
           <a-descriptions-item label="Email">
-            {{ selectedRegistration.parent.email }}
+            <a :href="`mailto:${selectedRegistration.parent.email}`">{{ selectedRegistration.parent.email }}</a>
           </a-descriptions-item>
-          <a-descriptions-item label="Activity Type">
-            {{ selectedRegistration.activityType }}
+          <a-descriptions-item label="Tip Activitate">
+            {{ getActivityTypeLabel(selectedRegistration.activityType) }}
           </a-descriptions-item>
           <a-descriptions-item label="Status">
             <a-select
               v-model:value="selectedRegistration.status"
               @change="updateStatus"
             >
-              <a-select-option value="pending">Pending</a-select-option>
-              <a-select-option value="confirmed">Confirmed</a-select-option>
-              <a-select-option value="cancelled">Cancelled</a-select-option>
+              <a-select-option value="pending">În așteptare</a-select-option>
+              <a-select-option value="confirmed">Confirmat</a-select-option>
+              <a-select-option value="cancelled">Anulat</a-select-option>
             </a-select>
           </a-descriptions-item>
         </a-descriptions>
@@ -167,14 +240,44 @@ const selectedRegistration = ref<any>(null)
 const isEditing = ref(false)
 
 const columns = [
-  { title: 'Child', key: 'childName' },
-  { title: 'Age', dataIndex: ['child', 'age'] },
-  { title: 'Parent', key: 'parentName' },
-  { title: 'Phone', dataIndex: ['parent', 'phone'] },
-  { title: 'Activity Type', dataIndex: 'activityType' },
+  { title: 'Copil', key: 'childName' },
+  { title: 'Vârstă', dataIndex: ['child', 'age'] },
+  { title: 'Părinte', key: 'parentName' },
+  { title: 'Telefon', dataIndex: ['parent', 'phone'] },
+  { title: 'Tip Activitate', key: 'activityType' },
   { title: 'Status', key: 'status' },
-  { title: 'Actions', key: 'actions', width: 120 }
+  { title: 'Acțiuni', key: 'actions', width: 150 }
 ]
+
+const mobilePage = ref(1)
+const mobilePageSize = ref(5)
+
+const paginatedMobileRegistrations = computed(() => {
+  const start = (mobilePage.value - 1) * mobilePageSize.value
+  const end = start + mobilePageSize.value
+  return filteredRegistrations.value.slice(start, end)
+})
+
+const getStatusLabel = (status: string) => {
+  const labels: Record<string, string> = {
+    'pending': 'În așteptare',
+    'confirmed': 'Confirmat',
+    'cancelled': 'Anulat'
+  }
+  return labels[status] || status
+}
+
+const getActivityTypeLabel = (type: string) => {
+  const labels: Record<string, string> = {
+    'camp': 'Tabără',
+    'hike': 'Drumeție',
+    'trip': 'Excursie',
+    'ski': 'Ski',
+    'swimming': 'Înot',
+    'afterschool': 'După școală'
+  }
+  return labels[type] || type
+}
 
 const filteredRegistrations = computed(() => {
   let filtered = registrations.value
@@ -297,11 +400,115 @@ onMounted(() => {
 .table-section {
   background: white;
   border-radius: 12px;
+  overflow: hidden;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.mobile-cards {
+  display: none;
 }
 
 .registration-details {
   max-height: 500px;
   overflow-y: auto;
+}
+
+/* Mobile Cards Styles */
+.registration-card {
+  margin-bottom: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.card-content {
+  margin-bottom: 16px;
+}
+
+.card-item {
+  margin-bottom: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.card-item:last-child {
+  border-bottom: none;
+}
+
+.card-item strong {
+  display: inline-block;
+  min-width: 120px;
+  color: #666;
+  font-weight: 500;
+}
+
+.card-item a {
+  color: #1890ff;
+  text-decoration: none;
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mobile-pagination {
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .admin-registrations {
+    padding: 12px;
+  }
+
+  .filters-section {
+    padding: 16px;
+  }
+
+  .desktop-table {
+    display: none;
+  }
+
+  .mobile-cards {
+    display: block;
+  }
+
+  .table-section {
+    display: none;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-cards {
+    display: none;
+  }
 }
 </style>
 

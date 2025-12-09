@@ -1,8 +1,16 @@
 <template>
     <div class="trips-page">
+      <!-- Mobile Back Button -->
+      <div class="mobile-back-button">
+        <a-button type="text" @click="goHome" class="back-btn">
+          <ArrowLeftOutlined />
+          Înapoi la pagina principală
+        </a-button>
+      </div>
+
       <div class="page-header">
-        <h1>🗺️ Educational Trips</h1>
-        <p>Discover Romania through educational trips to major cities</p>
+        <h1>🗺️ Excursii Educaționale</h1>
+        <p>Descoperă România prin excursii educaționale în orașele majore</p>
       </div>
 
       <div class="trips-grid">
@@ -23,10 +31,10 @@
                   </template>
                   <template #description>
                     <div class="trip-details">
-                      <p><strong>Destination:</strong> {{ getDestinationLabel(trip.destination) }}</p>
-                      <p><strong>Date:</strong> {{ trip.date }}</p>
-                      <p><strong>Duration:</strong> {{ trip.duration }}</p>
-                      <p><strong>Price:</strong> {{ trip.price }} RON</p>
+                      <p><strong>Județ:</strong> {{ getLocationDisplay(trip) }}</p>
+                      <p><strong>Dată:</strong> {{ trip.date }}</p>
+                      <p><strong>Durata:</strong> {{ trip.duration }}</p>
+                      <p><strong>Preț:</strong> {{ trip.price }} RON</p>
                     </div>
                     <p class="trip-description">{{ trip.description }}</p>
                   </template>
@@ -35,11 +43,11 @@
                 <template #actions>
                   <a-button type="primary" @click="navigateToRegistration('trip', trip.id)">
                     <FormOutlined />
-                    Register
+                    Înscrie-te
                   </a-button>
                   <a-button @click="viewTripDetails(trip)">
                     <EyeOutlined />
-                    Details
+                    Detalii
                   </a-button>
                 </template>
               </a-card>
@@ -64,13 +72,13 @@
             <p class="modal-description">{{ selectedTrip.description }}</p>
             
             <div class="modal-details">
-              <h4>Trip Information:</h4>
+              <h4>Informații Excursie:</h4>
               <ul>
-                <li><strong>Destination:</strong> {{ getDestinationLabel(selectedTrip.destination) }}</li>
-                <li><strong>Date:</strong> {{ selectedTrip.date }}</li>
-                <li><strong>Duration:</strong> {{ selectedTrip.duration }}</li>
-                <li><strong>Price:</strong> {{ selectedTrip.price }} RON</li>
-                <li><strong>Max Participants:</strong> {{ selectedTrip.maxParticipants }}</li>
+                <li><strong>Județ:</strong> {{ getLocationDisplay(selectedTrip) }}</li>
+                <li><strong>Dată:</strong> {{ selectedTrip.date }}</li>
+                <li><strong>Durata:</strong> {{ selectedTrip.duration }}</li>
+                <li><strong>Preț:</strong> {{ selectedTrip.price }} RON</li>
+                <li><strong>Participanți Maxim:</strong> {{ selectedTrip.maxParticipants }}</li>
               </ul>
             </div>
 
@@ -80,14 +88,14 @@
             </div>
 
             <div v-if="selectedTrip.details" class="modal-details-text">
-              <h4>Additional Details:</h4>
+              <h4>Detalii Suplimentare:</h4>
               <p>{{ selectedTrip.details }}</p>
             </div>
 
             <div class="modal-actions">
               <a-button type="primary" size="large" @click="navigateToRegistration('trip', selectedTrip.id)">
                 <FormOutlined />
-                Register for this Trip
+                Înscrie-te la această Excursie
               </a-button>
             </div>
           </div>
@@ -97,7 +105,7 @@
   </template>
 
 <script setup lang="ts">
-import { CarOutlined, FormOutlined, EyeOutlined } from '@ant-design/icons-vue'
+import { CarOutlined, FormOutlined, EyeOutlined, ArrowLeftOutlined } from '@ant-design/icons-vue'
 
 const router = useRouter()
 
@@ -105,6 +113,10 @@ const loading = ref(false)
 const trips = ref<any[]>([])
 const detailsModalVisible = ref(false)
 const selectedTrip = ref<any>(null)
+
+const goHome = () => {
+  router.push('/')
+}
 
 const loadTrips = async () => {
   loading.value = true
@@ -118,13 +130,20 @@ const loadTrips = async () => {
   }
 }
 
-const getDestinationLabel = (destination: string) => {
-  const labels: Record<string, string> = {
-    'bucharest': 'Bucharest',
-    'targu_mures': 'Târgu Mureș',
-    'sibiu': 'Sibiu'
+const getLocationDisplay = (trip: any) => {
+  if (trip.countyName) {
+    return trip.countyName
   }
-  return labels[destination] || destination
+  if (trip.destination) {
+    // Fallback pentru vechile date
+    const labels: Record<string, string> = {
+      'bucharest': 'București',
+      'targu_mures': 'Târgu Mureș',
+      'sibiu': 'Sibiu'
+    }
+    return labels[trip.destination] || trip.destination
+  }
+  return 'Nespecificat'
 }
 
 const viewTripDetails = (trip: any) => {
@@ -275,7 +294,23 @@ onMounted(() => {
   margin-top: 24px;
 }
 
+.mobile-back-button {
+  display: none;
+}
+
 @media (max-width: 768px) {
+  .mobile-back-button {
+    display: block;
+    margin-bottom: 16px;
+  }
+
+  .back-btn {
+    width: 100%;
+    text-align: left;
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
   .page-header {
     padding: 30px 20px;
     margin: 0 -16px 30px -16px;

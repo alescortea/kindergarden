@@ -1,8 +1,16 @@
 <template>
     <div class="school-offers-page">
+      <!-- Mobile Back Button -->
+      <div class="mobile-back-button">
+        <a-button type="text" @click="goHome" class="back-btn">
+          <ArrowLeftOutlined />
+          Înapoi la pagina principală
+        </a-button>
+      </div>
+
       <div class="page-header">
-        <h1>🏫 School Offers</h1>
-        <p>Are you a teacher and want to organize a trip with your students? We provide transport and activities!</p>
+        <h1>🏫 Oferte Școlare</h1>
+        <p>Ești profesor și vrei să organizezi o excursie cu elevii tăi? Oferim transport și activități!</p>
       </div>
 
       <div class="offers-grid">
@@ -23,14 +31,14 @@
                   </template>
                   <template #description>
                     <div class="offer-details">
-                      <p v-if="offer.price && !offer.customPrice"><strong>Price:</strong> {{ offer.price }} RON</p>
-                      <p v-else-if="offer.customPrice"><strong>Price:</strong> Custom</p>
-                      <p v-if="offer.maxParticipants"><strong>Max Participants:</strong> {{ offer.maxParticipants }}</p>
-                      <p><strong>Transport:</strong> {{ offer.transportIncluded ? 'Included' : 'Not included' }}</p>
+                      <p v-if="offer.price && !offer.customPrice"><strong>Preț:</strong> {{ offer.price }} RON</p>
+                      <p v-else-if="offer.customPrice"><strong>Preț:</strong> Personalizat</p>
+                      <p v-if="offer.maxParticipants"><strong>Participanți Maxim:</strong> {{ offer.maxParticipants }}</p>
+                      <p><strong>Transport:</strong> {{ offer.transportIncluded ? 'Inclus' : 'Neinclus' }}</p>
                     </div>
                     <p class="offer-description">{{ offer.description }}</p>
                     <div v-if="offer.activities && offer.activities.length > 0" class="offer-activities">
-                      <h4>Activities:</h4>
+                      <h4>Activități:</h4>
                       <a-tag v-for="activity in offer.activities" :key="activity" color="blue">
                         {{ activity }}
                       </a-tag>
@@ -41,7 +49,7 @@
                 <template #actions>
                   <a-button type="primary" @click="navigateToRegistration('afterschool', offer.id)">
                     <FormOutlined />
-                    Contact Us
+                    Contactează-ne
                   </a-button>
                 </template>
               </a-card>
@@ -53,12 +61,16 @@
   </template>
 
 <script setup lang="ts">
-import { BookOutlined, FormOutlined } from '@ant-design/icons-vue'
+import { BookOutlined, FormOutlined, ArrowLeftOutlined } from '@ant-design/icons-vue'
 
 const router = useRouter()
 
 const loading = ref(false)
 const offers = ref<any[]>([])
+
+const goHome = () => {
+  router.push('/')
+}
 
 const loadOffers = async () => {
   loading.value = true
@@ -175,7 +187,23 @@ onMounted(() => {
   color: #2c3e50;
 }
 
+.mobile-back-button {
+  display: none;
+}
+
 @media (max-width: 768px) {
+  .mobile-back-button {
+    display: block;
+    margin-bottom: 16px;
+  }
+
+  .back-btn {
+    width: 100%;
+    text-align: left;
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
   .page-header {
     padding: 30px 20px;
     margin: 0 -16px 30px -16px;

@@ -3,7 +3,9 @@ import { z } from 'zod'
 
 const hikeSchema = z.object({
   name: z.string(),
-  location: z.string(),
+  location: z.string().optional(),
+  countyId: z.string().optional(),
+  countyName: z.string().optional(),
   difficulty: z.enum(['easy', 'medium', 'hard']),
   duration: z.string(),
   distance: z.string().optional(),

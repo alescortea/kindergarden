@@ -3,7 +3,9 @@ import { z } from 'zod'
 
 const tripSchema = z.object({
   name: z.string(),
-  destination: z.enum(['bucharest', 'targu_mures', 'sibiu']),
+  destination: z.string().optional(),
+  countyId: z.string().optional(),
+  countyName: z.string().optional(),
   date: z.string(),
   description: z.string(),
   price: z.number(),

@@ -20,6 +20,35 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+}
+
+/* Margini consistente pentru întreaga aplicație */
+:root {
+  --app-margin-desktop: 24px;
+  --app-margin-tablet: 16px;
+  --app-margin-mobile: 12px;
+}
+
+/* Container principal pentru margini */
+.app-container {
+  margin-left: var(--app-margin-desktop);
+  margin-right: var(--app-margin-desktop);
+}
+
+@media (max-width: 992px) {
+  .app-container {
+    margin-left: var(--app-margin-tablet);
+    margin-right: var(--app-margin-tablet);
+  }
+}
+
+@media (max-width: 768px) {
+  .app-container {
+    margin-left: var(--app-margin-mobile);
+    margin-right: var(--app-margin-mobile);
+  }
 }
 
 /* Mobile optimizations */

@@ -7,6 +7,8 @@ const skiLessonSchema = z.object({
   price: z.number(),
   description: z.string(),
   maxParticipants: z.number().optional(),
+  countyId: z.string().optional(),
+  countyName: z.string().optional(),
   availableDates: z.array(z.string()).default([]),
   gallery: z.array(z.string()).default([]),
   videos: z.array(z.string()).default([]),

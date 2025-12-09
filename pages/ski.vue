@@ -1,8 +1,16 @@
 <template>
     <div class="ski-page">
+      <!-- Mobile Back Button -->
+      <div class="mobile-back-button">
+        <a-button type="text" @click="goHome" class="back-btn">
+          <ArrowLeftOutlined />
+          Înapoi la pagina principală
+        </a-button>
+      </div>
+
       <div class="page-header">
-        <h1>⛷️ Ski Lessons</h1>
-        <p>Individual and group ski lessons for all skill levels</p>
+        <h1>⛷️ Lecții de Ski</h1>
+        <p>Lecții de ski individuale și de grup pentru toate nivelurile</p>
       </div>
 
       <div class="filters-section">
@@ -10,13 +18,13 @@
           <a-col :xs="24" :sm="8" :md="6">
             <a-select
               v-model:value="filters.type"
-              placeholder="Lesson Type"
+              placeholder="Tip Lecție"
               style="width: 100%"
               @change="loadLessons"
             >
-              <a-select-option value="">All Types</a-select-option>
-              <a-select-option value="individual">Individual</a-select-option>
-              <a-select-option value="group">Group</a-select-option>
+              <a-select-option value="">Toate Tipurile</a-select-option>
+              <a-select-option value="individual">Individuală</a-select-option>
+              <a-select-option value="group">Grup</a-select-option>
             </a-select>
           </a-col>
         </a-row>
@@ -36,13 +44,13 @@
                 
                 <a-card-meta>
                   <template #title>
-                    <h3>{{ getTypeLabel(lesson.type) }} Lesson</h3>
+                    <h3>Lecție {{ getTypeLabel(lesson.type) }}</h3>
                   </template>
                   <template #description>
                     <div class="lesson-details">
-                      <p><strong>Duration:</strong> {{ lesson.duration }}</p>
-                      <p><strong>Price:</strong> {{ lesson.price }} RON</p>
-                      <p v-if="lesson.maxParticipants"><strong>Max Participants:</strong> {{ lesson.maxParticipants }}</p>
+                      <p><strong>Durata:</strong> {{ lesson.duration }}</p>
+                      <p><strong>Preț:</strong> {{ lesson.price }} RON</p>
+                      <p v-if="lesson.maxParticipants"><strong>Participanți Maxim:</strong> {{ lesson.maxParticipants }}</p>
                     </div>
                     <p class="lesson-description">{{ lesson.description }}</p>
                   </template>
@@ -51,7 +59,11 @@
                 <template #actions>
                   <a-button type="primary" @click="navigateToRegistration('ski', lesson.id)">
                     <FormOutlined />
-                    Register
+                    Înscriere
+                  </a-button>
+                  <a-button @click="viewLessonDetails(lesson)">
+                    <EyeOutlined />
+                    Detalii
                   </a-button>
                 </template>
               </a-card>
@@ -59,11 +71,53 @@
           </a-row>
         </a-spin>
       </div>
+
+      <!-- Lesson Details Modal -->
+      <a-modal
+        v-model:open="detailsModalVisible"
+        :title="selectedLesson ? `Lecție ${getTypeLabel(selectedLesson.type)}` : ''"
+        :width="800"
+        :footer="null"
+      >
+        <div v-if="selectedLesson" class="lesson-details-modal">
+          <div class="modal-image" v-if="selectedLesson.gallery && selectedLesson.gallery.length > 0">
+            <img :src="selectedLesson.gallery[0]" alt="Ski Lesson" />
+          </div>
+          
+          <div class="modal-content">
+            <p class="modal-description">{{ selectedLesson.description }}</p>
+            
+            <div class="modal-details">
+              <h4>Informații Lecție:</h4>
+              <ul>
+                <li><strong>Tip:</strong> {{ getTypeLabel(selectedLesson.type) }}</li>
+                <li><strong>Durata:</strong> {{ selectedLesson.duration }}</li>
+                <li><strong>Preț:</strong> {{ selectedLesson.price }} RON</li>
+                <li v-if="selectedLesson.maxParticipants"><strong>Participanți Maxim:</strong> {{ selectedLesson.maxParticipants }}</li>
+              </ul>
+            </div>
+
+            <div v-if="selectedLesson.availableDates && selectedLesson.availableDates.length > 0" class="modal-program">
+              <h4>Date Disponibile:</h4>
+              <ul>
+                <li v-for="date in selectedLesson.availableDates" :key="date">{{ date }}</li>
+              </ul>
+            </div>
+
+            <div class="modal-actions">
+              <a-button type="primary" size="large" @click="navigateToRegistration('ski', selectedLesson.id)">
+                <FormOutlined />
+                Înscriere la Această Lecție
+              </a-button>
+            </div>
+          </div>
+        </div>
+      </a-modal>
     </div>
   </template>
 
 <script setup lang="ts">
-import { TrophyOutlined, FormOutlined } from '@ant-design/icons-vue'
+import { TrophyOutlined, FormOutlined, EyeOutlined, ArrowLeftOutlined } from '@ant-design/icons-vue'
 
 const router = useRouter()
 
@@ -72,24 +126,39 @@ const lessons = ref<any[]>([])
 const filters = ref({
   type: ''
 })
+const detailsModalVisible = ref(false)
+const selectedLesson = ref<any>(null)
+
+const goHome = () => {
+  router.push('/')
+}
 
 const loadLessons = async () => {
   loading.value = true
   try {
     const query: any = {}
-    if (filters.value.type) query.type = filters.value.type
+    if (filters.value.type && filters.value.type !== '') {
+      query.type = filters.value.type
+    }
 
     const response = await $fetch('/api/ski', { query })
     lessons.value = Array.isArray(response) ? response : []
+    console.log('Loaded ski lessons:', lessons.value.length, 'with filters:', query)
   } catch (error) {
     console.error('Failed to load ski lessons:', error)
+    lessons.value = []
   } finally {
     loading.value = false
   }
 }
 
 const getTypeLabel = (type: string) => {
-  return type === 'individual' ? 'Individual' : 'Group'
+  return type === 'individual' ? 'Individuală' : 'Grup'
+}
+
+const viewLessonDetails = (lesson: any) => {
+  selectedLesson.value = lesson
+  detailsModalVisible.value = true
 }
 
 const navigateToRegistration = (activityType: string, activityId: string) => {
@@ -107,6 +176,24 @@ onMounted(() => {
 <style scoped>
 .ski-page {
   min-height: 100vh;
+  position: relative;
+}
+
+.mobile-back-button {
+  display: none;
+  margin-bottom: 16px;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #667eea;
+  font-weight: 500;
+}
+
+.back-btn:hover {
+  color: #764ba2;
 }
 
 .page-header {
@@ -192,7 +279,64 @@ onMounted(() => {
   line-height: 1.6;
 }
 
+.lesson-details-modal {
+  text-align: center;
+}
+
+.modal-image {
+  margin-bottom: 24px;
+}
+
+.modal-image img {
+  width: 100%;
+  max-height: 300px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.modal-description {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  color: #666;
+}
+
+.modal-details h4,
+.modal-program h4 {
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #2c3e50;
+}
+
+.modal-details ul {
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.modal-details li {
+  margin-bottom: 8px;
+  color: #666;
+}
+
+.modal-program ul {
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.modal-program li {
+  margin-bottom: 8px;
+  color: #666;
+}
+
+.modal-actions {
+  margin-top: 24px;
+}
+
 @media (max-width: 768px) {
+  .mobile-back-button {
+    display: block;
+  }
+
   .page-header {
     padding: 30px 20px;
     margin: 0 -16px 30px -16px;

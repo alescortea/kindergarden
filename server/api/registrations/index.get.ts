@@ -1,5 +1,6 @@
 import { getCollection } from '~/composables/useFirestore'
 import { orderBy, where, query } from 'firebase/firestore'
+import { getQuery } from 'h3'
 
 export default defineEventHandler(async (event) => {
   try {
