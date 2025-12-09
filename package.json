@@ -1,0 +1,29 @@
+{
+  "name": "roseli-sport-aventura",
+  "version": "1.0.0",
+  "description": "Roseli - Sport & Aventură pentru Copii website with Nuxt 3 and Firestore",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@ant-design/icons-vue": "^7.0.1",
+    "ant-design-vue": "^4.0.0",
+    "dayjs": "^1.11.9",
+    "firebase": "^10.14.1",
+    "nuxt": "^3.8.0",
+    "vue": "^3.3.4",
+    "xlsx": "^0.18.5",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@nuxtjs/tailwindcss": "^6.8.4",
+    "@types/node": "^20.10.0",
+    "sass": "^1.66.1",
+    "typescript": "^5.3.3"
+  }
+}
