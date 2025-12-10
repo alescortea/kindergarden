@@ -304,6 +304,15 @@ onMounted(() => {
 @media (max-width: 768px) {
   .mobile-back-button {
     display: block;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: white;
+    padding: 8px 0;
+    margin: -12px -12px 16px -12px;
+    padding-left: 12px;
+    padding-right: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 
   .page-header {

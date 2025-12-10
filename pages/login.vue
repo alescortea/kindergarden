@@ -34,19 +34,31 @@
             @finish="handleLogin"
           >
             <a-form-item label="Nume utilizator" name="username">
-              <a-input v-model:value="loginForm.username" placeholder="Introduceți numele de utilizator" />
+              <a-input 
+                v-model:value="loginForm.username" 
+                placeholder="Introduceți numele de utilizator (admin)" 
+                size="large"
+              />
             </a-form-item>
 
             <a-form-item label="Parolă" name="password">
-              <a-input-password v-model:value="loginForm.password" placeholder="Introduceți parola" />
+              <a-input-password 
+                v-model:value="loginForm.password" 
+                placeholder="Introduceți parola (admin)" 
+                size="large"
+              />
             </a-form-item>
 
             <a-form-item>
-              <a-button type="default" html-type="submit" :loading="loading" block size="large">
+              <a-button type="primary" html-type="submit" :loading="loading" block size="large">
                 Autentificare
               </a-button>
             </a-form-item>
           </a-form>
+          
+          <div class="login-hint">
+            <p>Utilizați: <strong>admin</strong> / <strong>admin</strong></p>
+          </div>
         </div>
       </a-card>
     </div>
@@ -102,25 +114,33 @@ const handleGoogleLogin = async () => {
   }
 }
 
-// Legacy username/password login (kept for backwards compatibility)
+// Username/password login
 const handleLogin = async () => {
   loading.value = true
   try {
-    // In a real app, this would call an authentication API
-    // For now, we'll use a simple check
-    if (loginForm.value.username === 'admin' && loginForm.value.password === 'admin123') {
-      // Store token (in real app, this would come from the API)
+    // Simple authentication check
+    if (loginForm.value.username === 'admin' && loginForm.value.password === 'admin') {
+      // Store token
       if (import.meta.client) {
         localStorage.setItem('adminToken', 'admin_token_here')
       }
-      router.push('/admin')
+      
+      // Small delay to ensure token is stored
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
+      // Redirect to admin
+      if (window.location) {
+        window.location.href = '/admin'
+      } else {
+        await navigateTo('/admin', { replace: true, external: false })
+      }
     } else {
-      alert('Credențiale invalide')
+      alert('Credențiale invalide. Utilizați: admin / admin')
+      loading.value = false
     }
   } catch (error) {
     console.error('Login error:', error)
     alert('Autentificare eșuată. Vă rugăm să încercați din nou.')
-  } finally {
     loading.value = false
   }
 }
@@ -162,6 +182,24 @@ const handleLogin = async () => {
 
 .google-login-btn svg {
   margin-right: 4px;
+}
+
+.login-hint {
+  margin-top: 16px;
+  text-align: center;
+  padding: 12px;
+  background: #f0f2f5;
+  border-radius: 8px;
+}
+
+.login-hint p {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.login-hint strong {
+  color: #2c3e50;
 }
 </style>
 

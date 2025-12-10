@@ -12,9 +12,9 @@
               lecții de ski și înot. Transport cu microbuze dotate cu climă pentru pasageri.
             </p>
             <div class="hero-actions">
-              <a-button type="primary" size="large" @click="navigateTo('/camps')">
-                <TeamOutlined />
-                Vezi Tabere
+              <a-button type="primary" size="large" @click="navigateTo('/activities')">
+                <TrophyOutlined />
+                Vezi Activități
               </a-button>
               <a-button size="large" @click="navigateTo('/registration')">
                 <FormOutlined />

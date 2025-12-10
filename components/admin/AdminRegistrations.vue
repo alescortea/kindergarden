@@ -178,40 +178,139 @@
     <a-modal
       v-model:open="modalVisible"
       :title="isEditing ? 'Editează Înscrierea' : 'Vezi Înscrierea'"
-      :width="800"
+      :width="modalWidth"
       :footer="null"
+      :wrap-class-name="'registration-modal'"
+      :class="'registration-modal-wrapper'"
+      @cancel="handleModalCancel"
     >
       <div v-if="selectedRegistration" class="registration-details">
-        <a-descriptions :column="2" bordered>
-          <a-descriptions-item label="Copil">
-            {{ selectedRegistration.child.firstName }} {{ selectedRegistration.child.lastName }}
-          </a-descriptions-item>
-          <a-descriptions-item label="Vârstă">
-            {{ selectedRegistration.child.age }} ani
-          </a-descriptions-item>
-          <a-descriptions-item label="Părinte">
-            {{ selectedRegistration.parent.firstName }} {{ selectedRegistration.parent.lastName }}
-          </a-descriptions-item>
-          <a-descriptions-item label="Telefon">
-            <a :href="`tel:${selectedRegistration.parent.phone}`">{{ selectedRegistration.parent.phone }}</a>
-          </a-descriptions-item>
-          <a-descriptions-item label="Email">
-            <a :href="`mailto:${selectedRegistration.parent.email}`">{{ selectedRegistration.parent.email }}</a>
-          </a-descriptions-item>
-          <a-descriptions-item label="Tip Activitate">
-            {{ getActivityTypeLabel(selectedRegistration.activityType) }}
-          </a-descriptions-item>
-          <a-descriptions-item label="Status">
-            <a-select
-              v-model:value="selectedRegistration.status"
-              @change="updateStatus"
-            >
-              <a-select-option value="pending">În așteptare</a-select-option>
-              <a-select-option value="confirmed">Confirmat</a-select-option>
-              <a-select-option value="cancelled">Anulat</a-select-option>
-            </a-select>
-          </a-descriptions-item>
-        </a-descriptions>
+        <!-- View Mode -->
+        <template v-if="!isEditing">
+          <a-descriptions :column="descriptionColumns" bordered>
+            <a-descriptions-item label="Copil">
+              {{ selectedRegistration.child.firstName }} {{ selectedRegistration.child.lastName }}
+            </a-descriptions-item>
+            <a-descriptions-item label="Vârstă">
+              {{ selectedRegistration.child.age }} ani
+            </a-descriptions-item>
+            <a-descriptions-item label="Părinte">
+              {{ selectedRegistration.parent.firstName }} {{ selectedRegistration.parent.lastName }}
+            </a-descriptions-item>
+            <a-descriptions-item label="Telefon">
+              <a :href="`tel:${selectedRegistration.parent.phone}`" class="contact-link">
+                {{ selectedRegistration.parent.phone }}
+              </a>
+            </a-descriptions-item>
+            <a-descriptions-item label="Email">
+              <a :href="`mailto:${selectedRegistration.parent.email}`" class="contact-link">
+                {{ selectedRegistration.parent.email }}
+              </a>
+            </a-descriptions-item>
+            <a-descriptions-item label="Tip Activitate">
+              {{ getActivityTypeLabel(selectedRegistration.activityType) }}
+            </a-descriptions-item>
+            <a-descriptions-item label="Status">
+              <a-tag :color="getStatusColor(selectedRegistration.status)">
+                {{ getStatusLabel(selectedRegistration.status) }}
+              </a-tag>
+            </a-descriptions-item>
+          </a-descriptions>
+          <div class="modal-actions">
+            <a-button type="primary" @click="modalVisible = false" block>
+              Închide
+            </a-button>
+          </div>
+        </template>
+
+        <!-- Edit Mode -->
+        <template v-else>
+          <a-form :model="editForm" layout="vertical" @submit.prevent="saveRegistration">
+            <a-row :gutter="16">
+              <a-col :xs="24" :sm="12">
+                <a-form-item label="Prenume Copil" required>
+                  <a-input v-model:value="editForm.child.firstName" />
+                </a-form-item>
+              </a-col>
+              <a-col :xs="24" :sm="12">
+                <a-form-item label="Nume Copil" required>
+                  <a-input v-model:value="editForm.child.lastName" />
+                </a-form-item>
+              </a-col>
+            </a-row>
+            <a-row :gutter="16">
+              <a-col :xs="24" :sm="12">
+                <a-form-item label="Vârstă" required>
+                  <a-input-number 
+                    v-model:value="editForm.child.age" 
+                    :min="1" 
+                    :max="18" 
+                    style="width: 100%"
+                  />
+                </a-form-item>
+              </a-col>
+            </a-row>
+            <a-divider>Date Părinte</a-divider>
+            <a-row :gutter="16">
+              <a-col :xs="24" :sm="12">
+                <a-form-item label="Prenume Părinte" required>
+                  <a-input v-model:value="editForm.parent.firstName" />
+                </a-form-item>
+              </a-col>
+              <a-col :xs="24" :sm="12">
+                <a-form-item label="Nume Părinte" required>
+                  <a-input v-model:value="editForm.parent.lastName" />
+                </a-form-item>
+              </a-col>
+            </a-row>
+            <a-row :gutter="16">
+              <a-col :xs="24" :sm="12">
+                <a-form-item label="Telefon" required>
+                  <a-input v-model:value="editForm.parent.phone" />
+                </a-form-item>
+              </a-col>
+              <a-col :xs="24" :sm="12">
+                <a-form-item label="Email" required>
+                  <a-input v-model:value="editForm.parent.email" type="email" />
+                </a-form-item>
+              </a-col>
+            </a-row>
+            <a-divider>Detalii Înscriere</a-divider>
+            <a-row :gutter="16">
+              <a-col :xs="24" :sm="12">
+                <a-form-item label="Tip Activitate" required>
+                  <a-select v-model:value="editForm.activityType" style="width: 100%">
+                    <a-select-option value="camp">Tabără</a-select-option>
+                    <a-select-option value="hike">Drumeție</a-select-option>
+                    <a-select-option value="trip">Excursie</a-select-option>
+                    <a-select-option value="ski">Ski</a-select-option>
+                    <a-select-option value="swimming">Înot</a-select-option>
+                    <a-select-option value="afterschool">După școală</a-select-option>
+                  </a-select>
+                </a-form-item>
+              </a-col>
+              <a-col :xs="24" :sm="12">
+                <a-form-item label="Status" required>
+                  <a-select v-model:value="editForm.status" style="width: 100%">
+                    <a-select-option value="pending">În așteptare</a-select-option>
+                    <a-select-option value="confirmed">Confirmat</a-select-option>
+                    <a-select-option value="cancelled">Anulat</a-select-option>
+                  </a-select>
+                </a-form-item>
+              </a-col>
+            </a-row>
+            <div class="modal-actions">
+              <a-space>
+                <a-button @click="handleModalCancel">
+                  Anulează
+                </a-button>
+                <a-button type="primary" @click="saveRegistration" :loading="saving">
+                  Salvează
+                </a-button>
+              </a-space>
+            </div>
+          </a-form>
+        </template>
       </div>
     </a-modal>
   </div>
@@ -225,6 +324,7 @@ import {
   EditOutlined,
   DeleteOutlined
 } from '@ant-design/icons-vue'
+import { message } from 'ant-design-vue'
 import * as XLSX from 'xlsx'
 import dayjs from 'dayjs'
 
@@ -238,6 +338,23 @@ const filters = ref({
 const modalVisible = ref(false)
 const selectedRegistration = ref<any>(null)
 const isEditing = ref(false)
+const saving = ref(false)
+
+const editForm = ref({
+  child: {
+    firstName: '',
+    lastName: '',
+    age: 0
+  },
+  parent: {
+    firstName: '',
+    lastName: '',
+    phone: '',
+    email: ''
+  },
+  activityType: '',
+  status: ''
+})
 
 const columns = [
   { title: 'Copil', key: 'childName' },
@@ -251,6 +368,20 @@ const columns = [
 
 const mobilePage = ref(1)
 const mobilePageSize = ref(5)
+
+const modalWidth = computed(() => {
+  if (typeof window !== 'undefined') {
+    return window.innerWidth <= 768 ? '95%' : 800
+  }
+  return 800
+})
+
+const descriptionColumns = computed(() => {
+  if (typeof window !== 'undefined') {
+    return window.innerWidth <= 768 ? 1 : 2
+  }
+  return 2
+})
 
 const paginatedMobileRegistrations = computed(() => {
   const start = (mobilePage.value - 1) * mobilePageSize.value
@@ -336,21 +467,83 @@ const viewRegistration = (registration: any) => {
 
 const editRegistration = (registration: any) => {
   selectedRegistration.value = { ...registration }
+  // Initialize edit form with current values
+  editForm.value = {
+    child: {
+      firstName: registration.child.firstName || '',
+      lastName: registration.child.lastName || '',
+      age: registration.child.age || 0
+    },
+    parent: {
+      firstName: registration.parent.firstName || '',
+      lastName: registration.parent.lastName || '',
+      phone: registration.parent.phone || '',
+      email: registration.parent.email || ''
+    },
+    activityType: registration.activityType || '',
+    status: registration.status || 'pending'
+  }
   isEditing.value = true
   modalVisible.value = true
 }
 
-const updateStatus = async () => {
+const handleModalCancel = () => {
+  modalVisible.value = false
+  isEditing.value = false
+  // Reset form
+  editForm.value = {
+    child: { firstName: '', lastName: '', age: 0 },
+    parent: { firstName: '', lastName: '', phone: '', email: '' },
+    activityType: '',
+    status: ''
+  }
+}
+
+const saveRegistration = async () => {
   if (!selectedRegistration.value) return
 
+  // Validation
+  if (!editForm.value.child.firstName || !editForm.value.child.lastName) {
+    message.warning('Te rog completează numele copilului')
+    return
+  }
+  if (!editForm.value.child.age || editForm.value.child.age < 1) {
+    message.warning('Te rog introdu o vârstă validă')
+    return
+  }
+  if (!editForm.value.parent.firstName || !editForm.value.parent.lastName) {
+    message.warning('Te rog completează numele părintelui')
+    return
+  }
+  if (!editForm.value.parent.phone) {
+    message.warning('Te rog introdu numărul de telefon')
+    return
+  }
+  if (!editForm.value.parent.email) {
+    message.warning('Te rog introdu adresa de email')
+    return
+  }
+
+  saving.value = true
   try {
     await $fetch(`/api/registrations/${selectedRegistration.value.id}`, {
       method: 'PATCH',
-      body: { status: selectedRegistration.value.status }
+      body: {
+        child: editForm.value.child,
+        parent: editForm.value.parent,
+        activityType: editForm.value.activityType,
+        status: editForm.value.status
+      }
     })
+    message.success('Înscrierea a fost actualizată cu succes')
     await loadRegistrations()
+    modalVisible.value = false
+    isEditing.value = false
   } catch (error) {
-    console.error('Failed to update status:', error)
+    console.error('Failed to update registration:', error)
+    message.error('Eroare la actualizarea înscrierii')
+  } finally {
+    saving.value = false
   }
 }
 
@@ -412,8 +605,115 @@ onMounted(() => {
 }
 
 .registration-details {
-  max-height: 500px;
+  max-height: 70vh;
   overflow-y: auto;
+  padding: 8px 0;
+}
+
+.registration-details :deep(.ant-descriptions-item-label) {
+  font-weight: 600;
+  background: #fafafa;
+  width: 40%;
+}
+
+.registration-details :deep(.ant-descriptions-item-content) {
+  width: 60%;
+}
+
+.contact-link {
+  color: #1890ff;
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.contact-link:hover {
+  text-decoration: underline;
+}
+
+.modal-actions {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* Mobile Modal Styles */
+:deep(.registration-modal) {
+  top: 20px;
+}
+
+:deep(.registration-modal-wrapper) {
+  padding: 0;
+}
+
+@media (max-width: 768px) {
+  .registration-details {
+    max-height: calc(100vh - 120px);
+    padding: 4px 0;
+  }
+
+  .registration-details :deep(.ant-descriptions-item-label) {
+    width: 35%;
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+
+  .registration-details :deep(.ant-descriptions-item-content) {
+    width: 65%;
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+
+  .registration-details :deep(.ant-descriptions-row) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .registration-details :deep(.ant-descriptions-item) {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .registration-details :deep(.ant-descriptions-item-label) {
+    width: 100%;
+    margin-bottom: 4px;
+    font-weight: 600;
+    color: #666;
+  }
+
+  .registration-details :deep(.ant-descriptions-item-content) {
+    width: 100%;
+  }
+
+  :deep(.registration-modal .ant-modal) {
+    margin: 10px auto;
+    max-width: 95%;
+  }
+
+  :deep(.registration-modal .ant-modal-content) {
+    border-radius: 12px;
+  }
+
+  :deep(.registration-modal .ant-modal-header) {
+    padding: 16px;
+    border-radius: 12px 12px 0 0;
+  }
+
+  :deep(.registration-modal .ant-modal-title) {
+    font-size: 18px;
+  }
+
+  :deep(.registration-modal .ant-modal-body) {
+    padding: 16px;
+    max-height: calc(100vh - 150px);
+    overflow-y: auto;
+  }
+
+  :deep(.registration-modal .ant-modal-close) {
+    top: 16px;
+    right: 16px;
+  }
 }
 
 /* Mobile Cards Styles */
