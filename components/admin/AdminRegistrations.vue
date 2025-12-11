@@ -16,7 +16,8 @@
             <a-select-option value="trip">Excursie</a-select-option>
             <a-select-option value="ski">Ski</a-select-option>
             <a-select-option value="swimming">Înot</a-select-option>
-            <a-select-option value="afterschool">După școală</a-select-option>
+            <a-select-option value="afterschool">Program Afterschool (9-17)</a-select-option>
+            <a-select-option value="school-offer">Ofertă Școlară</a-select-option>
           </a-select>
         </a-col>
         <a-col :xs="24" :sm="8" :md="6">
@@ -207,14 +208,29 @@
                 {{ selectedRegistration.parent.email }}
               </a>
             </a-descriptions-item>
-            <a-descriptions-item label="Tip Activitate">
-              {{ getActivityTypeLabel(selectedRegistration.activityType) }}
+          <a-descriptions-item label="Tip Activitate">
+            {{ getActivityTypeLabel(selectedRegistration.activityType) }}
+          </a-descriptions-item>
+          <!-- Afterschool Program Details -->
+          <template v-if="selectedRegistration.afterschool">
+            <a-descriptions-item label="Program Zilnic">
+              {{ getScheduleLabel(selectedRegistration.afterschool.schedule) }}
             </a-descriptions-item>
-            <a-descriptions-item label="Status">
-              <a-tag :color="getStatusColor(selectedRegistration.status)">
-                {{ getStatusLabel(selectedRegistration.status) }}
-              </a-tag>
+            <a-descriptions-item label="Zile pe Săptămână">
+              {{ selectedRegistration.afterschool.daysPerWeek }} {{ selectedRegistration.afterschool.daysPerWeek === '5' ? 'zile' : 'zi' }}/săptămână
             </a-descriptions-item>
+            <a-descriptions-item label="Zile Preferate" v-if="selectedRegistration.afterschool.preferredDays && selectedRegistration.afterschool.preferredDays.length > 0">
+              {{ getPreferredDaysLabel(selectedRegistration.afterschool.preferredDays) }}
+            </a-descriptions-item>
+            <a-descriptions-item label="Data Începerii" v-if="selectedRegistration.afterschool.startDate">
+              {{ selectedRegistration.afterschool.startDate }}
+            </a-descriptions-item>
+          </template>
+          <a-descriptions-item label="Status">
+            <a-tag :color="getStatusColor(selectedRegistration.status)">
+              {{ getStatusLabel(selectedRegistration.status) }}
+            </a-tag>
+          </a-descriptions-item>
           </a-descriptions>
           <div class="modal-actions">
             <a-button type="primary" @click="modalVisible = false" block>
@@ -285,7 +301,8 @@
                     <a-select-option value="trip">Excursie</a-select-option>
                     <a-select-option value="ski">Ski</a-select-option>
                     <a-select-option value="swimming">Înot</a-select-option>
-                    <a-select-option value="afterschool">După școală</a-select-option>
+                    <a-select-option value="afterschool">Program Afterschool (9-17)</a-select-option>
+                    <a-select-option value="school-offer">Ofertă Școlară</a-select-option>
                   </a-select>
                 </a-form-item>
               </a-col>
@@ -299,6 +316,58 @@
                 </a-form-item>
               </a-col>
             </a-row>
+            <!-- Afterschool Program Fields -->
+            <template v-if="editForm.activityType === 'afterschool'">
+              <a-divider>Detalii Program Afterschool</a-divider>
+              <a-row :gutter="16">
+                <a-col :xs="24" :sm="12">
+                  <a-form-item label="Program Zilnic">
+                    <a-select v-model:value="editForm.afterschool.schedule" style="width: 100%">
+                      <a-select-option value="full-time">Program Complet (9:00 - 17:00)</a-select-option>
+                      <a-select-option value="morning">Dimineață (9:00 - 13:00)</a-select-option>
+                      <a-select-option value="afternoon">După-amiază (13:00 - 17:00)</a-select-option>
+                    </a-select>
+                  </a-form-item>
+                </a-col>
+                <a-col :xs="24" :sm="12">
+                  <a-form-item label="Zile pe Săptămână">
+                    <a-select v-model:value="editForm.afterschool.daysPerWeek" style="width: 100%">
+                      <a-select-option value="1">1 zi/săptămână</a-select-option>
+                      <a-select-option value="2">2 zile/săptămână</a-select-option>
+                      <a-select-option value="3">3 zile/săptămână</a-select-option>
+                      <a-select-option value="4">4 zile/săptămână</a-select-option>
+                      <a-select-option value="5">5 zile/săptămână (Luni-Vineri)</a-select-option>
+                    </a-select>
+                  </a-form-item>
+                </a-col>
+              </a-row>
+              <a-row :gutter="16">
+                <a-col :xs="24">
+                  <a-form-item label="Zile Preferate">
+                    <a-checkbox-group v-model:value="editForm.afterschool.preferredDays">
+                      <a-space>
+                        <a-checkbox value="monday">Luni</a-checkbox>
+                        <a-checkbox value="tuesday">Marți</a-checkbox>
+                        <a-checkbox value="wednesday">Miercuri</a-checkbox>
+                        <a-checkbox value="thursday">Joi</a-checkbox>
+                        <a-checkbox value="friday">Vineri</a-checkbox>
+                      </a-space>
+                    </a-checkbox-group>
+                  </a-form-item>
+                </a-col>
+              </a-row>
+              <a-row :gutter="16">
+                <a-col :xs="24" :sm="12">
+                  <a-form-item label="Data Începerii">
+                    <a-date-picker
+                      v-model:value="editForm.afterschool.startDate"
+                      style="width: 100%"
+                      format="YYYY-MM-DD"
+                    />
+                  </a-form-item>
+                </a-col>
+              </a-row>
+            </template>
             <div class="modal-actions">
               <a-space>
                 <a-button @click="handleModalCancel">
@@ -326,7 +395,7 @@ import {
 } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
 import * as XLSX from 'xlsx'
-import dayjs from 'dayjs'
+import dayjs, { type Dayjs } from 'dayjs'
 
 const loading = ref(false)
 const registrations = ref<any[]>([])
@@ -353,7 +422,13 @@ const editForm = ref({
     email: ''
   },
   activityType: '',
-  status: ''
+  status: '',
+  afterschool: {
+    schedule: '',
+    daysPerWeek: '',
+    preferredDays: [] as string[],
+    startDate: null as any
+  }
 })
 
 const columns = [
@@ -405,7 +480,8 @@ const getActivityTypeLabel = (type: string) => {
     'trip': 'Excursie',
     'ski': 'Ski',
     'swimming': 'Înot',
-    'afterschool': 'După școală'
+    'afterschool': 'Program Afterschool (9-17)',
+    'school-offer': 'Ofertă Școlară'
   }
   return labels[type] || type
 }
@@ -481,7 +557,13 @@ const editRegistration = (registration: any) => {
       email: registration.parent.email || ''
     },
     activityType: registration.activityType || '',
-    status: registration.status || 'pending'
+    status: registration.status || 'pending',
+    afterschool: {
+      schedule: registration.afterschool?.schedule || '',
+      daysPerWeek: registration.afterschool?.daysPerWeek || '',
+      preferredDays: registration.afterschool?.preferredDays || [],
+      startDate: registration.afterschool?.startDate ? dayjs(registration.afterschool.startDate) : null
+    }
   }
   isEditing.value = true
   modalVisible.value = true
@@ -495,8 +577,35 @@ const handleModalCancel = () => {
     child: { firstName: '', lastName: '', age: 0 },
     parent: { firstName: '', lastName: '', phone: '', email: '' },
     activityType: '',
-    status: ''
+    status: '',
+    afterschool: {
+      schedule: '',
+      daysPerWeek: '',
+      preferredDays: [],
+      startDate: null
+    }
   }
+}
+
+const getScheduleLabel = (schedule: string) => {
+  const labels: Record<string, string> = {
+    'full-time': 'Program Complet (9:00 - 17:00)',
+    'morning': 'Dimineață (9:00 - 13:00)',
+    'afternoon': 'După-amiază (13:00 - 17:00)'
+  }
+  return labels[schedule] || schedule
+}
+
+const getPreferredDaysLabel = (days: string[]) => {
+  if (!days || days.length === 0) return 'Nespecificat'
+  const dayLabels: Record<string, string> = {
+    'monday': 'Luni',
+    'tuesday': 'Marți',
+    'wednesday': 'Miercuri',
+    'thursday': 'Joi',
+    'friday': 'Vineri'
+  }
+  return days.map(day => dayLabels[day] || day).join(', ')
 }
 
 const saveRegistration = async () => {
@@ -526,14 +635,28 @@ const saveRegistration = async () => {
 
   saving.value = true
   try {
+    const updateData: any = {
+      child: editForm.value.child,
+      parent: editForm.value.parent,
+      activityType: editForm.value.activityType,
+      status: editForm.value.status
+    }
+
+    // Include afterschool data if applicable
+    if (editForm.value.activityType === 'afterschool') {
+      updateData.afterschool = {
+        ...editForm.value.afterschool,
+        startDate: editForm.value.afterschool.startDate
+          ? (dayjs.isDayjs(editForm.value.afterschool.startDate) 
+              ? editForm.value.afterschool.startDate.format('YYYY-MM-DD')
+              : editForm.value.afterschool.startDate)
+          : null
+      }
+    }
+
     await $fetch(`/api/registrations/${selectedRegistration.value.id}`, {
       method: 'PATCH',
-      body: {
-        child: editForm.value.child,
-        parent: editForm.value.parent,
-        activityType: editForm.value.activityType,
-        status: editForm.value.status
-      }
+      body: updateData
     })
     message.success('Înscrierea a fost actualizată cu succes')
     await loadRegistrations()

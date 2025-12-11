@@ -1,0 +1,814 @@
+<template>
+  <div class="admin-afterschool">
+    <div class="info-section">
+      <a-card>
+        <template #title>
+          <h2>📚 Program Afterschool (9-17)</h2>
+        </template>
+        <div class="program-info">
+          <p><strong>Program:</strong> 9:00 - 17:00</p>
+          <p><strong>Zile:</strong> Luni - Vineri</p>
+          <p><strong>Opțiuni:</strong></p>
+          <ul>
+            <li>Program Complet: 9:00 - 17:00</li>
+            <li>Program Dimineață: 9:00 - 13:00</li>
+            <li>Program După-amiază: 13:00 - 17:00</li>
+          </ul>
+          <p><strong>Flexibilitate:</strong> Părinții pot alege numărul de zile pe săptămână (1-5 zile) și zilele preferate.</p>
+        </div>
+      </a-card>
+    </div>
+
+    <div class="registrations-section" style="margin-top: 24px;">
+      <a-card>
+        <template #title>
+          <h3>Înscrieri la Programul Afterschool</h3>
+        </template>
+        <div class="actions-section" style="margin-bottom: 16px;">
+          <a-button @click="loadRegistrations" :loading="loading">
+            <ReloadOutlined />
+            Reîncarcă
+          </a-button>
+          <a-button @click="exportToExcel" type="primary" :loading="exporting">
+            <DownloadOutlined />
+            Exportă în Excel
+          </a-button>
+        </div>
+
+        <!-- Desktop Table -->
+        <div class="desktop-table">
+          <a-spin :spinning="loading">
+            <a-table
+              :columns="columns"
+              :data-source="registrations"
+              :pagination="{ 
+                pageSize: 10,
+                showSizeChanger: true,
+                showQuickJumper: true,
+                showTotal: (total, range) => `${range[0]}-${range[1]} din ${total} înscrieri`
+              }"
+              :scroll="{ x: 'max-content' }"
+              row-key="id"
+            >
+              <template #bodyCell="{ column, record }">
+                <template v-if="column.key === 'child'">
+                  {{ record.child?.firstName || record.childFirstName }} {{ record.child?.lastName || record.childLastName }} ({{ record.child?.age || record.childAge || '-' }} ani)
+                </template>
+                <template v-else-if="column.key === 'parent'">
+                  {{ record.parent?.firstName || record.parentFirstName }} {{ record.parent?.lastName || record.parentLastName }}<br>
+                  <a :href="`tel:${record.parent?.phone || record.parentPhone}`">{{ record.parent?.phone || record.parentPhone }}</a><br>
+                  <a :href="`mailto:${record.parent?.email || record.parentEmail}`">{{ record.parent?.email || record.parentEmail }}</a>
+                </template>
+                <template v-else-if="column.key === 'schedule'">
+                  {{ getScheduleLabel(record.afterschool?.schedule) }}
+                </template>
+                <template v-else-if="column.key === 'days'">
+                  {{ record.afterschool?.daysPerWeek }} zile/săptămână<br>
+                  <span v-if="record.afterschool?.preferredDays && record.afterschool.preferredDays.length > 0">
+                    {{ getPreferredDaysLabel(record.afterschool.preferredDays) }}
+                  </span>
+                </template>
+                <template v-else-if="column.key === 'startDate'">
+                  {{ record.afterschool?.startDate ? formatDate(record.afterschool.startDate) : '-' }}
+                </template>
+                <template v-else-if="column.key === 'status'">
+                  <a-tag :color="getStatusColor(record.status)">
+                    {{ getStatusLabel(record.status) }}
+                  </a-tag>
+                </template>
+                <template v-else-if="column.key === 'actions'">
+                  <a-space>
+                    <a-button @click="viewRegistration(record)" size="small">
+                      <EyeOutlined />
+                      Vezi
+                    </a-button>
+                    <a-button @click="editRegistration(record)" size="small">
+                      <EditOutlined />
+                      Editează
+                    </a-button>
+                  </a-space>
+                </template>
+              </template>
+            </a-table>
+          </a-spin>
+        </div>
+
+        <!-- Mobile Cards -->
+        <div class="mobile-cards">
+          <a-spin :spinning="loading">
+            <div v-if="registrations.length === 0" class="empty-state">
+              <p>Nu există înscrieri</p>
+            </div>
+            <div v-else>
+              <a-pagination
+                v-model:current="mobilePage"
+                :total="registrations.length"
+                :page-size="mobilePageSize"
+                :show-size-changer="false"
+                simple
+                class="mobile-pagination"
+              />
+              <div class="cards-list">
+                <a-card
+                  v-for="record in paginatedMobileRegistrations"
+                  :key="record.id"
+                  class="registration-card"
+                >
+                  <div class="card-header">
+                    <h3>{{ record.child?.firstName || record.childFirstName }} {{ record.child?.lastName || record.childLastName }}</h3>
+                    <a-tag :color="getStatusColor(record.status)">
+                      {{ getStatusLabel(record.status) }}
+                    </a-tag>
+                  </div>
+                  <div class="card-content">
+                    <div class="card-item">
+                      <strong>Vârstă:</strong> {{ record.child?.age || record.childAge || '-' }} ani
+                    </div>
+                    <div class="card-item">
+                      <strong>Părinte:</strong> {{ record.parent?.firstName || record.parentFirstName }} {{ record.parent?.lastName || record.parentLastName }}
+                    </div>
+                    <div class="card-item">
+                      <strong>Telefon:</strong> 
+                      <a :href="`tel:${record.parent?.phone || record.parentPhone}`">{{ record.parent?.phone || record.parentPhone }}</a>
+                    </div>
+                    <div class="card-item">
+                      <strong>Email:</strong> 
+                      <a :href="`mailto:${record.parent?.email || record.parentEmail}`">{{ record.parent?.email || record.parentEmail }}</a>
+                    </div>
+                    <div class="card-item">
+                      <strong>Program:</strong> {{ getScheduleLabel(record.afterschool?.schedule) }}
+                    </div>
+                    <div class="card-item">
+                      <strong>Zile:</strong> {{ record.afterschool?.daysPerWeek }} zile/săptămână
+                    </div>
+                    <div class="card-item" v-if="record.afterschool?.preferredDays && record.afterschool.preferredDays.length > 0">
+                      <strong>Zile Preferate:</strong> {{ getPreferredDaysLabel(record.afterschool.preferredDays) }}
+                    </div>
+                    <div class="card-item" v-if="record.afterschool?.startDate">
+                      <strong>Data Începerii:</strong> {{ formatDate(record.afterschool.startDate) }}
+                    </div>
+                  </div>
+                  <div class="card-actions">
+                    <a-button size="small" @click="viewRegistration(record)" block style="margin-bottom: 8px;">
+                      <EyeOutlined />
+                      Vezi Detalii
+                    </a-button>
+                    <a-button size="small" @click="editRegistration(record)" type="primary" block>
+                      <EditOutlined />
+                      Editează
+                    </a-button>
+                  </div>
+                </a-card>
+              </div>
+            </div>
+          </a-spin>
+        </div>
+      </a-card>
+    </div>
+
+    <!-- View Registration Modal -->
+    <a-modal
+      v-model:open="viewModalVisible"
+      title="Detalii Înscriere"
+      :width="800"
+      @cancel="closeViewModal"
+      :footer="null"
+    >
+      <div v-if="selectedRegistration">
+        <a-descriptions :column="1" bordered>
+          <a-descriptions-item label="Copil">
+            {{ selectedRegistration.child?.firstName || selectedRegistration.childFirstName }} {{ selectedRegistration.child?.lastName || selectedRegistration.childLastName }} ({{ selectedRegistration.child?.age || selectedRegistration.childAge || '-' }} ani)
+          </a-descriptions-item>
+          <a-descriptions-item label="Părinte">
+            {{ selectedRegistration.parent?.firstName || selectedRegistration.parentFirstName }} {{ selectedRegistration.parent?.lastName || selectedRegistration.parentLastName }}
+          </a-descriptions-item>
+          <a-descriptions-item label="Telefon">
+            <a :href="`tel:${selectedRegistration.parent?.phone || selectedRegistration.parentPhone}`">{{ selectedRegistration.parent?.phone || selectedRegistration.parentPhone }}</a>
+          </a-descriptions-item>
+          <a-descriptions-item label="Email">
+            <a :href="`mailto:${selectedRegistration.parent?.email || selectedRegistration.parentEmail}`">{{ selectedRegistration.parent?.email || selectedRegistration.parentEmail }}</a>
+          </a-descriptions-item>
+          <a-descriptions-item label="Program Zilnic">
+            {{ getScheduleLabel(selectedRegistration.afterschool?.schedule) }}
+          </a-descriptions-item>
+          <a-descriptions-item label="Zile pe Săptămână">
+            {{ selectedRegistration.afterschool?.daysPerWeek }}
+          </a-descriptions-item>
+          <a-descriptions-item label="Zile Preferate" v-if="selectedRegistration.afterschool?.preferredDays && selectedRegistration.afterschool.preferredDays.length > 0">
+            {{ getPreferredDaysLabel(selectedRegistration.afterschool.preferredDays) }}
+          </a-descriptions-item>
+          <a-descriptions-item label="Data Începerii" v-if="selectedRegistration.afterschool?.startDate">
+            {{ formatDate(selectedRegistration.afterschool.startDate) }}
+          </a-descriptions-item>
+          <a-descriptions-item label="Status">
+            <a-tag :color="getStatusColor(selectedRegistration.status)">
+              {{ getStatusLabel(selectedRegistration.status) }}
+            </a-tag>
+          </a-descriptions-item>
+          <a-descriptions-item label="Data Înscrierii">
+            {{ formatDate(selectedRegistration.createdAt) }}
+          </a-descriptions-item>
+        </a-descriptions>
+      </div>
+    </a-modal>
+
+    <!-- Edit Registration Modal -->
+    <a-modal
+      v-model:open="editModalVisible"
+      title="Editează Înscrierea"
+      :width="800"
+      :confirm-loading="saving"
+      @ok="saveRegistration"
+      @cancel="handleEditModalCancel"
+    >
+      <a-form :model="editForm" layout="vertical">
+        <a-divider>Date Copil</a-divider>
+        <a-row :gutter="16">
+          <a-col :xs="24" :sm="12">
+            <a-form-item label="Prenume Copil" required>
+              <a-input v-model:value="editForm.child.firstName" />
+            </a-form-item>
+          </a-col>
+          <a-col :xs="24" :sm="12">
+            <a-form-item label="Nume Copil" required>
+              <a-input v-model:value="editForm.child.lastName" />
+            </a-form-item>
+          </a-col>
+        </a-row>
+        <a-form-item label="Vârstă" required>
+          <a-input-number v-model:value="editForm.child.age" :min="1" :max="18" style="width: 100%" />
+        </a-form-item>
+
+        <a-divider>Date Părinte</a-divider>
+        <a-row :gutter="16">
+          <a-col :xs="24" :sm="12">
+            <a-form-item label="Prenume Părinte" required>
+              <a-input v-model:value="editForm.parent.firstName" />
+            </a-form-item>
+          </a-col>
+          <a-col :xs="24" :sm="12">
+            <a-form-item label="Nume Părinte" required>
+              <a-input v-model:value="editForm.parent.lastName" />
+            </a-form-item>
+          </a-col>
+        </a-row>
+        <a-row :gutter="16">
+          <a-col :xs="24" :sm="12">
+            <a-form-item label="Telefon" required>
+              <a-input v-model:value="editForm.parent.phone" />
+            </a-form-item>
+          </a-col>
+          <a-col :xs="24" :sm="12">
+            <a-form-item label="Email" required>
+              <a-input v-model:value="editForm.parent.email" type="email" />
+            </a-form-item>
+          </a-col>
+        </a-row>
+
+        <a-divider>Program Afterschool</a-divider>
+        <a-form-item label="Program Zilnic">
+          <a-select v-model:value="editForm.afterschool.schedule" style="width: 100%">
+            <a-select-option value="full-time">Program Complet (9:00 - 17:00)</a-select-option>
+            <a-select-option value="morning">Dimineață (9:00 - 13:00)</a-select-option>
+            <a-select-option value="afternoon">După-amiază (13:00 - 17:00)</a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item label="Zile pe Săptămână">
+          <a-select v-model:value="editForm.afterschool.daysPerWeek" style="width: 100%">
+            <a-select-option value="1">1 zi/săptămână</a-select-option>
+            <a-select-option value="2">2 zile/săptămână</a-select-option>
+            <a-select-option value="3">3 zile/săptămână</a-select-option>
+            <a-select-option value="4">4 zile/săptămână</a-select-option>
+            <a-select-option value="5">5 zile/săptămână (Luni-Vineri)</a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item label="Zile Preferate">
+          <a-checkbox-group v-model:value="editForm.afterschool.preferredDays">
+            <a-row>
+              <a-col :span="8">
+                <a-checkbox value="monday">Luni</a-checkbox>
+              </a-col>
+              <a-col :span="8">
+                <a-checkbox value="tuesday">Marți</a-checkbox>
+              </a-col>
+              <a-col :span="8">
+                <a-checkbox value="wednesday">Miercuri</a-checkbox>
+              </a-col>
+              <a-col :span="8">
+                <a-checkbox value="thursday">Joi</a-checkbox>
+              </a-col>
+              <a-col :span="8">
+                <a-checkbox value="friday">Vineri</a-checkbox>
+              </a-col>
+            </a-row>
+          </a-checkbox-group>
+        </a-form-item>
+        <a-form-item label="Data Începerii">
+          <a-date-picker
+            v-model:value="editForm.afterschool.startDate"
+            style="width: 100%"
+            format="DD.MM.YYYY"
+          />
+        </a-form-item>
+
+        <a-divider>Status</a-divider>
+        <a-form-item label="Status" required>
+          <a-select v-model:value="editForm.status" style="width: 100%">
+            <a-select-option value="pending">În Așteptare</a-select-option>
+            <a-select-option value="confirmed">Confirmată</a-select-option>
+            <a-select-option value="cancelled">Anulată</a-select-option>
+          </a-select>
+        </a-form-item>
+      </a-form>
+    </a-modal>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ReloadOutlined, DownloadOutlined, EyeOutlined, EditOutlined } from '@ant-design/icons-vue'
+import { message } from 'ant-design-vue'
+import dayjs from 'dayjs'
+import * as XLSX from 'xlsx'
+
+const loading = ref(false)
+const exporting = ref(false)
+const registrations = ref<any[]>([])
+const viewModalVisible = ref(false)
+const editModalVisible = ref(false)
+const selectedRegistration = ref<any>(null)
+const isEditing = ref(false)
+const saving = ref(false)
+const mobilePage = ref(1)
+const mobilePageSize = ref(5)
+
+const editForm = ref({
+  child: {
+    firstName: '',
+    lastName: '',
+    age: 0
+  },
+  parent: {
+    firstName: '',
+    lastName: '',
+    phone: '',
+    email: ''
+  },
+  status: 'pending',
+  afterschool: {
+    schedule: '',
+    daysPerWeek: '',
+    preferredDays: [] as string[],
+    startDate: null as any
+  }
+})
+
+const columns = [
+  {
+    title: 'Copil',
+    key: 'child',
+    dataIndex: 'childFirstName'
+  },
+  {
+    title: 'Părinte / Contact',
+    key: 'parent',
+    dataIndex: 'parentFirstName'
+  },
+  {
+    title: 'Program',
+    key: 'schedule',
+    dataIndex: ['afterschool', 'schedule']
+  },
+  {
+    title: 'Zile',
+    key: 'days',
+    dataIndex: ['afterschool', 'daysPerWeek']
+  },
+  {
+    title: 'Data Începerii',
+    key: 'startDate',
+    dataIndex: ['afterschool', 'startDate']
+  },
+  {
+    title: 'Status',
+    key: 'status',
+    dataIndex: 'status'
+  },
+  {
+    title: 'Acțiuni',
+    key: 'actions',
+    fixed: 'right'
+  }
+]
+
+const getScheduleLabel = (schedule: string) => {
+  const labels: Record<string, string> = {
+    'full': 'Program Complet (9:00 - 17:00)',
+    'full-time': 'Program Complet (9:00 - 17:00)',
+    'morning': 'Dimineață (9:00 - 13:00)',
+    'afternoon': 'După-amiază (13:00 - 17:00)'
+  }
+  return labels[schedule] || schedule || '-'
+}
+
+const getPreferredDaysLabel = (days: string[]) => {
+  const dayLabels: Record<string, string> = {
+    'monday': 'Luni',
+    'tuesday': 'Marți',
+    'wednesday': 'Miercuri',
+    'thursday': 'Joi',
+    'friday': 'Vineri'
+  }
+  return days.map(day => dayLabels[day] || day).join(', ')
+}
+
+const getStatusLabel = (status: string) => {
+  const labels: Record<string, string> = {
+    'pending': 'În Așteptare',
+    'confirmed': 'Confirmată',
+    'cancelled': 'Anulată'
+  }
+  return labels[status] || status
+}
+
+const getStatusColor = (status: string) => {
+  const colors: Record<string, string> = {
+    'pending': 'orange',
+    'confirmed': 'green',
+    'cancelled': 'red'
+  }
+  return colors[status] || 'default'
+}
+
+const formatDate = (date: string | Date | any) => {
+  if (!date) return '-'
+  
+  try {
+    // Handle Firebase Timestamp (v9+) - has toDate method
+    if (date && typeof date === 'object' && typeof date.toDate === 'function') {
+      const jsDate = date.toDate()
+      if (jsDate instanceof Date && !isNaN(jsDate.getTime())) {
+        return dayjs(jsDate).format('DD.MM.YYYY')
+      }
+    }
+    
+    // Handle Firebase Timestamp (v8) - has seconds and nanoseconds
+    if (date && typeof date === 'object' && 'seconds' in date && typeof date.seconds === 'number') {
+      const jsDate = new Date(date.seconds * 1000)
+      if (!isNaN(jsDate.getTime())) {
+        return dayjs(jsDate).format('DD.MM.YYYY')
+      }
+    }
+    
+    // Handle Timestamp object with _seconds property (serialized)
+    if (date && typeof date === 'object' && '_seconds' in date) {
+      const jsDate = new Date(date._seconds * 1000)
+      if (!isNaN(jsDate.getTime())) {
+        return dayjs(jsDate).format('DD.MM.YYYY')
+      }
+    }
+    
+    // Handle regular Date objects
+    if (date instanceof Date) {
+      if (!isNaN(date.getTime())) {
+        return dayjs(date).format('DD.MM.YYYY')
+      }
+    }
+    
+    // Handle date strings (ISO format, etc.)
+    if (typeof date === 'string') {
+      const parsed = dayjs(date)
+      if (parsed.isValid()) {
+        return parsed.format('DD.MM.YYYY')
+      }
+    }
+    
+    // Last resort: try dayjs directly
+    const parsed = dayjs(date)
+    if (parsed.isValid()) {
+      return parsed.format('DD.MM.YYYY')
+    }
+    
+    console.warn('Could not format date:', date, typeof date)
+    return '-'
+  } catch (error) {
+    console.error('Error formatting date:', date, error)
+    return '-'
+  }
+}
+
+const paginatedMobileRegistrations = computed(() => {
+  const start = (mobilePage.value - 1) * mobilePageSize.value
+  const end = start + mobilePageSize.value
+  return registrations.value.slice(start, end)
+})
+
+const loadRegistrations = async () => {
+  loading.value = true
+  try {
+    const response = await $fetch('/api/registrations', {
+      method: 'GET',
+      query: {
+        activityType: 'afterschool'
+      }
+    })
+    
+    registrations.value = response as any[]
+  } catch (error) {
+    console.error('Error loading registrations:', error)
+    message.error('Eroare la încărcarea înscrierilor')
+  } finally {
+    loading.value = false
+  }
+}
+
+const viewRegistration = (registration: any) => {
+  selectedRegistration.value = registration
+  viewModalVisible.value = true
+}
+
+const closeViewModal = () => {
+  viewModalVisible.value = false
+  selectedRegistration.value = null
+}
+
+const editRegistration = (registration: any) => {
+  selectedRegistration.value = registration
+  editForm.value = {
+    child: {
+      firstName: registration.child?.firstName || registration.childFirstName || '',
+      lastName: registration.child?.lastName || registration.childLastName || '',
+      age: registration.child?.age || registration.childAge || 0
+    },
+    parent: {
+      firstName: registration.parent?.firstName || registration.parentFirstName || '',
+      lastName: registration.parent?.lastName || registration.parentLastName || '',
+      phone: registration.parent?.phone || registration.parentPhone || '',
+      email: registration.parent?.email || registration.parentEmail || ''
+    },
+    status: registration.status || 'pending',
+    afterschool: {
+      schedule: registration.afterschool?.schedule || '',
+      daysPerWeek: registration.afterschool?.daysPerWeek || '',
+      preferredDays: registration.afterschool?.preferredDays || [],
+      startDate: registration.afterschool?.startDate 
+        ? (typeof registration.afterschool.startDate === 'string' 
+            ? dayjs(registration.afterschool.startDate) 
+            : dayjs(registration.afterschool.startDate))
+        : null
+    }
+  }
+  isEditing.value = true
+  editModalVisible.value = true
+}
+
+const handleEditModalCancel = () => {
+  editModalVisible.value = false
+  isEditing.value = false
+  selectedRegistration.value = null
+  editForm.value = {
+    child: { firstName: '', lastName: '', age: 0 },
+    parent: { firstName: '', lastName: '', phone: '', email: '' },
+    status: 'pending',
+    afterschool: {
+      schedule: '',
+      daysPerWeek: '',
+      preferredDays: [],
+      startDate: null
+    }
+  }
+}
+
+const saveRegistration = async () => {
+  if (!selectedRegistration.value) return
+
+  // Validation
+  if (!editForm.value.child.firstName || !editForm.value.child.lastName) {
+    message.warning('Te rog completează numele copilului')
+    return
+  }
+  if (!editForm.value.child.age || editForm.value.child.age < 1) {
+    message.warning('Te rog introdu o vârstă validă')
+    return
+  }
+  if (!editForm.value.parent.firstName || !editForm.value.parent.lastName) {
+    message.warning('Te rog completează numele părintelui')
+    return
+  }
+  if (!editForm.value.parent.phone) {
+    message.warning('Te rog introdu numărul de telefon')
+    return
+  }
+  if (!editForm.value.parent.email) {
+    message.warning('Te rog introdu adresa de email')
+    return
+  }
+
+  saving.value = true
+  try {
+    const updateData: any = {
+      child: editForm.value.child,
+      parent: editForm.value.parent,
+      status: editForm.value.status,
+      afterschool: {
+        ...editForm.value.afterschool,
+        startDate: editForm.value.afterschool.startDate
+          ? (dayjs.isDayjs(editForm.value.afterschool.startDate)
+              ? editForm.value.afterschool.startDate.format('YYYY-MM-DD')
+              : editForm.value.afterschool.startDate)
+          : null
+      }
+    }
+
+    await $fetch(`/api/registrations/${selectedRegistration.value.id}`, {
+      method: 'PATCH',
+      body: updateData
+    })
+    
+    message.success('Înscrierea a fost actualizată cu succes')
+    await loadRegistrations()
+    editModalVisible.value = false
+    isEditing.value = false
+    selectedRegistration.value = null
+  } catch (error) {
+    console.error('Failed to update registration:', error)
+    message.error('Eroare la actualizarea înscrierii')
+  } finally {
+    saving.value = false
+  }
+}
+
+const exportToExcel = async () => {
+  exporting.value = true
+  try {
+    const data = registrations.value.map(reg => ({
+      'Copil (Nume)': reg.child?.firstName || reg.childFirstName || '',
+      'Copil (Prenume)': reg.child?.lastName || reg.childLastName || '',
+      'Vârstă': reg.child?.age || reg.childAge || '',
+      'Părinte (Nume)': reg.parent?.firstName || reg.parentFirstName || '',
+      'Părinte (Prenume)': reg.parent?.lastName || reg.parentLastName || '',
+      'Telefon': reg.parent?.phone || reg.parentPhone || '',
+      'Email': reg.parent?.email || reg.parentEmail || '',
+      'Program': getScheduleLabel(reg.afterschool?.schedule),
+      'Zile pe Săptămână': reg.afterschool?.daysPerWeek || '',
+      'Zile Preferate': reg.afterschool?.preferredDays ? getPreferredDaysLabel(reg.afterschool.preferredDays) : '',
+      'Data Începerii': reg.afterschool?.startDate ? formatDate(reg.afterschool.startDate) : '',
+      'Status': getStatusLabel(reg.status),
+      'Data Înscrierii': formatDate(reg.createdAt)
+    }))
+
+    const ws = XLSX.utils.json_to_sheet(data)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Înscrieri Afterschool')
+    
+    const fileName = `inscrieri_afterschool_${dayjs().format('YYYY-MM-DD')}.xlsx`
+    XLSX.writeFile(wb, fileName)
+    
+    message.success('Export realizat cu succes!')
+  } catch (error) {
+    console.error('Error exporting to Excel:', error)
+    message.error('Eroare la exportul în Excel')
+  } finally {
+    exporting.value = false
+  }
+}
+
+onMounted(() => {
+  loadRegistrations()
+})
+</script>
+
+<style scoped>
+.admin-afterschool {
+  padding: 0;
+}
+
+.info-section {
+  margin-bottom: 24px;
+}
+
+.program-info {
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.program-info p {
+  margin-bottom: 12px;
+}
+
+.program-info ul {
+  margin-left: 24px;
+  margin-bottom: 12px;
+}
+
+.program-info ul li {
+  margin-bottom: 8px;
+}
+
+.actions-section {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+/* Desktop Table */
+.desktop-table {
+  display: block;
+}
+
+/* Mobile Cards */
+.mobile-cards {
+  display: none;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+}
+
+.mobile-pagination {
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.registration-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.card-content {
+  margin-bottom: 16px;
+}
+
+.card-item {
+  margin-bottom: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.card-item strong {
+  color: #2c3e50;
+  margin-right: 8px;
+}
+
+.card-item a {
+  color: #1890ff;
+  text-decoration: none;
+}
+
+.card-item a:hover {
+  text-decoration: underline;
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+@media (max-width: 768px) {
+  .actions-section {
+    flex-direction: column;
+  }
+  
+  .actions-section .ant-btn {
+    width: 100%;
+  }
+
+  .desktop-table {
+    display: none;
+  }
+
+  .mobile-cards {
+    display: block;
+  }
+
+  .card-actions .ant-btn {
+    width: 100%;
+  }
+}
+</style>
+

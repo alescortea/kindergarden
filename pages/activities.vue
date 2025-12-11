@@ -29,6 +29,7 @@
             <a-select-option value="trip">Excursii</a-select-option>
             <a-select-option value="ski">Lecții de Ski</a-select-option>
             <a-select-option value="swimming">Lecții de Înot</a-select-option>
+            <a-select-option value="afterschool">Program Afterschool (9-17)</a-select-option>
             <a-select-option value="school-offer">Oferte Școlare</a-select-option>
           </a-select>
         </a-col>
@@ -39,6 +40,39 @@
     <div class="activities-grid">
       <a-spin :spinning="loading">
         <a-row :gutter="[24, 24]">
+          <!-- Afterschool Program -->
+          <a-col 
+            v-if="!filters.type || filters.type === 'afterschool'"
+            :xs="24" 
+            :sm="12" 
+            :lg="8"
+          >
+            <a-card class="activity-card" hoverable>
+              <template #cover>
+                <div class="activity-image">
+                  <BookOutlined />
+                </div>
+              </template>
+              <a-card-meta>
+                <template #title>
+                  <h3>Program Afterschool</h3>
+                  <a-tag color="gold">Program Afterschool (9-17)</a-tag>
+                </template>
+                <template #description>
+                  <p><strong>Program:</strong> 9:00 - 17:00</p>
+                  <p><strong>Zile:</strong> Luni - Vineri</p>
+                  <p class="activity-description">Program complet de afterschool pentru copii, cu activități educaționale și recreative.</p>
+                </template>
+              </a-card-meta>
+              <template #actions>
+                <a-button type="primary" @click="navigateToRegistration('afterschool', 'afterschool-program')">
+                  <FormOutlined />
+                  Înscrie-te
+                </a-button>
+              </template>
+            </a-card>
+          </a-col>
+
           <!-- Camps -->
           <a-col 
             v-for="camp in filteredCamps" 
@@ -247,7 +281,7 @@
                 </template>
               </a-card-meta>
               <template #actions>
-                <a-button type="primary" @click="navigateToRegistration('afterschool', offer.id)">
+                <a-button type="primary" @click="navigateToRegistration('school-offer', offer.id)">
                   <FormOutlined />
                   Contactează-ne
                 </a-button>
@@ -352,12 +386,14 @@ const filteredSchoolOffers = computed(() => {
 })
 
 const totalActivities = computed(() => {
+  const afterschoolCount = (!filters.value.type || filters.value.type === 'afterschool') ? 1 : 0
   return filteredCamps.value.length +
     filteredHikes.value.length +
     filteredTrips.value.length +
     filteredSkiLessons.value.length +
     filteredSwimmingLessons.value.length +
-    filteredSchoolOffers.value.length
+    filteredSchoolOffers.value.length +
+    afterschoolCount
 })
 
 const loadActivities = async () => {

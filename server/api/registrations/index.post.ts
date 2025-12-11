@@ -2,7 +2,7 @@ import { createDocument } from '~/composables/useFirestore'
 import { z } from 'zod'
 
 const registrationSchema = z.object({
-  activityType: z.enum(['camp', 'hike', 'trip', 'ski', 'swimming', 'afterschool']),
+  activityType: z.enum(['camp', 'hike', 'trip', 'ski', 'swimming', 'afterschool', 'school-offer']),
   activityId: z.string(),
   child: z.object({
     firstName: z.string(),
@@ -31,6 +31,12 @@ const registrationSchema = z.object({
     transport: z.boolean(),
     terms: z.boolean(),
   }),
+  afterschool: z.object({
+    schedule: z.string().optional(),
+    daysPerWeek: z.string().optional(),
+    preferredDays: z.array(z.string()).optional(),
+    startDate: z.string().optional(),
+  }).optional(),
 })
 
 export default defineEventHandler(async (event) => {

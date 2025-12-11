@@ -36,7 +36,7 @@
 
     <!-- Features Section -->
     <div class="features-section">
-      <h2 class="section-title">De Ce Să Ne Alegi?</h2>
+      <h2 class="section-title">De ce să ne alegi?</h2>
       <a-row :gutter="[24, 24]">
         <a-col :xs="24" :sm="12" :lg="6" v-for="feature in features" :key="feature.id">
           <a-card class="feature-card" :bordered="false">
@@ -129,41 +129,48 @@ const features = [
 const activities = [
   {
     id: 1,
+    icon: 'BookOutlined',
+    title: 'Program Afterschool',
+    description: 'Program complet de afterschool pentru copii (9:00 - 17:00), cu activități educaționale și recreative.',
+    route: '/afterschool'
+  },
+  {
+    id: 2,
     icon: 'TeamOutlined',
     title: 'Tabere',
     description: 'Tabere de vară și de iarnă în locații frumoase: Straja, Rafting, Delta Dunării, Colibița.',
     route: '/camps'
   },
   {
-    id: 2,
+    id: 3,
     icon: 'EnvironmentOutlined',
     title: 'Drumeții',
     description: 'Drumeții de aventură la Vârful Ciucaș, Sfinxul & Babele, Lacul Scropoasa, Cascada 7 Izvoare, Cheile Zănoaga.',
     route: '/hikes'
   },
   {
-    id: 3,
+    id: 4,
     icon: 'CarOutlined',
     title: 'Excursii',
     description: 'Excursii educaționale la București, Târgu Mureș, Sibiu și alte orașe.',
     route: '/trips'
   },
   {
-    id: 4,
+    id: 5,
     icon: 'TrophyOutlined',
     title: 'Lecții de Ski',
     description: 'Lecții de ski individuale și de grup pentru toate nivelurile.',
     route: '/ski'
   },
   {
-    id: 5,
+    id: 6,
     icon: 'PlayCircleOutlined',
     title: 'Lecții de Înot',
     description: 'Lecții de înot la locația Paradisul Acvatic.',
     route: '/swimming'
   },
   {
-    id: 6,
+    id: 7,
     icon: 'BookOutlined',
     title: 'Oferte Școlare',
     description: 'Oferte personalizate pentru profesori care organizează excursii cu elevii.',

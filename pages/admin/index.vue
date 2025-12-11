@@ -27,6 +27,7 @@
         </div>
         <div class="tabs-content">
           <AdminRegistrations v-if="activeTab === 'registrations'" />
+          <AdminAfterschool v-else-if="activeTab === 'afterschool'" />
           <AdminCamps v-else-if="activeTab === 'camps'" />
           <AdminHikes v-else-if="activeTab === 'hikes'" />
           <AdminTrips v-else-if="activeTab === 'trips'" />
@@ -50,6 +51,7 @@ const activeTab = ref('registrations')
 
 const tabs = [
   { key: 'registrations', label: '📋 Înscrieri' },
+  { key: 'afterschool', label: '📚 Afterschool' },
   { key: 'camps', label: '🏕️ Tabere' },
   { key: 'hikes', label: '🥾 Drumeții' },
   { key: 'trips', label: '🗺️ Excursii' },

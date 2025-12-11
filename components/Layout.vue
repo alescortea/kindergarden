@@ -48,6 +48,10 @@
             <PlayCircleOutlined />
             Înot
           </a-menu-item>
+          <a-menu-item key="afterschool" @click="navigateTo('/afterschool')">
+            <BookOutlined />
+            Afterschool
+          </a-menu-item>
           <a-menu-item key="school-offers" @click="navigateTo('/school-offers')">
             <BookOutlined />
             Oferte Școlare
@@ -107,6 +111,10 @@
           <a-menu-item key="swimming">
             <PlayCircleOutlined />
             Înot
+          </a-menu-item>
+          <a-menu-item key="afterschool">
+            <BookOutlined />
+            Afterschool
           </a-menu-item>
           <a-menu-item key="school-offers">
             <BookOutlined />

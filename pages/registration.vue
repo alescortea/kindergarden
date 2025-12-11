@@ -28,11 +28,16 @@
                     <a-select-option value="trip">Excursie</a-select-option>
                     <a-select-option value="ski">Lecție de Ski</a-select-option>
                     <a-select-option value="swimming">Lecție de Înot</a-select-option>
-                    <a-select-option value="afterschool">Ofertă Școlară</a-select-option>
+                    <a-select-option value="afterschool">Program Afterschool (9-17)</a-select-option>
+                    <a-select-option value="school-offer">Ofertă Școlară</a-select-option>
                   </a-select>
                 </a-form-item>
 
-                <a-form-item label="Selectați Activitatea" name="activityId" v-if="formData.activityType">
+                <a-form-item 
+                  label="Selectați Activitatea" 
+                  name="activityId" 
+                  v-if="formData.activityType && formData.activityType !== 'afterschool'"
+                >
                   <a-select
                     v-model:value="formData.activityId"
                     placeholder="Selectați activitatea specifică"
@@ -50,6 +55,66 @@
                     </a-select-option>
                   </a-select>
                 </a-form-item>
+
+                <!-- Afterschool Program Specific Fields -->
+                <template v-if="formData.activityType === 'afterschool'">
+                  <a-form-item label="Program Zilnic" name="afterschool.schedule">
+                    <a-select
+                      v-model:value="formData.afterschool.schedule"
+                      placeholder="Selectați programul zilnic"
+                      style="width: 100%"
+                    >
+                      <a-select-option value="full-time">Program Complet (9:00 - 17:00)</a-select-option>
+                      <a-select-option value="morning">Dimineață (9:00 - 13:00)</a-select-option>
+                      <a-select-option value="afternoon">După-amiază (13:00 - 17:00)</a-select-option>
+                    </a-select>
+                  </a-form-item>
+                  
+                  <a-form-item label="Zile pe Săptămână" name="afterschool.daysPerWeek">
+                    <a-select
+                      v-model:value="formData.afterschool.daysPerWeek"
+                      placeholder="Selectați numărul de zile"
+                      style="width: 100%"
+                    >
+                      <a-select-option value="1">1 zi/săptămână</a-select-option>
+                      <a-select-option value="2">2 zile/săptămână</a-select-option>
+                      <a-select-option value="3">3 zile/săptămână</a-select-option>
+                      <a-select-option value="4">4 zile/săptămână</a-select-option>
+                      <a-select-option value="5">5 zile/săptămână (Luni-Vineri)</a-select-option>
+                    </a-select>
+                  </a-form-item>
+
+                  <a-form-item label="Zile Preferate" name="afterschool.preferredDays">
+                    <a-checkbox-group v-model:value="formData.afterschool.preferredDays">
+                      <a-row>
+                        <a-col :span="8">
+                          <a-checkbox value="monday">Luni</a-checkbox>
+                        </a-col>
+                        <a-col :span="8">
+                          <a-checkbox value="tuesday">Marți</a-checkbox>
+                        </a-col>
+                        <a-col :span="8">
+                          <a-checkbox value="wednesday">Miercuri</a-checkbox>
+                        </a-col>
+                        <a-col :span="8">
+                          <a-checkbox value="thursday">Joi</a-checkbox>
+                        </a-col>
+                        <a-col :span="8">
+                          <a-checkbox value="friday">Vineri</a-checkbox>
+                        </a-col>
+                      </a-row>
+                    </a-checkbox-group>
+                  </a-form-item>
+
+                  <a-form-item label="Data Începerii" name="afterschool.startDate">
+                    <a-date-picker
+                      v-model:value="formData.afterschool.startDate"
+                      style="width: 100%"
+                      format="DD/MM/YYYY"
+                      placeholder="Selectați data începerii"
+                    />
+                  </a-form-item>
+                </template>
               </div>
 
               <!-- Child Information -->
@@ -305,6 +370,12 @@ const formData = ref({
     photos: false,
     transport: false,
     terms: false
+  },
+  afterschool: {
+    schedule: '',
+    daysPerWeek: '',
+    preferredDays: [] as string[],
+    startDate: null as any
   }
 })
 
@@ -335,6 +406,12 @@ const loadActivities = async () => {
         endpoint = '/api/swimming'
         break
       case 'afterschool':
+        // Afterschool program doesn't need to load activities
+        activities.value = []
+        formData.value.activityId = 'afterschool-program'
+        loadingActivities.value = false
+        return
+      case 'school-offer':
         endpoint = '/api/school-offers'
         break
     }
@@ -407,6 +484,12 @@ const resetForm = () => {
       photos: false,
       transport: false,
       terms: false
+    },
+    afterschool: {
+      schedule: '',
+      daysPerWeek: '',
+      preferredDays: [],
+      startDate: null
     }
   }
 }
@@ -414,7 +497,7 @@ const resetForm = () => {
 const handleSubmit = async (values: any) => {
   submitting.value = true
   try {
-    const registrationData = {
+    const registrationData: any = {
       ...formData.value,
       child: {
         ...formData.value.child,
@@ -422,6 +505,17 @@ const handleSubmit = async (values: any) => {
           ? dayjs(formData.value.child.birthDate).format('YYYY-MM-DD')
           : null
       }
+    }
+
+    // For afterschool, include the afterschool data
+    if (formData.value.activityType === 'afterschool') {
+      registrationData.afterschool = {
+        ...formData.value.afterschool,
+        startDate: formData.value.afterschool.startDate
+          ? dayjs(formData.value.afterschool.startDate).format('YYYY-MM-DD')
+          : null
+      }
+      registrationData.activityId = 'afterschool-program'
     }
 
     await $fetch('/api/registrations', {
