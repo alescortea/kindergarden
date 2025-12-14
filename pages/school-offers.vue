@@ -10,7 +10,7 @@
 
       <div class="page-header">
         <h1>🏫 Oferte Școlare</h1>
-        <p>Ești profesor și vrei să organizezi o excursie cu elevii tăi? Oferim transport și activități!</p>
+        <p>Ești profesor și vrei să organizezi o excursie cu elevii tăi? Oferim activități!</p>
       </div>
 
       <div class="offers-grid">

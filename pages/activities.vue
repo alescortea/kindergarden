@@ -47,7 +47,7 @@
             :sm="12" 
             :lg="8"
           >
-            <a-card class="activity-card" hoverable>
+            <a-card class="activity-card activity-afterschool" hoverable>
               <template #cover>
                 <div class="activity-image">
                   <BookOutlined />
@@ -56,12 +56,12 @@
               <a-card-meta>
                 <template #title>
                   <h3>Program Afterschool</h3>
-                  <a-tag color="gold">Program Afterschool (9-17)</a-tag>
+                  <a-tag color="gold">Aproape de tine și de copilul tău!</a-tag>
                 </template>
                 <template #description>
-                  <p><strong>Program:</strong> 9:00 - 17:00</p>
-                  <p><strong>Zile:</strong> Luni - Vineri</p>
-                  <p class="activity-description">Program complet de afterschool pentru copii, cu activități educaționale și recreative.</p>
+                  <p><strong>Program:</strong> Luni-Vineri (12:00-17:30)</p>
+                  <p><strong>Vacanțe școlare:</strong> Luni-Vineri (8:00-17:30)</p>
+                  <p class="activity-description">Aproape de tine și de copilul tău! Program complet de afterschool pentru copii, cu activități educaționale și recreative.</p>
                 </template>
               </a-card-meta>
               <template #actions>
@@ -81,7 +81,7 @@
             :sm="12" 
             :lg="8"
           >
-            <a-card class="activity-card" hoverable>
+            <a-card class="activity-card activity-camp" hoverable>
               <template #cover>
                 <div class="activity-image">
                   <img v-if="camp.gallery && camp.gallery.length > 0" :src="camp.gallery[0]" :alt="camp.name" />
@@ -117,7 +117,7 @@
             :sm="12" 
             :lg="8"
           >
-            <a-card class="activity-card" hoverable>
+            <a-card class="activity-card activity-hike" hoverable>
               <template #cover>
                 <div class="activity-image">
                   <img v-if="hike.gallery && hike.gallery.length > 0" :src="hike.gallery[0]" :alt="hike.name" />
@@ -153,7 +153,7 @@
             :sm="12" 
             :lg="8"
           >
-            <a-card class="activity-card" hoverable>
+            <a-card class="activity-card activity-trip" hoverable>
               <template #cover>
                 <div class="activity-image">
                   <img v-if="trip.gallery && trip.gallery.length > 0" :src="trip.gallery[0]" :alt="trip.name" />
@@ -189,7 +189,7 @@
             :sm="12" 
             :lg="8"
           >
-            <a-card class="activity-card" hoverable>
+            <a-card class="activity-card activity-ski" hoverable>
               <template #cover>
                 <div class="activity-image">
                   <img v-if="lesson.gallery && lesson.gallery.length > 0" :src="lesson.gallery[0]" alt="Ski Lesson" />
@@ -225,7 +225,7 @@
             :sm="12" 
             :lg="8"
           >
-            <a-card class="activity-card" hoverable>
+            <a-card class="activity-card activity-swimming" hoverable>
               <template #cover>
                 <div class="activity-image">
                   <img v-if="lesson.gallery && lesson.gallery.length > 0" :src="lesson.gallery[0]" alt="Swimming Lesson" />
@@ -348,11 +348,15 @@ const getDifficultyLabel = (difficulty: string) => {
     'medium': 'Mediu',
     'hard': 'Greu'
   }
-  return labels[difficulty] || difficulty
+  return labels[difficulty?.toLowerCase()] || 'Nespecificat'
 }
 
 const getTypeLabel = (type: string) => {
-  return type === 'individual' ? 'Individuală' : 'Grup'
+  const labels: Record<string, string> = {
+    'individual': 'Individuală',
+    'group': 'Grup'
+  }
+  return labels[type] || type
 }
 
 const filteredCamps = computed(() => {
@@ -542,6 +546,31 @@ onMounted(() => {
   justify-content: center;
   color: white;
   overflow: hidden;
+}
+
+/* Colori pentru fiecare tip de activitate */
+.activity-afterschool .activity-image {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+}
+
+.activity-camp .activity-image {
+  background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+}
+
+.activity-hike .activity-image {
+  background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%);
+}
+
+.activity-trip .activity-image {
+  background: linear-gradient(135deg, #FF6B6B 0%, #EE5A6F 100%);
+}
+
+.activity-ski .activity-image {
+  background: linear-gradient(135deg, #5DADE2 0%, #3498DB 100%);
+}
+
+.activity-swimming .activity-image {
+  background: linear-gradient(135deg, #48C9B0 0%, #1ABC9C 100%);
 }
 
 .activity-image img {

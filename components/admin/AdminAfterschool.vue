@@ -3,17 +3,12 @@
     <div class="info-section">
       <a-card>
         <template #title>
-          <h2>📚 Program Afterschool (9-17)</h2>
+          <h2>📚 Program Afterschool</h2>
         </template>
         <div class="program-info">
-          <p><strong>Program:</strong> 9:00 - 17:00</p>
-          <p><strong>Zile:</strong> Luni - Vineri</p>
-          <p><strong>Opțiuni:</strong></p>
-          <ul>
-            <li>Program Complet: 9:00 - 17:00</li>
-            <li>Program Dimineață: 9:00 - 13:00</li>
-            <li>Program După-amiază: 13:00 - 17:00</li>
-          </ul>
+          <p><strong>Aproape de tine și de copilul tău!</strong></p>
+          <p><strong>Program:</strong> Luni-Vineri (12:00-17:30)</p>
+          <p><strong>Mențiune*:</strong> În perioada vacanțelor școlare Luni-Vineri 8:00-17:30</p>
           <p><strong>Flexibilitate:</strong> Părinții pot alege numărul de zile pe săptămână (1-5 zile) și zilele preferate.</p>
         </div>
       </a-card>
@@ -407,7 +402,7 @@ const getScheduleLabel = (schedule: string) => {
     'morning': 'Dimineață (9:00 - 13:00)',
     'afternoon': 'După-amiază (13:00 - 17:00)'
   }
-  return labels[schedule] || schedule || '-'
+  return labels[schedule?.toLowerCase()] || 'Nespecificat'
 }
 
 const getPreferredDaysLabel = (days: string[]) => {
@@ -427,7 +422,7 @@ const getStatusLabel = (status: string) => {
     'confirmed': 'Confirmată',
     'cancelled': 'Anulată'
   }
-  return labels[status] || status
+  return labels[status?.toLowerCase()] || 'Nespecificat'
 }
 
 const getStatusColor = (status: string) => {

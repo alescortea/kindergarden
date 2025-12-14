@@ -134,7 +134,7 @@ const getDifficultyLabel = (difficulty: string) => {
     'medium': 'Mediu',
     'hard': 'Greu'
   }
-  return labels[difficulty] || difficulty
+  return labels[difficulty?.toLowerCase()] || 'Nespecificat'
 }
 
 const viewHikeDetails = (hike: any) => {

@@ -149,7 +149,6 @@
     <a-layout-footer class="footer">
       <div class="footer-content">
         <p>&copy; 2024 Roseli - Sport & Aventură pentru Copii. Toate drepturile rezervate.</p>
-        <p>Transport cu microbuze dotate cu climă pentru pasageri.</p>
       </div>
     </a-layout-footer>
   </a-layout>

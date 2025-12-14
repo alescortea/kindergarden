@@ -153,7 +153,11 @@ const loadLessons = async () => {
 }
 
 const getTypeLabel = (type: string) => {
-  return type === 'individual' ? 'Individuală' : 'Grup'
+  const labels: Record<string, string> = {
+    'individual': 'Individuală',
+    'group': 'Grup'
+  }
+  return labels[type?.toLowerCase()] || 'Nespecificat'
 }
 
 const viewLessonDetails = (lesson: any) => {

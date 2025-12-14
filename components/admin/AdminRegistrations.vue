@@ -470,7 +470,7 @@ const getStatusLabel = (status: string) => {
     'confirmed': 'Confirmat',
     'cancelled': 'Anulat'
   }
-  return labels[status] || status
+  return labels[status?.toLowerCase()] || 'Nespecificat'
 }
 
 const getActivityTypeLabel = (type: string) => {
@@ -589,11 +589,12 @@ const handleModalCancel = () => {
 
 const getScheduleLabel = (schedule: string) => {
   const labels: Record<string, string> = {
+    'full': 'Program Complet (9:00 - 17:00)',
     'full-time': 'Program Complet (9:00 - 17:00)',
     'morning': 'Dimineață (9:00 - 13:00)',
     'afternoon': 'După-amiază (13:00 - 17:00)'
   }
-  return labels[schedule] || schedule
+  return labels[schedule?.toLowerCase()] || 'Nespecificat'
 }
 
 const getPreferredDaysLabel = (days: string[]) => {

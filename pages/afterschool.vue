@@ -9,8 +9,8 @@
     </div>
 
     <div class="page-header">
-      <h1>📚 Program Afterschool (9-17)</h1>
-      <p>Program complet de afterschool pentru copii, cu activități educaționale și recreative</p>
+      <h1>📚 Program Afterschool</h1>
+      <p>Aproape de tine și de copilul tău!</p>
     </div>
 
     <div class="afterschool-content">
@@ -19,8 +19,7 @@
           <a-card class="info-card">
             <h2>Despre Programul Afterschool</h2>
             <p>
-              Oferim un program complet de afterschool pentru copii, cu activități educaționale și recreative 
-              în intervalul 9:00 - 17:00, de luni până vineri.
+              Oferim un program complet de afterschool pentru copii, cu activități educaționale și recreative.
             </p>
             
             <h3>Ce oferim:</h3>
@@ -33,11 +32,10 @@
             </ul>
 
             <h3>Program:</h3>
-            <ul>
-              <li><strong>Program Complet:</strong> 9:00 - 17:00</li>
-              <li><strong>Program Dimineață:</strong> 9:00 - 13:00</li>
-              <li><strong>Program După-amiază:</strong> 13:00 - 17:00</li>
-            </ul>
+            <p><strong>Luni-Vineri: 12:00-17:30</strong></p>
+            <p style="font-style: italic; color: #666;">
+              <strong>Mențiune*:</strong> În perioada vacanțelor școlare Luni-Vineri 8:00-17:30
+            </p>
 
             <h3>Flexibilitate:</h3>
             <p>

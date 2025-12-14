@@ -271,12 +271,6 @@
                   </a-checkbox>
                 </a-form-item>
 
-                <a-form-item name="agreements.transport">
-                  <a-checkbox v-model:checked="formData.agreements.transport">
-                    Sunt de acord cu transportul copilului folosind mijloacele noastre de transport (microbuze cu aer condiționat)
-                  </a-checkbox>
-                </a-form-item>
-
                 <a-form-item name="agreements.terms">
                   <a-checkbox v-model:checked="formData.agreements.terms">
                     Am citit și sunt de acord cu termenii și condițiile
@@ -316,11 +310,6 @@
               <div class="info-item">
                 <h4>🚫 Anularea</h4>
                 <p>Anularea este posibilă cu cel puțin 48h înainte, cu rambursare de 50%.</p>
-              </div>
-
-              <div class="info-item">
-                <h4>🚐 Transport</h4>
-                <p>Transportul se face cu microbuze cu aer condiționat pentru participanți.</p>
               </div>
             </a-card>
           </div>
