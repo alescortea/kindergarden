@@ -3,10 +3,9 @@
     <div class="info-section">
       <a-card>
         <template #title>
-          <h2>📚 Program Afterschool</h2>
+          <h2>📚 Centru Afterschool</h2>
         </template>
         <div class="program-info">
-          <p><strong>Aproape de tine și de copilul tău!</strong></p>
           <p><strong>Program:</strong> Luni-Vineri (12:00-17:30)</p>
           <p><strong>Mențiune*:</strong> În perioada vacanțelor școlare Luni-Vineri 8:00-17:30</p>
           <p><strong>Flexibilitate:</strong> Părinții pot alege numărul de zile pe săptămână (1-5 zile) și zilele preferate.</p>
@@ -17,7 +16,7 @@
     <div class="registrations-section" style="margin-top: 24px;">
       <a-card>
         <template #title>
-          <h3>Înscrieri la Programul Afterschool</h3>
+          <h3>Înscrieri la Centrul Afterschool</h3>
         </template>
         <div class="actions-section" style="margin-bottom: 16px;">
           <a-button @click="loadRegistrations" :loading="loading">
@@ -260,7 +259,7 @@
           </a-col>
         </a-row>
 
-        <a-divider>Program Afterschool</a-divider>
+        <a-divider>Centru Afterschool</a-divider>
         <a-form-item label="Program Zilnic">
           <a-select v-model:value="editForm.afterschool.schedule" style="width: 100%">
             <a-select-option value="full-time">Program Complet (9:00 - 17:00)</a-select-option>

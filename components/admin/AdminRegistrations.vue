@@ -16,7 +16,7 @@
             <a-select-option value="trip">Excursie</a-select-option>
             <a-select-option value="ski">Ski</a-select-option>
             <a-select-option value="swimming">Înot</a-select-option>
-            <a-select-option value="afterschool">Program Afterschool (9-17)</a-select-option>
+            <a-select-option value="afterschool">Centrul Afterschool (9-17)</a-select-option>
             <a-select-option value="school-offer">Ofertă Școlară</a-select-option>
           </a-select>
         </a-col>
@@ -301,7 +301,7 @@
                     <a-select-option value="trip">Excursie</a-select-option>
                     <a-select-option value="ski">Ski</a-select-option>
                     <a-select-option value="swimming">Înot</a-select-option>
-                    <a-select-option value="afterschool">Program Afterschool (9-17)</a-select-option>
+                    <a-select-option value="afterschool">Centru Afterschool (9-17)</a-select-option>
                     <a-select-option value="school-offer">Ofertă Școlară</a-select-option>
                   </a-select>
                 </a-form-item>
@@ -318,7 +318,7 @@
             </a-row>
             <!-- Afterschool Program Fields -->
             <template v-if="editForm.activityType === 'afterschool'">
-              <a-divider>Detalii Program Afterschool</a-divider>
+              <a-divider>Detalii Centru Afterschool</a-divider>
               <a-row :gutter="16">
                 <a-col :xs="24" :sm="12">
                   <a-form-item label="Program Zilnic">
@@ -480,7 +480,7 @@ const getActivityTypeLabel = (type: string) => {
     'trip': 'Excursie',
     'ski': 'Ski',
     'swimming': 'Înot',
-    'afterschool': 'Program Afterschool (9-17)',
+    'afterschool': 'Centru Afterschool (9-17)',
     'school-offer': 'Ofertă Școlară'
   }
   return labels[type] || type

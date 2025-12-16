@@ -9,15 +9,14 @@
     </div>
 
     <div class="page-header">
-      <h1>📚 Program Afterschool</h1>
-      <p>Aproape de tine și de copilul tău!</p>
+      <h1>📚 Centru Afterschool</h1>
     </div>
 
     <div class="afterschool-content">
       <a-row :gutter="[24, 24]">
         <a-col :xs="24" :lg="16">
           <a-card class="info-card">
-            <h2>Despre Programul Afterschool</h2>
+            <h2>Despre Centrul Afterschool</h2>
             <p>
               Oferim un program complet de afterschool pentru copii, cu activități educaționale și recreative.
             </p>
@@ -60,7 +59,13 @@
             <template #title>
               <h3>Contact</h3>
             </template>
-            <p>Pentru întrebări sau informații suplimentare, ne puteți contacta.</p>
+            <p><strong>Adresă:</strong> Str. Albatrosului Nr. 11, Avantgarden, Bartolomeu, Brașov</p>
+            <p><strong>Telefon:</strong> <a href="tel:0724428883">0724428883</a></p>
+            <p> <a href="https://www.facebook.com/profile.php?id=61551620890862" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 8px;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#1877F2" style="vertical-align: middle;">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+            </a></p>
           </a-card>
         </a-col>
       </a-row>
@@ -113,6 +118,18 @@ const navigateToRegistration = () => {
 .page-header p {
   font-size: 1.2rem;
   opacity: 0.9;
+}
+
+.slogan-single-line {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 768px) {
+  .slogan-single-line {
+    white-space: normal;
+  }
 }
 
 .afterschool-content {
@@ -170,7 +187,18 @@ const navigateToRegistration = () => {
 .contact-card p {
   color: #666;
   line-height: 1.6;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+}
+
+.contact-card a {
+  color: #667eea;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.contact-card a:hover {
+  color: #764ba2;
+  text-decoration: underline;
 }
 
 @media (max-width: 768px) {

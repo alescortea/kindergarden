@@ -8,7 +8,7 @@
               Roseli - Sport & Aventură pentru Copii 🏔️
             </h1>
             <p class="hero-tagline">
-              Cresc prin sport. Zambesc prin aventură.
+              Cresc prin sport, zâmbesc prin aventură!
             </p>
             <p class="hero-description">
               Oferim experiențe unice de sport și aventură pentru copii: tabere, drumeții, excursii, 
@@ -28,7 +28,10 @@
         </a-col>
         <a-col :xs="24" :lg="12">
           <div class="hero-image">
-            <img :src="logoImage" alt="Roseli - Centrul Educational & Sportiv Brasov" class="hero-logo" />
+            <div class="image-placeholder">
+              <TrophyOutlined />
+              <p>Sport & Aventură</p>
+            </div>
           </div>
         </a-col>
       </a-row>
@@ -93,13 +96,46 @@
       </a-row>
     </div>
 
-    <!-- Stats Section -->
-    <div class="stats-section">
+    <!-- Contact Footer Section -->
+    <div class="stats-section contact-footer-section">
       <a-row :gutter="24" justify="center">
-        <a-col :xs="12" :sm="6" v-for="stat in stats" :key="stat.id">
+        <a-col :xs="24" :sm="12" :md="8">
           <div class="stat-item">
-            <div class="stat-number">{{ stat.number }}</div>
-            <div class="stat-label">{{ stat.label }}</div>
+            <div class="stat-label"><strong>Adresă</strong></div>
+            <div class="stat-number" style="font-size: 1.2rem; margin-top: 8px;">Str. Albatrosului Nr. 11<br>Avantgarden, Bartolomeu, Brașov</div>
+          </div>
+        </a-col>
+        <a-col :xs="24" :sm="12" :md="8">
+          <div class="stat-item">
+            <div class="stat-label"><strong>Telefon</strong></div>
+            <div class="stat-number" style="font-size: 1.2rem; margin-top: 8px;">
+              <a href="tel:0724428883" style="color: #ffd700; text-decoration: none;">0724428883</a>
+            </div>
+          </div>
+        </a-col>
+        <a-col :xs="24" :sm="12" :md="8">
+          <div class="stat-item">
+            <div class="stat-number" style="font-size: 1.2rem; margin-top: 8px;">
+              <a href="https://www.facebook.com/profile.php?id=61551620890862" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; color: #ffd700; text-decoration: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="#1877F2">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+        </a-col>
+      </a-row>
+      <a-row :gutter="24" justify="center" style="margin-top: 24px;">
+        <a-col :xs="24" :sm="12" :md="12">
+          <div class="stat-item" style="text-align: center;">
+            <div style="display: flex; justify-content: center; align-items: center; gap: 20px; flex-wrap: wrap;">
+              <a href="https://anpc.ro/ce-este-sal/" target="_blank" rel="noopener noreferrer" style="display: inline-block; transition: opacity 0.3s ease;">
+                <img :src="anpcSalRoImage" alt="ANPC SAL" style="height: 60px; width: auto; object-fit: contain;" />
+              </a>
+              <a href="https://consumer-redress.ec.europa.eu/site-relocation_en?event=main.home.chooseLanguage" target="_blank" rel="noopener noreferrer" style="display: inline-block; transition: opacity 0.3s ease;">
+                <img :src="anpcSalEuImage" alt="ANPC SAL EU" style="height: 60px; width: auto; object-fit: contain;" />
+              </a>
+            </div>
           </div>
         </a-col>
       </a-row>
@@ -145,6 +181,8 @@ import mountainsImage from '~/assets/photo/mountains.jpg'
 import raftingImage from '~/assets/photo/rafting.jpeg'
 import skiBrasovImage from '~/assets/photo/ski_brasov.jpg'
 import skiImage from '~/assets/photo/ski.jpg'
+import anpcSalRoImage from '~/assets/photo/apnc_sal_ro.png'
+import anpcSalEuImage from '~/assets/photo/apnc_sol_eu.png'
 
 const router = useRouter()
 
@@ -183,7 +221,7 @@ const activities = [
   {
     id: 1,
     icon: 'BookOutlined',
-    title: 'Program Afterschool',
+    title: 'Centru Afterschool',
     description: 'Aproape de tine și de copilul tău! Program: Luni-Vineri (12:00-17:30). În perioada vacanțelor școlare: Luni-Vineri (8:00-17:30).',
     route: '/afterschool'
   },
@@ -222,13 +260,6 @@ const activities = [
     description: 'Lecții de înot individuale și de grup pentru toate nivelurile.',
     route: '/swimming'
   }
-]
-
-const stats = [
-  { id: 1, number: '500+', label: 'Copii Fericiți' },
-  { id: 2, number: '10+', label: 'Ani Experiență' },
-  { id: 3, number: '100+', label: 'Activități Anuale' },
-  { id: 4, number: '100%', label: 'Părinți Mulțumiți' }
 ]
 
 const galleryImages = [
@@ -301,28 +332,28 @@ const viewImage = (image: { src: string, alt: string }) => {
   padding: 20px;
 }
 
-.hero-logo {
-  max-width: 300px;
-  width: 100%;
-  height: auto;
-  border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  background: white;
-  padding: 15px;
-  display: block;
-  margin: 0 auto;
-}
-
-.hero-image {
+.hero-logo-title {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.hero-rose-logo {
+  height: 80px;
+  width: auto;
+  object-fit: contain;
 }
 
 @media (max-width: 768px) {
-  .hero-logo {
-    max-width: 250px;
-    padding: 10px;
+  .hero-rose-logo {
+    height: 60px;
+  }
+  
+  .hero-logo-title {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
   }
 }
 
@@ -476,9 +507,9 @@ const viewImage = (image: { src: string, alt: string }) => {
   color: #667eea;
 }
 
-/* Colori pentru cardurile "De ce să ne alegi?" */
+/* Colori pentru cardurile "De ce să ne alegi?" - aceleași culori ca activity cards, dar mult mai opace */
 .feature-1 {
-  background: linear-gradient(135deg, #FF6B9D 0%, #C44569 100%);
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.4) 0%, rgba(255, 165, 0, 0.4) 100%);
   color: white;
   border: none;
 }
@@ -493,7 +524,7 @@ const viewImage = (image: { src: string, alt: string }) => {
 }
 
 .feature-2 {
-  background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
+  background: linear-gradient(135deg, rgba(74, 144, 226, 0.4) 0%, rgba(53, 122, 189, 0.4) 100%);
   color: white;
   border: none;
 }
@@ -508,7 +539,7 @@ const viewImage = (image: { src: string, alt: string }) => {
 }
 
 .feature-3 {
-  background: linear-gradient(135deg, #A8E6CF 0%, #7FCDBB 100%);
+  background: linear-gradient(135deg, rgba(46, 204, 113, 0.4) 0%, rgba(39, 174, 96, 0.4) 100%);
   color: white;
   border: none;
 }
@@ -523,7 +554,7 @@ const viewImage = (image: { src: string, alt: string }) => {
 }
 
 .feature-4 {
-  background: linear-gradient(135deg, #FFD93D 0%, #F6C23E 100%);
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.4) 0%, rgba(255, 165, 0, 0.4) 100%);
   color: white;
   border: none;
 }
@@ -537,9 +568,9 @@ const viewImage = (image: { src: string, alt: string }) => {
   color: white;
 }
 
-/* Colori pentru cardurile de activități */
+/* Colori pentru cardurile de activități - doar primele 3 culori repetate, cu opacitate mai mică */
 .activity-1 {
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.4) 0%, rgba(255, 165, 0, 0.4) 100%);
   color: white;
 }
 
@@ -553,7 +584,7 @@ const viewImage = (image: { src: string, alt: string }) => {
 }
 
 .activity-2 {
-  background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+  background: linear-gradient(135deg, rgba(74, 144, 226, 0.4) 0%, rgba(53, 122, 189, 0.4) 100%);
   color: white;
 }
 
@@ -567,7 +598,7 @@ const viewImage = (image: { src: string, alt: string }) => {
 }
 
 .activity-3 {
-  background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%);
+  background: linear-gradient(135deg, rgba(46, 204, 113, 0.4) 0%, rgba(39, 174, 96, 0.4) 100%);
   color: white;
 }
 
@@ -581,7 +612,7 @@ const viewImage = (image: { src: string, alt: string }) => {
 }
 
 .activity-4 {
-  background: linear-gradient(135deg, #FF6B6B 0%, #EE5A6F 100%);
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.4) 0%, rgba(255, 165, 0, 0.4) 100%);
   color: white;
 }
 
@@ -595,7 +626,7 @@ const viewImage = (image: { src: string, alt: string }) => {
 }
 
 .activity-5 {
-  background: linear-gradient(135deg, #5DADE2 0%, #3498DB 100%);
+  background: linear-gradient(135deg, rgba(74, 144, 226, 0.4) 0%, rgba(53, 122, 189, 0.4) 100%);
   color: white;
 }
 
@@ -609,7 +640,7 @@ const viewImage = (image: { src: string, alt: string }) => {
 }
 
 .activity-6 {
-  background: linear-gradient(135deg, #48C9B0 0%, #1ABC9C 100%);
+  background: linear-gradient(135deg, rgba(46, 204, 113, 0.4) 0%, rgba(39, 174, 96, 0.4) 100%);
   color: white;
 }
 
@@ -637,27 +668,43 @@ const viewImage = (image: { src: string, alt: string }) => {
   line-height: 1.6;
 }
 
-.stats-section {
+.stats-section.contact-footer-section {
   background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
   color: white;
   padding: 60px 0;
-  margin: 60px -24px -24px -24px;
+  margin: 60px -24px 0 -24px;
   border-radius: 20px 20px 0 0;
 }
 
-.stat-item {
+.contact-footer-section .stat-item {
   text-align: center;
+  margin-bottom: 20px;
 }
 
-.stat-number {
-  font-size: 3rem;
-  font-weight: 700;
-  color: #ffd700;
+.contact-footer-section .stat-number {
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: white;
   margin-bottom: 8px;
+  line-height: 1.6;
 }
 
-.stat-label {
-  font-size: 1.1rem;
+.contact-footer-section .stat-label {
+  font-size: 1.3rem;
+  font-weight: 600;
+  opacity: 1;
+  margin-bottom: 12px;
+  color: #ffd700;
+}
+
+.contact-footer-section .stat-number a {
+  color: #ffd700;
+  text-decoration: none;
+  transition: opacity 0.3s ease;
+}
+
+.contact-footer-section .stat-number a:hover {
+  text-decoration: underline;
   opacity: 0.9;
 }
 

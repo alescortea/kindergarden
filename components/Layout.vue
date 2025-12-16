@@ -1,5 +1,5 @@
 <template>
-  <a-layout>
+  <a-layout style="min-height: 100vh; display: flex; flex-direction: column;">
     <a-layout-header class="header">
       <div class="header-content">
         <a-button 
@@ -13,8 +13,8 @@
         
         <div class="logo">
           <NuxtLink to="/">
-            <img :src="logoImage" alt="Roseli - Sport & Aventură" class="logo-image" />
-            <h2 class="logo-text">Roseli - Sport & Aventură</h2>
+            <img :src="logoImage" alt="Roseli" class="logo-image" />
+            <h2 class="logo-text">Roseli</h2>
           </NuxtLink>
         </div>
         
@@ -67,6 +67,10 @@
           <a-menu-item key="registration" @click="navigateTo('/registration')">
             <FormOutlined />
             Înscriere
+          </a-menu-item>
+          <a-menu-item key="contact" @click="navigateTo('/#contact')">
+            <ContactsOutlined />
+            Contact
           </a-menu-item>
           <a-menu-item key="admin" @click="navigateTo('/admin')" v-if="isAdmin">
             <SettingOutlined />
@@ -132,6 +136,10 @@
             <FormOutlined />
             Înscriere
           </a-menu-item>
+          <a-menu-item key="contact">
+            <ContactsOutlined />
+            Contact
+          </a-menu-item>
           <a-menu-item key="admin" v-if="isAdmin">
             <SettingOutlined />
             Admin
@@ -140,7 +148,7 @@
       </a-drawer>
     </a-layout-header>
 
-    <a-layout-content class="content">
+    <a-layout-content class="content" style="flex: 1;">
       <div class="content-wrapper">
         <slot />
       </div>
@@ -148,7 +156,26 @@
 
     <a-layout-footer class="footer">
       <div class="footer-content">
-        <p>&copy; 2024 Roseli - Sport & Aventură pentru Copii. Toate drepturile rezervate.</p>
+        <div class="footer-info">
+          <div class="footer-section">
+            <p><strong>Adresă:</strong> Str. Albatrosului Nr. 11, Avantgarden, Bartolomeu, Brașov</p>
+            <p><strong>Telefon:</strong> <a href="tel:0724428883">0724428883</a></p>
+            <a href="https://www.facebook.com/profile.php?id=61551620890862" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 8px;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#1877F2" style="vertical-align: middle;">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+            </a></p>
+          </div>
+        </div>
+        <p>&copy; 2024 Roseli. Toate drepturile rezervate.</p>
+        <div class="footer-badges">
+          <a href="https://anpc.ro/ce-este-sal/" target="_blank" rel="noopener noreferrer" class="anpc-badge">
+            <img :src="anpcSalRoImage" alt="ANPC SAL" />
+          </a>
+          <a href="https://consumer-redress.ec.europa.eu/site-relocation_en?event=main.home.chooseLanguage" target="_blank" rel="noopener noreferrer" class="anpc-badge">
+            <img :src="anpcSalEuImage" alt="ANPC SAL EU" />
+          </a>
+        </div>
       </div>
     </a-layout-footer>
   </a-layout>
@@ -168,9 +195,12 @@ import {
   PictureOutlined,
   NotificationOutlined,
   MenuOutlined,
-  CloseOutlined
+  CloseOutlined,
+  ContactsOutlined
 } from '@ant-design/icons-vue'
 import logoImage from '~/assets/photo/logo.png'
+import anpcSalRoImage from '~/assets/photo/apnc_sal_ro.png'
+import anpcSalEuImage from '~/assets/photo/apnc_sol_eu.png'
 
 const route = useRoute()
 const router = useRouter()
@@ -208,12 +238,14 @@ const handleMobileMenuClick = ({ key }: { key: string }) => {
     'gallery': '/gallery',
     'notice-board': '/notice-board',
     'registration': '/registration',
+    'contact': '/#contact',
     'admin': '/admin'
   }
   if (routes[key]) {
     navigateTo(routes[key])
   }
 }
+
 </script>
 
 <style scoped>
@@ -291,7 +323,7 @@ const handleMobileMenuClick = ({ key }: { key: string }) => {
 }
 
 .content {
-  min-height: calc(100vh - 64px - 70px);
+  min-height: calc(100vh - 64px - 120px);
   background: #f5f5f5;
 }
 
@@ -307,7 +339,11 @@ const handleMobileMenuClick = ({ key }: { key: string }) => {
   background: #2c3e50;
   color: white;
   text-align: center;
-  padding: 20px 0;
+  padding: 30px 0;
+  margin-top: auto;
+  width: 100%;
+  position: relative;
+  z-index: 10;
 }
 
 .footer-content {
@@ -321,6 +357,54 @@ const handleMobileMenuClick = ({ key }: { key: string }) => {
 .footer-content p {
   margin: 4px 0;
   opacity: 0.9;
+}
+
+.footer-info {
+  margin-bottom: 20px;
+}
+
+.footer-section {
+  text-align: center;
+}
+
+.footer-section p {
+  margin: 8px 0;
+  opacity: 0.9;
+}
+
+.footer-section a {
+  color: #64b5f6;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer-section a:hover {
+  color: #90caf9;
+  text-decoration: underline;
+}
+
+.footer-badges {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.anpc-badge {
+  display: inline-block;
+  transition: opacity 0.3s ease;
+}
+
+.anpc-badge:hover {
+  opacity: 0.8;
+}
+
+.anpc-badge img {
+  height: 50px;
+  width: auto;
+  object-fit: contain;
 }
 
 @media (max-width: 992px) {

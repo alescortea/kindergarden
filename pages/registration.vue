@@ -1,5 +1,13 @@
 <template>
     <div class="registration-page">
+      <!-- Mobile Back Button -->
+      <div class="mobile-back-button">
+        <a-button type="text" @click="goHome" class="back-btn">
+          <ArrowLeftOutlined />
+          Înapoi la pagina principală
+        </a-button>
+      </div>
+
       <div class="page-header">
         <h1>📝 Formular de Înscriere</h1>
         <p>Completați formularul pentru a înregistra copilul la activitățile noastre</p>
@@ -22,14 +30,15 @@
                     v-model:value="formData.activityType"
                     placeholder="Selectați tipul de activitate"
                     @change="loadActivities"
+                    :loading="loadingActivityTypes"
                   >
-                    <a-select-option value="camp">Tabără</a-select-option>
-                    <a-select-option value="hike">Drumeție</a-select-option>
-                    <a-select-option value="trip">Excursie</a-select-option>
-                    <a-select-option value="ski">Lecție de Ski</a-select-option>
-                    <a-select-option value="swimming">Lecție de Înot</a-select-option>
-                    <a-select-option value="afterschool">Program Afterschool (9-17)</a-select-option>
-                    <a-select-option value="school-offer">Ofertă Școlară</a-select-option>
+                    <a-select-option v-if="availableActivityTypes.camp" value="camp">Tabără</a-select-option>
+                    <a-select-option v-if="availableActivityTypes.hike" value="hike">Drumeție</a-select-option>
+                    <a-select-option v-if="availableActivityTypes.trip" value="trip">Excursie</a-select-option>
+                    <a-select-option v-if="availableActivityTypes.ski" value="ski">Lecție de Ski</a-select-option>
+                    <a-select-option v-if="availableActivityTypes.swimming" value="swimming">Lecție de Înot</a-select-option>
+                    <a-select-option v-if="availableActivityTypes.afterschool" value="afterschool">Centru Afterschool (9-17)</a-select-option>
+                    <a-select-option v-if="availableActivityTypes['school-offer']" value="school-offer">Ofertă Școlară</a-select-option>
                   </a-select>
                 </a-form-item>
 
@@ -319,16 +328,30 @@
   </template>
 
 <script setup lang="ts">
-import { ReloadOutlined, SendOutlined } from '@ant-design/icons-vue'
+import { ReloadOutlined, SendOutlined, ArrowLeftOutlined } from '@ant-design/icons-vue'
 import dayjs from 'dayjs'
 
 const route = useRoute()
 const router = useRouter()
 
+const goHome = () => {
+  router.push('/')
+}
+
 const formRef = ref()
 const submitting = ref(false)
 const loadingActivities = ref(false)
+const loadingActivityTypes = ref(false)
 const activities = ref<any[]>([])
+const availableActivityTypes = ref({
+  camp: false,
+  hike: false,
+  trip: false,
+  ski: false,
+  swimming: false,
+  'afterschool': true, // Afterschool este întotdeauna disponibil
+  'school-offer': false
+})
 
 const formData = ref({
   activityType: '',
@@ -412,8 +435,37 @@ const loadActivities = async () => {
     }
   } catch (error) {
     console.error('Failed to load activities:', error)
+    activities.value = []
   } finally {
     loadingActivities.value = false
+  }
+}
+
+const checkAvailableActivityTypes = async () => {
+  loadingActivityTypes.value = true
+  try {
+    const checks = await Promise.all([
+      $fetch('/api/camps').then((r: any) => Array.isArray(r) && r.length > 0).catch(() => false),
+      $fetch('/api/hikes').then((r: any) => Array.isArray(r) && r.length > 0).catch(() => false),
+      $fetch('/api/trips').then((r: any) => Array.isArray(r) && r.length > 0).catch(() => false),
+      $fetch('/api/ski').then((r: any) => Array.isArray(r) && r.length > 0).catch(() => false),
+      $fetch('/api/swimming').then((r: any) => Array.isArray(r) && r.length > 0).catch(() => false),
+      $fetch('/api/school-offers').then((r: any) => Array.isArray(r) && r.length > 0).catch(() => false)
+    ])
+
+    availableActivityTypes.value = {
+      camp: checks[0],
+      hike: checks[1],
+      trip: checks[2],
+      ski: checks[3],
+      swimming: checks[4],
+      'afterschool': true, // Afterschool este întotdeauna disponibil
+      'school-offer': checks[5]
+    }
+  } catch (error) {
+    console.error('Failed to check available activity types:', error)
+  } finally {
+    loadingActivityTypes.value = false
   }
 }
 
@@ -526,7 +578,10 @@ const handleSubmit = async (values: any) => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  // Check available activity types first
+  await checkAvailableActivityTypes()
+  
   // Pre-fill from query params if available
   const query = route.query
   if (query.activityType) {
@@ -543,6 +598,10 @@ onMounted(() => {
 <style scoped>
 .registration-page {
   min-height: 100vh;
+}
+
+.mobile-back-button {
+  display: none;
 }
 
 .page-header {
@@ -644,6 +703,26 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
+  .mobile-back-button {
+    display: block;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: white;
+    padding: 8px 0;
+    margin: -12px -12px 16px -12px;
+    padding-left: 12px;
+    padding-right: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .back-btn {
+    width: 100%;
+    text-align: left;
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
   .page-header {
     padding: 30px 20px;
     margin: 0 -16px 30px -16px;

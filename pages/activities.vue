@@ -24,13 +24,13 @@
             @change="loadActivities"
           >
             <a-select-option value="">Toate Activitățile</a-select-option>
-            <a-select-option value="camp">Tabere</a-select-option>
-            <a-select-option value="hike">Drumeții</a-select-option>
-            <a-select-option value="trip">Excursii</a-select-option>
-            <a-select-option value="ski">Lecții de Ski</a-select-option>
-            <a-select-option value="swimming">Lecții de Înot</a-select-option>
-            <a-select-option value="afterschool">Program Afterschool (9-17)</a-select-option>
-            <a-select-option value="school-offer">Oferte Școlare</a-select-option>
+            <a-select-option 
+              v-for="activityType in availableActivityTypes" 
+              :key="activityType.value" 
+              :value="activityType.value"
+            >
+              {{ activityType.label }}
+            </a-select-option>
           </a-select>
         </a-col>
       </a-row>
@@ -55,7 +55,7 @@
               </template>
               <a-card-meta>
                 <template #title>
-                  <h3>Program Afterschool</h3>
+                  <h3>Centru Afterschool</h3>
                   <a-tag color="gold">Aproape de tine și de copilul tău!</a-tag>
                 </template>
                 <template #description>
@@ -398,6 +398,36 @@ const totalActivities = computed(() => {
     filteredSwimmingLessons.value.length +
     filteredSchoolOffers.value.length +
     afterschoolCount
+})
+
+// Computed property pentru activitățile disponibile în dropdown
+const availableActivityTypes = computed(() => {
+  const types: Array<{ value: string; label: string }> = []
+  
+  // Afterschool este întotdeauna disponibil
+  types.push({ value: 'afterschool', label: 'Centru Afterschool (9-17)' })
+  
+  // Verificăm ce activități au date
+  if (camps.value.length > 0) {
+    types.push({ value: 'camp', label: 'Tabere' })
+  }
+  if (hikes.value.length > 0) {
+    types.push({ value: 'hike', label: 'Drumeții' })
+  }
+  if (trips.value.length > 0) {
+    types.push({ value: 'trip', label: 'Excursii' })
+  }
+  if (skiLessons.value.length > 0) {
+    types.push({ value: 'ski', label: 'Lecții de Ski' })
+  }
+  if (swimmingLessons.value.length > 0) {
+    types.push({ value: 'swimming', label: 'Lecții de Înot' })
+  }
+  if (schoolOffers.value.length > 0) {
+    types.push({ value: 'school-offer', label: 'Oferte Școlare' })
+  }
+  
+  return types
 })
 
 const loadActivities = async () => {
