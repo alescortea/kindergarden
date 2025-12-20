@@ -324,6 +324,16 @@ const viewImage = (image: { src: string, alt: string }) => {
   margin-top: 24px;
 }
 
+.hero-actions :deep(.anticon) {
+  margin-top: -6px !important;
+  vertical-align: middle;
+}
+
+.hero-actions .ant-btn :deep(.anticon) {
+  margin-top: -6px !important;
+  vertical-align: middle;
+}
+
 .hero-image {
   display: flex;
   justify-content: center;
@@ -351,11 +361,13 @@ const viewImage = (image: { src: string, alt: string }) => {
 
 /* SVG icons margin */
 :deep(.anticon) {
-  margin-top: -6px;
+  margin-top: -6px !important;
+  vertical-align: middle;
 }
 
 svg {
-  margin-top: -6px;
+  margin-top: -6px !important;
+  vertical-align: middle;
 }
 
 .image-placeholder p {

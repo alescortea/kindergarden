@@ -332,6 +332,16 @@ const handleMobileMenuClick = ({ key }: { key: string }) => {
   justify-content: flex-end;
 }
 
+.menu.desktop-menu :deep(.anticon) {
+  margin-top: -6px !important;
+  vertical-align: middle;
+}
+
+.mobile-menu-toggle :deep(.anticon) {
+  margin-top: -6px !important;
+  vertical-align: middle;
+}
+
 .content {
   min-height: calc(100vh - 64px - 120px);
   background: #f5f5f5;
@@ -419,11 +429,13 @@ const handleMobileMenuClick = ({ key }: { key: string }) => {
 
 /* SVG icons margin */
 :deep(.anticon) {
-  margin-top: -6px;
+  margin-top: -6px !important;
+  vertical-align: middle;
 }
 
 svg {
-  margin-top: -6px;
+  margin-top: -6px !important;
+  vertical-align: middle;
 }
 
 @media (max-width: 992px) {

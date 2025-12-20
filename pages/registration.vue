@@ -20,12 +20,17 @@
               ref="formRef"
               :model="formData"
               layout="vertical"
+              :validate-trigger="[]"
               @finish="handleSubmit"
             >
               <!-- Activity Selection -->
               <div class="form-section">
                 <h3>🎯 Selectare Activitate</h3>
-                <a-form-item label="Tip Activitate" name="activityType">
+                <a-form-item 
+                  label="Tip Activitate" 
+                  name="activityType"
+                  :rules="[{ required: true, message: 'Selectați tipul de activitate', trigger: 'change' }]"
+                >
                   <a-select
                     v-model:value="formData.activityType"
                     placeholder="Selectați tipul de activitate"
@@ -46,6 +51,7 @@
                   label="Selectați Activitatea" 
                   name="activityId" 
                   v-if="formData.activityType && formData.activityType !== 'afterschool'"
+                  :rules="[{ required: true, message: 'Selectați activitatea', trigger: 'change' }]"
                 >
                   <a-select
                     v-model:value="formData.activityId"
@@ -157,7 +163,11 @@
                 
                 <a-row :gutter="16">
                   <a-col :xs="24" :sm="12">
-                    <a-form-item :label="'Prenume' + (index === 0 ? '*' : '')" :name="['children', index, 'firstName']">
+                    <a-form-item 
+                      :label="'Prenume' + (index === 0 ? '*' : '')" 
+                      :name="['children', index, 'firstName']"
+                      :rules="index === 0 ? [{ required: true, message: 'Prenumele este obligatoriu' }] : []"
+                    >
                       <a-input 
                         v-model:value="child.firstName" 
                         :placeholder="'Introduceți prenumele copilului ' + (index + 1)" 
@@ -165,7 +175,11 @@
                     </a-form-item>
                   </a-col>
                   <a-col :xs="24" :sm="12">
-                    <a-form-item :label="'Nume' + (index === 0 ? '*' : '')" :name="['children', index, 'lastName']">
+                    <a-form-item 
+                      :label="'Nume' + (index === 0 ? '*' : '')" 
+                      :name="['children', index, 'lastName']"
+                      :rules="index === 0 ? [{ required: true, message: 'Numele este obligatoriu' }] : []"
+                    >
                       <a-input 
                         v-model:value="child.lastName" 
                         :placeholder="'Introduceți numele copilului ' + (index + 1)" 
@@ -269,12 +283,20 @@
                 <h3>👨‍👩‍👧‍👦 Informații Părinte/Tutore</h3>
                 <a-row :gutter="16">
                   <a-col :xs="24" :sm="12">
-                    <a-form-item label="Prenume" name="parent.firstName">
+                    <a-form-item 
+                      label="Prenume" 
+                      :name="['parent', 'firstName']"
+                      :rules="[{ required: true, message: 'Prenumele părintelui este obligatoriu' }]"
+                    >
                       <a-input v-model:value="formData.parent.firstName" placeholder="Introduceți prenumele" />
                     </a-form-item>
                   </a-col>
                   <a-col :xs="24" :sm="12">
-                    <a-form-item label="Nume" name="parent.lastName">
+                    <a-form-item 
+                      label="Nume" 
+                      :name="['parent', 'lastName']"
+                      :rules="[{ required: true, message: 'Numele părintelui este obligatoriu' }]"
+                    >
                       <a-input v-model:value="formData.parent.lastName" placeholder="Introduceți numele" />
                     </a-form-item>
                   </a-col>
@@ -282,7 +304,11 @@
 
                 <a-row :gutter="16">
                   <a-col :xs="24" :sm="12">
-                    <a-form-item label="Telefon" name="parent.phone">
+                    <a-form-item 
+                      label="Telefon" 
+                      :name="['parent', 'phone']"
+                      :rules="[{ required: true, message: 'Telefonul este obligatoriu' }]"
+                    >
                       <a-input
                         v-model:value="formData.parent.phone"
                         placeholder="Introduceți numărul de telefon"
@@ -291,13 +317,24 @@
                     </a-form-item>
                   </a-col>
                   <a-col :xs="24" :sm="12">
-                    <a-form-item label="Email" name="parent.email">
+                    <a-form-item 
+                      label="Email" 
+                      :name="['parent', 'email']"
+                      :rules="[
+                        { required: true, message: 'Email-ul este obligatoriu' },
+                        { type: 'email', message: 'Email invalid' }
+                      ]"
+                    >
                       <a-input v-model:value="formData.parent.email" placeholder="Introduceți adresa de email" />
                     </a-form-item>
                   </a-col>
                 </a-row>
 
-                <a-form-item label="Relația" name="parent.relationship">
+                <a-form-item 
+                  label="Relația" 
+                  :name="['parent', 'relationship']"
+                  :rules="[{ required: true, message: 'Selectați relația' }]"
+                >
                   <a-select v-model:value="formData.parent.relationship" placeholder="Selectați relația">
                     <a-select-option value="mother">Mamă</a-select-option>
                     <a-select-option value="father">Tată</a-select-option>
@@ -355,19 +392,19 @@
               <div class="form-section">
                 <h3>📋 Acorduri și Autorizații</h3>
                 
-                <a-form-item name="agreements.medicalTreatment">
+                <a-form-item :name="['agreements', 'medicalTreatment']">
                   <a-checkbox v-model:checked="formData.agreements.medicalTreatment">
                     Sunt de acord cu tratamentul medical de urgență dacă este necesar
                   </a-checkbox>
                 </a-form-item>
 
-                <a-form-item name="agreements.photos">
+                <a-form-item :name="['agreements', 'photos']">
                   <a-checkbox v-model:checked="formData.agreements.photos">
                     Sunt de acord cu fotografia și utilizarea imaginilor copilului în scopuri educaționale
                   </a-checkbox>
                 </a-form-item>
 
-                <a-form-item name="agreements.terms">
+                <a-form-item :name="['agreements', 'terms']">
                   <a-checkbox v-model:checked="formData.agreements.terms">
                     Am citit și sunt de acord cu termenii și condițiile
                   </a-checkbox>
@@ -674,6 +711,14 @@ const resetForm = () => {
 }
 
 const handleSubmit = async (values: any) => {
+  // Validate form manually before submitting
+  try {
+    await formRef.value?.validate()
+  } catch (error) {
+    message.error('Completează toate câmpurile obligatorii!', 5)
+    return
+  }
+
   submitting.value = true
   try {
     // Format children data with birth dates
@@ -921,6 +966,17 @@ onMounted(async () => {
   .form-actions .ant-btn {
     width: 100%;
   }
+}
+
+/* SVG icons margin */
+:deep(.anticon) {
+  margin-top: -6px !important;
+  vertical-align: middle;
+}
+
+svg {
+  margin-top: -6px !important;
+  vertical-align: middle;
 }
 </style>
 
