@@ -84,7 +84,12 @@
                 </template>
               </template>
               <template v-if="column.key === 'parentName'">
-                {{ record.parent.firstName }} {{ record.parent.lastName }}
+                <template v-if="record.parent">
+                  {{ record.parent.firstName }} {{ record.parent.lastName }}
+                </template>
+                <template v-else>
+                  N/A
+                </template>
               </template>
               <template v-if="column.key === 'activityType'">
                 {{ getActivityTypeLabel(record.activityType) }}
@@ -167,10 +172,10 @@
                     <strong>Vârstă:</strong> {{ record.child.age }} ani
                   </div>
                 </template>
-                <div class="card-item">
+                <div class="card-item" v-if="record.parent">
                   <strong>Părinte:</strong> {{ record.parent.firstName }} {{ record.parent.lastName }}
                 </div>
-                <div class="card-item">
+                <div class="card-item" v-if="record.parent && record.parent.phone">
                   <strong>Telefon:</strong> 
                   <a :href="`tel:${record.parent.phone}`">{{ record.parent.phone }}</a>
                 </div>
@@ -231,15 +236,15 @@
                 {{ selectedRegistration.child.age }} ani
               </a-descriptions-item>
             </template>
-            <a-descriptions-item label="Părinte">
+            <a-descriptions-item v-if="selectedRegistration.parent" label="Părinte">
               {{ selectedRegistration.parent.firstName }} {{ selectedRegistration.parent.lastName }}
             </a-descriptions-item>
-            <a-descriptions-item label="Telefon">
+            <a-descriptions-item v-if="selectedRegistration.parent && selectedRegistration.parent.phone" label="Telefon">
               <a :href="`tel:${selectedRegistration.parent.phone}`" class="contact-link">
                 {{ selectedRegistration.parent.phone }}
               </a>
             </a-descriptions-item>
-            <a-descriptions-item label="Email">
+            <a-descriptions-item v-if="selectedRegistration.parent && selectedRegistration.parent.email" label="Email">
               <a :href="`mailto:${selectedRegistration.parent.email}`" class="contact-link">
                 {{ selectedRegistration.parent.email }}
               </a>
@@ -754,9 +759,9 @@ const exportToExcel = () => {
         ? `${reg.child.firstName} ${reg.child.lastName}`
         : 'N/A',
     'Number of Children': reg.children ? reg.children.length : (reg.child ? 1 : 0),
-    'Parent Name': `${reg.parent.firstName} ${reg.parent.lastName}`,
-    'Phone': reg.parent.phone,
-    'Email': reg.parent.email,
+    'Parent Name': reg.parent ? `${reg.parent.firstName || ''} ${reg.parent.lastName || ''}`.trim() : 'N/A',
+    'Phone': reg.parent?.phone || 'N/A',
+    'Email': reg.parent?.email || 'N/A',
     'Activity Type': reg.activityType,
     'Status': reg.status
   }))

@@ -145,9 +145,11 @@ const loadOffers = async () => {
 }
 
 const showAddModal = () => {
+  console.log('showAddModal called')
   isEditing.value = false
   resetForm()
   modalVisible.value = true
+  console.log('modalVisible set to:', modalVisible.value)
 }
 
 const editOffer = (offer: any) => {
