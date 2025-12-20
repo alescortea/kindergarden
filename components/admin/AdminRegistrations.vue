@@ -71,7 +71,17 @@
           >
             <template #bodyCell="{ column, record }">
               <template v-if="column.key === 'childName'">
-                {{ record.child.firstName }} {{ record.child.lastName }}
+                <template v-if="record.children && record.children.length > 0">
+                  <div v-for="(child, index) in record.children" :key="index">
+                    {{ child.firstName }} {{ child.lastName }}
+                  </div>
+                </template>
+                <template v-else-if="record.child">
+                  {{ record.child.firstName }} {{ record.child.lastName }}
+                </template>
+                <template v-else>
+                  N/A
+                </template>
               </template>
               <template v-if="column.key === 'parentName'">
                 {{ record.parent.firstName }} {{ record.parent.lastName }}
@@ -130,15 +140,33 @@
               class="registration-card"
             >
               <div class="card-header">
-                <h3>{{ record.child.firstName }} {{ record.child.lastName }}</h3>
+                <h3>
+                  <template v-if="record.children && record.children.length > 0">
+                    {{ record.children.length }} copil{{ record.children.length > 1 ? 'i' : '' }}
+                  </template>
+                  <template v-else-if="record.child">
+                    {{ record.child.firstName }} {{ record.child.lastName }}
+                  </template>
+                  <template v-else>
+                    N/A
+                  </template>
+                </h3>
                 <a-tag :color="getStatusColor(record.status)">
                   {{ getStatusLabel(record.status) }}
                 </a-tag>
               </div>
               <div class="card-content">
-                <div class="card-item">
-                  <strong>Vârstă:</strong> {{ record.child.age }} ani
-                </div>
+                <template v-if="record.children && record.children.length > 0">
+                  <div v-for="(child, index) in record.children" :key="index" class="card-item">
+                    <strong>Copil {{ index + 1 }}:</strong> {{ child.firstName }} {{ child.lastName }} 
+                    <span v-if="child.age">({{ child.age }} ani)</span>
+                  </div>
+                </template>
+                <template v-else-if="record.child">
+                  <div class="card-item">
+                    <strong>Vârstă:</strong> {{ record.child.age }} ani
+                  </div>
+                </template>
                 <div class="card-item">
                   <strong>Părinte:</strong> {{ record.parent.firstName }} {{ record.parent.lastName }}
                 </div>
@@ -189,12 +217,20 @@
         <!-- View Mode -->
         <template v-if="!isEditing">
           <a-descriptions :column="descriptionColumns" bordered>
-            <a-descriptions-item label="Copil">
-              {{ selectedRegistration.child.firstName }} {{ selectedRegistration.child.lastName }}
-            </a-descriptions-item>
-            <a-descriptions-item label="Vârstă">
-              {{ selectedRegistration.child.age }} ani
-            </a-descriptions-item>
+            <template v-if="selectedRegistration.children && selectedRegistration.children.length > 0">
+              <a-descriptions-item :label="`Copil ${index + 1}`" v-for="(child, index) in selectedRegistration.children" :key="index">
+                {{ child.firstName }} {{ child.lastName }}
+                <span v-if="child.age"> ({{ child.age }} ani)</span>
+              </a-descriptions-item>
+            </template>
+            <template v-else-if="selectedRegistration.child">
+              <a-descriptions-item label="Copil">
+                {{ selectedRegistration.child.firstName }} {{ selectedRegistration.child.lastName }}
+              </a-descriptions-item>
+              <a-descriptions-item label="Vârstă">
+                {{ selectedRegistration.child.age }} ani
+              </a-descriptions-item>
+            </template>
             <a-descriptions-item label="Părinte">
               {{ selectedRegistration.parent.firstName }} {{ selectedRegistration.parent.lastName }}
             </a-descriptions-item>
@@ -499,12 +535,28 @@ const filteredRegistrations = computed(() => {
 
   if (filters.value.search) {
     const search = filters.value.search.toLowerCase()
-    filtered = filtered.filter(r =>
-      r.child.firstName.toLowerCase().includes(search) ||
-      r.child.lastName.toLowerCase().includes(search) ||
-      r.parent.firstName.toLowerCase().includes(search) ||
-      r.parent.lastName.toLowerCase().includes(search)
-    )
+    filtered = filtered.filter(r => {
+      const parentMatch = r.parent?.firstName?.toLowerCase().includes(search) ||
+                         r.parent?.lastName?.toLowerCase().includes(search)
+      
+      if (parentMatch) return true
+      
+      // Check children array
+      if (r.children && r.children.length > 0) {
+        return r.children.some(child => 
+          child.firstName?.toLowerCase().includes(search) ||
+          child.lastName?.toLowerCase().includes(search)
+        )
+      }
+      
+      // Fallback to old structure
+      if (r.child) {
+        return r.child.firstName?.toLowerCase().includes(search) ||
+               r.child.lastName?.toLowerCase().includes(search)
+      }
+      
+      return false
+    })
   }
 
   return filtered
@@ -544,17 +596,18 @@ const viewRegistration = (registration: any) => {
 const editRegistration = (registration: any) => {
   selectedRegistration.value = { ...registration }
   // Initialize edit form with current values
+  // Support both old (child) and new (children) structure
+  const children = registration.children || (registration.child ? [registration.child] : [])
+  const firstChild = registration.child || (children && children.length > 0 ? children[0] : { firstName: '', lastName: '', age: 0 })
+  
   editForm.value = {
-    child: {
-      firstName: registration.child.firstName || '',
-      lastName: registration.child.lastName || '',
-      age: registration.child.age || 0
-    },
+    children: children,
+    child: firstChild, // Keep for backward compatibility
     parent: {
-      firstName: registration.parent.firstName || '',
-      lastName: registration.parent.lastName || '',
-      phone: registration.parent.phone || '',
-      email: registration.parent.email || ''
+      firstName: registration.parent?.firstName || '',
+      lastName: registration.parent?.lastName || '',
+      phone: registration.parent?.phone || '',
+      email: registration.parent?.email || ''
     },
     activityType: registration.activityType || '',
     status: registration.status || 'pending',
@@ -574,6 +627,7 @@ const handleModalCancel = () => {
   isEditing.value = false
   // Reset form
   editForm.value = {
+    children: [],
     child: { firstName: '', lastName: '', age: 0 },
     parent: { firstName: '', lastName: '', phone: '', email: '' },
     activityType: '',
@@ -612,14 +666,24 @@ const getPreferredDaysLabel = (days: string[]) => {
 const saveRegistration = async () => {
   if (!selectedRegistration.value) return
 
-  // Validation
-  if (!editForm.value.child.firstName || !editForm.value.child.lastName) {
-    message.warning('Te rog completează numele copilului')
-    return
-  }
-  if (!editForm.value.child.age || editForm.value.child.age < 1) {
-    message.warning('Te rog introdu o vârstă validă')
-    return
+  // Validation - support both children array and single child
+  if (editForm.value.children && editForm.value.children.length > 0) {
+    for (let i = 0; i < editForm.value.children.length; i++) {
+      const child = editForm.value.children[i]
+      if (!child.firstName || !child.lastName) {
+        message.warning(`Te rog completează numele copilului ${i + 1}`)
+        return
+      }
+    }
+  } else if (editForm.value.child) {
+    if (!editForm.value.child.firstName || !editForm.value.child.lastName) {
+      message.warning('Te rog completează numele copilului')
+      return
+    }
+    if (!editForm.value.child.age || editForm.value.child.age < 1) {
+      message.warning('Te rog introdu o vârstă validă')
+      return
+    }
   }
   if (!editForm.value.parent.firstName || !editForm.value.parent.lastName) {
     message.warning('Te rog completează numele părintelui')
@@ -637,7 +701,9 @@ const saveRegistration = async () => {
   saving.value = true
   try {
     const updateData: any = {
-      child: editForm.value.child,
+      // Support both structures
+      children: editForm.value.children || (editForm.value.child ? [editForm.value.child] : []),
+      child: editForm.value.child, // Keep for backward compatibility
       parent: editForm.value.parent,
       activityType: editForm.value.activityType,
       status: editForm.value.status
@@ -682,8 +748,12 @@ const deleteRegistration = async (id: string) => {
 
 const exportToExcel = () => {
   const data = filteredRegistrations.value.map(reg => ({
-    'Child Name': `${reg.child.firstName} ${reg.child.lastName}`,
-    'Age': reg.child.age,
+    'Children': reg.children && reg.children.length > 0 
+      ? reg.children.map((c: any, i: number) => `${i + 1}. ${c.firstName} ${c.lastName} (${c.age || 'N/A'} ani)`).join('; ')
+      : reg.child 
+        ? `${reg.child.firstName} ${reg.child.lastName}`
+        : 'N/A',
+    'Number of Children': reg.children ? reg.children.length : (reg.child ? 1 : 0),
     'Parent Name': `${reg.parent.firstName} ${reg.parent.lastName}`,
     'Phone': reg.parent.phone,
     'Email': reg.parent.email,

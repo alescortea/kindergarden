@@ -126,38 +126,70 @@
                 </template>
               </div>
 
-              <!-- Child Information -->
+              <!-- Number of Children -->
               <div class="form-section">
-                <h3>👶 Informații Copil</h3>
+                <h3>👶 Informații Copii</h3>
+                <a-form-item label="Număr copii" name="numberOfChildren">
+                  <a-select
+                    v-model:value="formData.numberOfChildren"
+                    placeholder="Selectați numărul de copii"
+                    style="width: 100%"
+                    @change="updateChildrenArray"
+                  >
+                    <a-select-option :value="1">1</a-select-option>
+                    <a-select-option :value="2">2</a-select-option>
+                    <a-select-option :value="3">3</a-select-option>
+                    <a-select-option :value="4">4</a-select-option>
+                    <a-select-option :value="5">5</a-select-option>
+                  </a-select>
+                </a-form-item>
+              </div>
+
+              <!-- Children Information -->
+              <div 
+                v-for="(child, index) in formData.children" 
+                :key="`child-${index}-${formData.children.length}`"
+                class="form-section child-section"
+              >
+                <div class="child-divider">
+                  <span>- Copil {{ index + 1 }} -</span>
+                </div>
+                
                 <a-row :gutter="16">
                   <a-col :xs="24" :sm="12">
-                    <a-form-item label="Prenume" name="child.firstName">
-                      <a-input v-model:value="formData.child.firstName" placeholder="Introduceți prenumele" />
+                    <a-form-item :label="'Prenume' + (index === 0 ? '*' : '')" :name="['children', index, 'firstName']">
+                      <a-input 
+                        v-model:value="child.firstName" 
+                        :placeholder="'Introduceți prenumele copilului ' + (index + 1)" 
+                      />
                     </a-form-item>
                   </a-col>
                   <a-col :xs="24" :sm="12">
-                    <a-form-item label="Nume" name="child.lastName">
-                      <a-input v-model:value="formData.child.lastName" placeholder="Introduceți numele" />
+                    <a-form-item :label="'Nume' + (index === 0 ? '*' : '')" :name="['children', index, 'lastName']">
+                      <a-input 
+                        v-model:value="child.lastName" 
+                        :placeholder="'Introduceți numele copilului ' + (index + 1)" 
+                      />
                     </a-form-item>
                   </a-col>
                 </a-row>
 
                 <a-row :gutter="16">
                   <a-col :xs="24" :sm="8">
-                    <a-form-item label="Data Nașterii" name="child.birthDate">
+                    <a-form-item :label="'Data Nașterii' + (index === 0 ? '*' : '')" :name="['children', index, 'birthDate']">
                       <a-date-picker
-                        v-model:value="formData.child.birthDate"
+                        v-model:value="child.birthDate"
                         style="width: 100%"
                         format="DD/MM/YYYY"
-                        placeholder="Selectați data"
-                        @change="calculateAge"
+                        placeholder="dd.mm.yyyy"
+                        @change="() => calculateAge(index)"
                       />
                     </a-form-item>
                   </a-col>
                   <a-col :xs="24" :sm="8">
-                    <a-form-item label="Vârstă" name="child.age">
+                    <a-form-item :label="'Vârstă' + (index === 0 ? '*' : '')" :name="['children', index, 'age']">
                       <a-input-number
-                        v-model:value="formData.child.age"
+                        v-model:value="child.age"
                         style="width: 100%"
                         :min="2"
                         :max="18"
@@ -166,8 +198,8 @@
                     </a-form-item>
                   </a-col>
                   <a-col :xs="24" :sm="8">
-                    <a-form-item label="Gen" name="child.gender">
-                      <a-select v-model:value="formData.child.gender" placeholder="Selectați genul">
+                    <a-form-item label="Gen" :name="['children', index, 'gender']">
+                      <a-select v-model:value="child.gender" placeholder="Selectați genul">
                         <a-select-option value="male">Băiat</a-select-option>
                         <a-select-option value="female">Fată</a-select-option>
                       </a-select>
@@ -175,13 +207,61 @@
                   </a-col>
                 </a-row>
 
-                <a-form-item label="CNP (Opțional)" name="child.cnp">
+                <a-form-item label="Alte informații" :name="['children', index, 'otherInfo']">
                   <a-input
-                    v-model:value="formData.child.cnp"
-                    placeholder="Introduceți CNP-ul"
-                    :maxlength="13"
+                    v-model:value="child.otherInfo"
+                    placeholder="Informații suplimentare despre copil"
                   />
                 </a-form-item>
+
+                <!-- Ski Level (for ski activities) -->
+                <template v-if="formData.activityType === 'ski'">
+                  <a-form-item label="Nivel de schi" :name="['children', index, 'skiLevel']">
+                    <a-radio-group v-model:value="child.skiLevel">
+                      <a-radio value="class1">Clasa 1 (nu a schiat niciodată)</a-radio>
+                      <a-radio value="class2">Clasa 2 (a schiat puțin)</a-radio>
+                      <a-radio value="class3">Clasa 3 (vrea perfecționare)</a-radio>
+                      <a-radio value="class4">Clasa 4 (carving)</a-radio>
+                    </a-radio-group>
+                  </a-form-item>
+
+                  <a-form-item label="Echipament de schi" :name="['children', index, 'skiEquipment']">
+                    <p style="margin-bottom: 8px; color: #666;">Vă rugăm să selectați echipamentul de schi existent.</p>
+                    <a-checkbox-group v-model:value="child.skiEquipment">
+                      <a-row>
+                        <a-col :span="12">
+                          <a-checkbox value="helmet">Cască schi</a-checkbox>
+                        </a-col>
+                        <a-col :span="12">
+                          <a-checkbox value="goggles">Ochelari</a-checkbox>
+                        </a-col>
+                        <a-col :span="12">
+                          <a-checkbox value="skis">Schiuri</a-checkbox>
+                        </a-col>
+                        <a-col :span="12">
+                          <a-checkbox value="poles">Bețe</a-checkbox>
+                        </a-col>
+                        <a-col :span="12">
+                          <a-checkbox value="boots">Clăpari</a-checkbox>
+                        </a-col>
+                        <a-col :span="12">
+                          <a-checkbox value="gloves">Mănuși</a-checkbox>
+                        </a-col>
+                      </a-row>
+                    </a-checkbox-group>
+                  </a-form-item>
+                </template>
+
+                <!-- Swimming Level (for swimming activities) -->
+                <template v-if="formData.activityType === 'swimming'">
+                  <a-form-item label="Nivel de înot" :name="['children', index, 'swimmingLevel']">
+                    <a-radio-group v-model:value="child.swimmingLevel">
+                      <a-radio value="beginner">Începător</a-radio>
+                      <a-radio value="intermediate">Intermediar</a-radio>
+                      <a-radio value="advanced">Avansat</a-radio>
+                    </a-radio-group>
+                  </a-form-item>
+                </template>
               </div>
 
               <!-- Parent Information -->
@@ -227,37 +307,44 @@
                 </a-form-item>
               </div>
 
-              <!-- Medical Information -->
-              <div class="form-section">
-                <h3>🏥 Informații Medicale</h3>
+              <!-- Medical Information for each child -->
+              <div 
+                v-for="(child, index) in formData.children" 
+                :key="`medical-${index}-${formData.children.length}`"
+                class="form-section medical-section"
+                v-if="formData.numberOfChildren > 0"
+              >
+                <div class="child-divider">
+                  <span>🏥 Informații Medicale - Copil {{ index + 1 }}</span>
+                </div>
                 
-                <a-form-item label="Alergii Cunoscute" name="medical.allergies">
+                <a-form-item :label="'Alergii Cunoscute'" :name="['children', index, 'medical', 'allergies']">
                   <a-textarea
-                    v-model:value="formData.medical.allergies"
+                    v-model:value="child.medical.allergies"
                     placeholder="Specificați orice alergii (alimente, medicamente, etc.). Lăsați gol dacă nu există."
                     :rows="3"
                   />
                 </a-form-item>
 
-                <a-form-item label="Afecțiuni Medicale" name="medical.conditions">
+                <a-form-item :label="'Afecțiuni Medicale'" :name="['children', index, 'medical', 'conditions']">
                   <a-textarea
-                    v-model:value="formData.medical.conditions"
+                    v-model:value="child.medical.conditions"
                     placeholder="Specificați orice afecțiuni medicale sau tratamente în curs. Lăsați gol dacă nu există."
                     :rows="3"
                   />
                 </a-form-item>
 
-                <a-form-item label="Medicamente Necesare" name="medical.medications">
+                <a-form-item :label="'Medicamente Necesare'" :name="['children', index, 'medical', 'medications']">
                   <a-textarea
-                    v-model:value="formData.medical.medications"
+                    v-model:value="child.medical.medications"
                     placeholder="Specificați medicamentele pe care copilul trebuie să le ia în timpul activității. Lăsați gol dacă nu există."
                     :rows="2"
                   />
                 </a-form-item>
 
-                <a-form-item label="Note Speciale" name="medical.notes">
+                <a-form-item :label="'Note Speciale'" :name="['children', index, 'medical', 'notes']">
                   <a-textarea
-                    v-model:value="formData.medical.notes"
+                    v-model:value="child.medical.notes"
                     placeholder="Orice note speciale despre copil (comportament, preferințe, restricții, etc.)"
                     :rows="3"
                   />
@@ -308,7 +395,7 @@
             <a-card title="ℹ️ Informații Importante" class="info-card">
               <div class="info-item">
                 <h4>📅 Procesul de Înscriere</h4>
-                <p>După trimiterea formularului, veți primi un email de confirmare în termen de 24 de ore.</p>
+                <p>După trimiterea formularului, veți fi contactat în cel mai scurt timp.</p>
               </div>
 
               <div class="info-item">
@@ -329,6 +416,7 @@
 
 <script setup lang="ts">
 import { ReloadOutlined, SendOutlined, ArrowLeftOutlined } from '@ant-design/icons-vue'
+import { message } from 'ant-design-vue'
 import dayjs from 'dayjs'
 
 const route = useRoute()
@@ -356,26 +444,33 @@ const availableActivityTypes = ref({
 const formData = ref({
   activityType: '',
   activityId: null as string | null,
-  child: {
-    firstName: '',
-    lastName: '',
-    birthDate: null as any,
-    age: null as number | null,
-    gender: '',
-    cnp: ''
-  },
+  numberOfChildren: 1,
+  children: [
+    {
+      firstName: '',
+      lastName: '',
+      birthDate: null as any,
+      age: null as number | null,
+      gender: '',
+      cnp: '',
+      otherInfo: '',
+      skiLevel: '',
+      skiEquipment: [] as string[],
+      swimmingLevel: '',
+      medical: {
+        allergies: '',
+        conditions: '',
+        medications: '',
+        notes: ''
+      }
+    }
+  ],
   parent: {
     firstName: '',
     lastName: '',
     phone: '',
     email: '',
     relationship: ''
-  },
-  medical: {
-    allergies: '',
-    conditions: '',
-    medications: '',
-    notes: ''
   },
   agreements: {
     medicalTreatment: false,
@@ -390,6 +485,42 @@ const formData = ref({
     startDate: null as any
   }
 })
+
+const updateChildrenArray = () => {
+  const newCount = formData.value.numberOfChildren || 1
+  const currentCount = formData.value.children.length
+
+  console.log('Updating children array:', { currentCount, newCount })
+
+  if (newCount > currentCount) {
+    // Add new children
+    for (let i = currentCount; i < newCount; i++) {
+      formData.value.children.push({
+        firstName: '',
+        lastName: '',
+        birthDate: null,
+        age: null,
+        gender: '',
+        cnp: '',
+        otherInfo: '',
+        skiLevel: '',
+        skiEquipment: [],
+        swimmingLevel: '',
+        medical: {
+          allergies: '',
+          conditions: '',
+          medications: '',
+          notes: ''
+        }
+      })
+    }
+  } else if (newCount < currentCount) {
+    // Remove extra children
+    formData.value.children = formData.value.children.slice(0, newCount)
+  }
+  
+  console.log('Children array after update:', formData.value.children.length)
+}
 
 const loadActivities = async () => {
   if (!formData.value.activityType) {
@@ -486,11 +617,11 @@ const getActivityName = (activity: any) => {
   return activity.id || 'Activitate Necunoscută'
 }
 
-const calculateAge = () => {
-  if (formData.value.child.birthDate) {
-    const birthDate = dayjs(formData.value.child.birthDate)
+const calculateAge = (index: number) => {
+  if (formData.value.children[index]?.birthDate) {
+    const birthDate = dayjs(formData.value.children[index].birthDate)
     const age = dayjs().diff(birthDate, 'year')
-    formData.value.child.age = age
+    formData.value.children[index].age = age
   }
 }
 
@@ -499,26 +630,33 @@ const resetForm = () => {
   formData.value = {
     activityType: '',
     activityId: null,
-    child: {
-      firstName: '',
-      lastName: '',
-      birthDate: null,
-      age: null,
-      gender: '',
-      cnp: ''
-    },
+    numberOfChildren: 1,
+    children: [
+      {
+        firstName: '',
+        lastName: '',
+        birthDate: null,
+        age: null,
+        gender: '',
+        cnp: '',
+        otherInfo: '',
+        skiLevel: '',
+        skiEquipment: [],
+        swimmingLevel: '',
+        medical: {
+          allergies: '',
+          conditions: '',
+          medications: '',
+          notes: ''
+        }
+      }
+    ],
     parent: {
       firstName: '',
       lastName: '',
       phone: '',
       email: '',
       relationship: ''
-    },
-    medical: {
-      allergies: '',
-      conditions: '',
-      medications: '',
-      notes: ''
     },
     agreements: {
       medicalTreatment: false,
@@ -538,14 +676,17 @@ const resetForm = () => {
 const handleSubmit = async (values: any) => {
   submitting.value = true
   try {
+    // Format children data with birth dates
+    const childrenData = formData.value.children.map(child => ({
+      ...child,
+      birthDate: child.birthDate
+        ? dayjs(child.birthDate).format('YYYY-MM-DD')
+        : null
+    }))
+
     const registrationData: any = {
       ...formData.value,
-      child: {
-        ...formData.value.child,
-        birthDate: formData.value.child.birthDate
-          ? dayjs(formData.value.child.birthDate).format('YYYY-MM-DD')
-          : null
-      }
+      children: childrenData
     }
 
     // For afterschool, include the afterschool data
@@ -566,13 +707,23 @@ const handleSubmit = async (values: any) => {
 
     // Show success message
     // In a real app, you'd use a notification system
-    alert('Înscrierea a fost trimisă cu succes! Veți primi un email de confirmare.')
+    alert('Înscrierea a fost trimisă cu succes! Veți fi contactat în cel mai scurt timp.')
     
     resetForm()
     router.push('/')
   } catch (error: any) {
     console.error('Registration error:', error)
-    alert(error.data?.message || 'Trimiterea înscrierii a eșuat. Vă rugăm să încercați din nou.')
+    
+    // Display simple validation error message
+    if (error.data?.errors && Array.isArray(error.data.errors) && error.data.errors.length > 0) {
+      message.error('Completează toate câmpurile!', 5)
+    } else if (error.data?.formattedErrors && Array.isArray(error.data.formattedErrors) && error.data.formattedErrors.length > 0) {
+      message.error('Completează toate câmpurile!', 5)
+    } else if (error.message && error.message.includes('validare')) {
+      message.error('Completează toate câmpurile!', 5)
+    } else {
+      message.error('Trimiterea înscrierii a eșuat. Vă rugăm să încercați din nou.', 5)
+    }
   } finally {
     submitting.value = false
   }
@@ -636,6 +787,33 @@ onMounted(async () => {
   background: #fafafa;
   border-radius: 12px;
   border-left: 4px solid #667eea;
+}
+
+.child-section {
+  margin-top: 24px;
+  border-left: 4px solid #48c9b0;
+}
+
+.medical-section {
+  border-left: 4px solid #f39c12;
+}
+
+.child-divider {
+  text-align: center;
+  margin: -24px -24px 24px -24px;
+  padding: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-weight: 600;
+  border-radius: 12px 12px 0 0;
+}
+
+.child-section .child-divider {
+  background: linear-gradient(135deg, #48c9b0 0%, #1abc9c 100%);
+}
+
+.medical-section .child-divider {
+  background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
 }
 
 .form-section h3 {

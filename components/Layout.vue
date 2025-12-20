@@ -198,7 +198,7 @@ import {
   CloseOutlined,
   ContactsOutlined
 } from '@ant-design/icons-vue'
-import logoImage from '~/assets/photo/logo.png'
+import logoImage from '~/assets/photo/Roseli_logo.png'
 import anpcSalRoImage from '~/assets/photo/apnc_sal_ro.png'
 import anpcSalEuImage from '~/assets/photo/apnc_sol_eu.png'
 
@@ -283,10 +283,18 @@ const handleMobileMenuClick = ({ key }: { key: string }) => {
   height: 40px;
 }
 
+.logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: -10px;
+}
+
 .logo a {
   text-decoration: none;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
 }
 
@@ -294,6 +302,8 @@ const handleMobileMenuClick = ({ key }: { key: string }) => {
   height: 50px;
   width: auto;
   object-fit: contain;
+  display: block;
+  margin: 0 auto;
 }
 
 .logo-text {
@@ -405,6 +415,15 @@ const handleMobileMenuClick = ({ key }: { key: string }) => {
   height: 50px;
   width: auto;
   object-fit: contain;
+}
+
+/* SVG icons margin */
+:deep(.anticon) {
+  margin-top: -6px;
+}
+
+svg {
+  margin-top: -6px;
 }
 
 @media (max-width: 992px) {

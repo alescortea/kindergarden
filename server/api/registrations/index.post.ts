@@ -1,41 +1,50 @@
 import { createDocument } from '~/composables/useFirestore'
 import { z } from 'zod'
 
-const registrationSchema = z.object({
-  activityType: z.enum(['camp', 'hike', 'trip', 'ski', 'swimming', 'afterschool', 'school-offer']),
-  activityId: z.string(),
-  child: z.object({
-    firstName: z.string(),
-    lastName: z.string(),
-    birthDate: z.string(),
-    age: z.number(),
-    gender: z.enum(['male', 'female']),
-    cnp: z.string().optional(),
-  }),
-  parent: z.object({
-    firstName: z.string(),
-    lastName: z.string(),
-    phone: z.string(),
-    email: z.string().email(),
-    relationship: z.string(),
-  }),
+const childSchema = z.object({
+  firstName: z.string().min(1, 'Prenumele este obligatoriu'),
+  lastName: z.string().min(1, 'Numele este obligatoriu'),
+  birthDate: z.string().nullable().optional(),
+  age: z.number().nullable().optional(),
+  gender: z.enum(['male', 'female']).optional(),
+  cnp: z.string().optional(),
+  otherInfo: z.string().optional(),
+  skiLevel: z.string().optional(),
+  skiEquipment: z.array(z.string()).optional(),
+  swimmingLevel: z.string().optional(),
   medical: z.object({
     allergies: z.string().optional(),
     conditions: z.string().optional(),
     medications: z.string().optional(),
     notes: z.string().optional(),
+  }).optional(),
+})
+
+const registrationSchema = z.object({
+  activityType: z.enum(['camp', 'hike', 'trip', 'ski', 'swimming', 'afterschool', 'school-offer'], {
+    errorMap: () => ({ message: 'Tipul de activitate este obligatoriu' })
+  }),
+  activityId: z.string().min(1, 'Activitatea este obligatorie'),
+  numberOfChildren: z.number().int().min(1).max(5).optional(),
+  children: z.array(childSchema).min(1, 'Trebuie să înregistrați cel puțin un copil'),
+  parent: z.object({
+    firstName: z.string().min(1, 'Prenumele părintelui este obligatoriu'),
+    lastName: z.string().min(1, 'Numele părintelui este obligatoriu'),
+    phone: z.string().min(1, 'Telefonul este obligatoriu'),
+    email: z.string().email('Email invalid').min(1, 'Email-ul este obligatoriu'),
+    relationship: z.string().min(1, 'Relația este obligatorie'),
   }),
   agreements: z.object({
     medicalTreatment: z.boolean(),
     photos: z.boolean(),
-    transport: z.boolean(),
+    transport: z.boolean().optional(),
     terms: z.boolean(),
   }),
   afterschool: z.object({
     schedule: z.string().optional(),
     daysPerWeek: z.string().optional(),
     preferredDays: z.array(z.string()).optional(),
-    startDate: z.string().optional(),
+    startDate: z.string().nullable().optional(),
   }).optional(),
 })
 
@@ -58,16 +67,27 @@ export default defineEventHandler(async (event) => {
     }
   } catch (error) {
     if (error instanceof z.ZodError) {
+      // Format validation errors for better user experience
+      const errorMessages = error.errors.map(err => {
+        const path = err.path.join('.')
+        return `${path}: ${err.message}`
+      })
+      
       throw createError({
         statusCode: 400,
-        statusMessage: 'Validation error',
-        data: error.errors
+        statusMessage: 'Eroare de validare',
+        message: errorMessages.join('; '),
+        data: {
+          errors: error.errors,
+          formattedErrors: errorMessages
+        }
       })
     }
     
     throw createError({
       statusCode: 500,
-      statusMessage: 'Failed to create registration'
+      statusMessage: 'Eroare la crearea înscrierii',
+      message: 'A apărut o eroare. Vă rugăm să încercați din nou.'
     })
   }
 })

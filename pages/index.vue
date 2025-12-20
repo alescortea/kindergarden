@@ -29,8 +29,7 @@
         <a-col :xs="24" :lg="12">
           <div class="hero-image">
             <div class="image-placeholder">
-              <TrophyOutlined />
-              <p>Sport & Aventură</p>
+              <img :src="logoImage" alt="Roseli Logo" class="hero-logo-image" />
             </div>
           </div>
         </a-col>
@@ -170,7 +169,7 @@ import {
   PictureOutlined,
   EyeOutlined,
 } from '@ant-design/icons-vue'
-import logoImage from '~/assets/photo/logo.png.jpeg'
+import logoImage from '~/assets/photo/Roseli_logo.png'
 import swimmingBannerImage from '~/assets/photo/banner_swim.jpeg'
 import beachImage from '~/assets/photo/beach.jpg'
 import boatImage from '~/assets/photo/boat.jpg'
@@ -330,6 +329,41 @@ const viewImage = (image: { src: string, alt: string }) => {
   justify-content: center;
   align-items: center;
   padding: 20px;
+}
+
+.image-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: white;
+  text-align: center;
+}
+
+.hero-logo-image {
+  height: 200px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  margin: -20px auto 0 auto;
+}
+
+/* SVG icons margin */
+:deep(.anticon) {
+  margin-top: -6px;
+}
+
+svg {
+  margin-top: -6px;
+}
+
+.image-placeholder p {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  color: white;
+  opacity: 0.95;
 }
 
 .hero-logo-title {
