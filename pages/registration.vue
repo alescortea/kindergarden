@@ -646,9 +646,14 @@ const getActivityName = (activity: any) => {
   if (activity.title) {
     return activity.title
   }
-  // Fallback
+  // Fallback - translate type to Romanian
   if (activity.type) {
-    return `Lecție ${activity.type}`
+    const typeLabels: Record<string, string> = {
+      'individual': 'Individuală',
+      'group': 'Grup'
+    }
+    const translatedType = typeLabels[activity.type?.toLowerCase()] || activity.type
+    return `Lecție ${translatedType}`
   }
   // Last resort - return ID if nothing else available
   return activity.id || 'Activitate Necunoscută'

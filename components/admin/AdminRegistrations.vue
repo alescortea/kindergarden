@@ -67,28 +67,107 @@
               showTotal: (total, range) => `${range[0]}-${range[1]} din ${total} înscrieri`
             }"
             :scroll="{ x: 'max-content' }"
-            row-key="id"
+            :row-key="(record) => String(record.id)"
+            :default-expand-all-rows="false"
+            :expandable="{
+              rowExpandable: (record) => {
+                // Only allow expansion for registrations with multiple children
+                // Make sure this is a parent registration, not a child
+                const canExpand = !!(record.id && record.parent && record.children && Array.isArray(record.children) && record.children.length > 1)
+                return canExpand
+              },
+              expandedRowKeys: expandedRowKeys,
+              onExpand: (expanded, record) => {
+                if (expanded) {
+                  // Only allow one row to be expanded at a time
+                  expandedRowKeys.value = [String(record.id)]
+                } else {
+                  expandedRowKeys.value = []
+                }
+              },
+              // Prevent nested expansion - children should not be expandable
+              childrenColumnName: undefined
+            }"
           >
+            <template #expandedRowRender="{ record }">
+              <div v-if="record.children && Array.isArray(record.children) && record.children.length > 1" style="padding: 16px; background: #fafafa; border-top: 1px solid #e8e8e8; display: block;">
+                <h4 style="margin-bottom: 16px; color: #1890ff;">Detalii Copii</h4>
+                <div v-for="(child, index) in record.children" :key="`child-${record.id}-${index}`" style="margin-bottom: 16px; padding: 12px; background: white; border-radius: 8px; border: 1px solid #e8e8e8; display: block;">
+                  <div style="font-weight: bold; margin-bottom: 8px; color: #1890ff;">Copil {{ index + 1 }}</div>
+                  <div style="margin-bottom: 4px;"><strong>Nume:</strong> {{ (child.firstName || '').trim() }} {{ (child.lastName || '').trim() }}</div>
+                  <div style="margin-bottom: 4px;" v-if="child.age"><strong>Vârstă:</strong> {{ child.age }} ani</div>
+                  <div style="margin-bottom: 4px;" v-if="child.birthDate"><strong>Data Nașterii:</strong> {{ child.birthDate }}</div>
+                  <div style="margin-bottom: 4px;" v-if="child.gender"><strong>Gen:</strong> {{ child.gender === 'male' ? 'Băiat' : child.gender === 'female' ? 'Fată' : 'N/A' }}</div>
+                  <div style="margin-bottom: 4px;" v-if="child.skiLevel"><strong>Nivel Ski:</strong> {{ child.skiLevel }}</div>
+                  <div style="margin-bottom: 4px;" v-if="child.skiEquipment && child.skiEquipment.length > 0"><strong>Echipament Ski:</strong> {{ child.skiEquipment.join(', ') }}</div>
+                  <div style="margin-bottom: 4px;" v-if="child.swimmingLevel"><strong>Nivel Înot:</strong> {{ child.swimmingLevel }}</div>
+                  <div style="margin-bottom: 4px;" v-if="child.medical?.allergies"><strong>Alergii:</strong> {{ child.medical.allergies }}</div>
+                  <div style="margin-bottom: 4px;" v-if="child.medical?.conditions"><strong>Afecțiuni Medicale:</strong> {{ child.medical.conditions }}</div>
+                  <div style="margin-bottom: 4px;" v-if="child.medical?.medications"><strong>Medicamente:</strong> {{ child.medical.medications }}</div>
+                  <div style="margin-bottom: 4px;" v-if="child.otherInfo"><strong>Alte Informații:</strong> {{ child.otherInfo }}</div>
+                </div>
+              </div>
+            </template>
             <template #bodyCell="{ column, record }">
               <template v-if="column.key === 'childName'">
                 <template v-if="record.children && record.children.length > 0">
-                  <div v-for="(child, index) in record.children" :key="index">
-                    {{ child.firstName }} {{ child.lastName }}
-                  </div>
+                  <template v-if="record.children.length === 1">
+                    <template v-if="record.children[0].firstName || record.children[0].lastName">
+                      {{ (record.children[0].firstName || '').trim() }} {{ (record.children[0].lastName || '').trim() }}
+                    </template>
+                    <template v-else>
+                      -
+                    </template>
+                  </template>
+                  <template v-else>
+                    <a-tag color="blue">{{ record.children.length }} copii</a-tag>
+                  </template>
                 </template>
-                <template v-else-if="record.child">
-                  {{ record.child.firstName }} {{ record.child.lastName }}
+                <template v-else-if="record.child && ((record.child.firstName && record.child.firstName.trim()) || (record.child.lastName && record.child.lastName.trim()))">
+                  {{ (record.child.firstName || '').trim() }} {{ (record.child.lastName || '').trim() }}
                 </template>
                 <template v-else>
-                  N/A
+                  -
+                </template>
+              </template>
+              <template v-if="column.key === 'age'">
+                <template v-if="record.children && record.children.length > 0">
+                  <template v-if="record.children.length === 1">
+                    <template v-if="record.children[0].age">
+                      {{ record.children[0].age }} ani
+                    </template>
+                    <template v-else>
+                      -
+                    </template>
+                  </template>
+                  <template v-else>
+                    <!-- Pentru mai mulți copii, vârsta apare doar în secțiunea expandată - nu se afișează nimic -->
+                  </template>
+                </template>
+                <template v-else-if="record.child && record.child.age">
+                  {{ record.child.age }} ani
+                </template>
+                <template v-else>
+                  -
                 </template>
               </template>
               <template v-if="column.key === 'parentName'">
-                <template v-if="record.parent">
-                  {{ record.parent.firstName }} {{ record.parent.lastName }}
+                <template v-if="record.parent && ((record.parent.firstName && record.parent.firstName.trim()) || (record.parent.lastName && record.parent.lastName.trim()))">
+                  {{ (record.parent.firstName || '').trim() }} {{ (record.parent.lastName || '').trim() }}
+                  <span v-if="record.parent.relationship" style="color: #8c8c8c; font-size: 12px; margin-left: 4px;">
+                    ({{ getRelationshipLabel(record.parent.relationship) }})
+                  </span>
                 </template>
                 <template v-else>
-                  N/A
+                  -
+                </template>
+              </template>
+              <template v-if="column.key === 'phone'">
+                <template v-if="record.parent && record.parent.phone">
+                  {{ record.parent.phone }}
+                </template>
+                <template v-else>
+                  -
                 </template>
               </template>
               <template v-if="column.key === 'activityType'">
@@ -223,16 +302,50 @@
         <template v-if="!isEditing">
           <a-descriptions :column="descriptionColumns" bordered>
             <template v-if="selectedRegistration.children && selectedRegistration.children.length > 0">
-              <a-descriptions-item :label="`Copil ${index + 1}`" v-for="(child, index) in selectedRegistration.children" :key="index">
-                {{ child.firstName }} {{ child.lastName }}
-                <span v-if="child.age"> ({{ child.age }} ani)</span>
-              </a-descriptions-item>
+              <template v-for="(child, index) in selectedRegistration.children" :key="index">
+                <a-descriptions-item :label="`Copil ${index + 1} - Nume Complet`">
+                  {{ child.firstName }} {{ child.lastName }}
+                </a-descriptions-item>
+                <a-descriptions-item :label="`Copil ${index + 1} - Vârstă`" v-if="child.age">
+                  {{ child.age }} ani
+                </a-descriptions-item>
+                <a-descriptions-item :label="`Copil ${index + 1} - Data Nașterii`" v-if="child.birthDate">
+                  {{ child.birthDate }}
+                </a-descriptions-item>
+                <a-descriptions-item :label="`Copil ${index + 1} - Gen`" v-if="child.gender">
+                  {{ child.gender === 'male' ? 'Băiat' : 'Fată' }}
+                </a-descriptions-item>
+                <a-descriptions-item :label="`Copil ${index + 1} - Nivel Ski`" v-if="child.skiLevel">
+                  {{ child.skiLevel }}
+                </a-descriptions-item>
+                <a-descriptions-item :label="`Copil ${index + 1} - Echipament Ski`" v-if="child.skiEquipment && child.skiEquipment.length > 0">
+                  {{ child.skiEquipment.join(', ') }}
+                </a-descriptions-item>
+                <a-descriptions-item :label="`Copil ${index + 1} - Nivel Înot`" v-if="child.swimmingLevel">
+                  {{ child.swimmingLevel }}
+                </a-descriptions-item>
+                <a-descriptions-item :label="`Copil ${index + 1} - Alergii`" v-if="child.medical?.allergies">
+                  {{ child.medical.allergies }}
+                </a-descriptions-item>
+                <a-descriptions-item :label="`Copil ${index + 1} - Afecțiuni Medicale`" v-if="child.medical?.conditions">
+                  {{ child.medical.conditions }}
+                </a-descriptions-item>
+                <a-descriptions-item :label="`Copil ${index + 1} - Medicamente`" v-if="child.medical?.medications">
+                  {{ child.medical.medications }}
+                </a-descriptions-item>
+                <a-descriptions-item :label="`Copil ${index + 1} - Note`" v-if="child.medical?.notes">
+                  {{ child.medical.notes }}
+                </a-descriptions-item>
+                <a-descriptions-item :label="`Copil ${index + 1} - Alte Informații`" v-if="child.otherInfo">
+                  {{ child.otherInfo }}
+                </a-descriptions-item>
+              </template>
             </template>
             <template v-else-if="selectedRegistration.child">
-              <a-descriptions-item label="Copil">
+              <a-descriptions-item label="Copil - Nume Complet">
                 {{ selectedRegistration.child.firstName }} {{ selectedRegistration.child.lastName }}
               </a-descriptions-item>
-              <a-descriptions-item label="Vârstă">
+              <a-descriptions-item label="Copil - Vârstă" v-if="selectedRegistration.child.age">
                 {{ selectedRegistration.child.age }} ani
               </a-descriptions-item>
             </template>
@@ -283,30 +396,64 @@
         <!-- Edit Mode -->
         <template v-else>
           <a-form :model="editForm" layout="vertical" @submit.prevent="saveRegistration">
-            <a-row :gutter="16">
-              <a-col :xs="24" :sm="12">
-                <a-form-item label="Prenume Copil" required>
-                  <a-input v-model:value="editForm.child.firstName" />
-                </a-form-item>
-              </a-col>
-              <a-col :xs="24" :sm="12">
-                <a-form-item label="Nume Copil" required>
-                  <a-input v-model:value="editForm.child.lastName" />
-                </a-form-item>
-              </a-col>
-            </a-row>
-            <a-row :gutter="16">
-              <a-col :xs="24" :sm="12">
-                <a-form-item label="Vârstă" required>
-                  <a-input-number 
-                    v-model:value="editForm.child.age" 
-                    :min="1" 
-                    :max="18" 
-                    style="width: 100%"
-                  />
-                </a-form-item>
-              </a-col>
-            </a-row>
+            <!-- Children Information -->
+            <template v-if="editForm.children && editForm.children.length > 0">
+              <a-divider>Informații Copii</a-divider>
+              <div v-for="(child, index) in editForm.children" :key="index" style="margin-bottom: 24px; padding: 16px; background: #f5f5f5; border-radius: 8px;">
+                <h4 style="margin-bottom: 16px;">Copil {{ index + 1 }}</h4>
+                <a-row :gutter="16">
+                  <a-col :xs="24" :sm="12">
+                    <a-form-item :label="`Prenume Copil ${index + 1}`" required>
+                      <a-input v-model:value="child.firstName" />
+                    </a-form-item>
+                  </a-col>
+                  <a-col :xs="24" :sm="12">
+                    <a-form-item :label="`Nume Copil ${index + 1}`" required>
+                      <a-input v-model:value="child.lastName" />
+                    </a-form-item>
+                  </a-col>
+                </a-row>
+                <a-row :gutter="16">
+                  <a-col :xs="24" :sm="12">
+                    <a-form-item :label="`Vârstă Copil ${index + 1}`" required>
+                      <a-input-number 
+                        v-model:value="child.age" 
+                        :min="1" 
+                        :max="18" 
+                        style="width: 100%"
+                      />
+                    </a-form-item>
+                  </a-col>
+                </a-row>
+              </div>
+            </template>
+            <template v-else>
+              <a-divider>Informații Copil</a-divider>
+              <a-row :gutter="16">
+                <a-col :xs="24" :sm="12">
+                  <a-form-item label="Prenume Copil" required>
+                    <a-input v-model:value="editForm.child.firstName" />
+                  </a-form-item>
+                </a-col>
+                <a-col :xs="24" :sm="12">
+                  <a-form-item label="Nume Copil" required>
+                    <a-input v-model:value="editForm.child.lastName" />
+                  </a-form-item>
+                </a-col>
+              </a-row>
+              <a-row :gutter="16">
+                <a-col :xs="24" :sm="12">
+                  <a-form-item label="Vârstă" required>
+                    <a-input-number 
+                      v-model:value="editForm.child.age" 
+                      :min="1" 
+                      :max="18" 
+                      style="width: 100%"
+                    />
+                  </a-form-item>
+                </a-col>
+              </a-row>
+            </template>
             <a-divider>Date Părinte</a-divider>
             <a-row :gutter="16">
               <a-col :xs="24" :sm="12">
@@ -329,6 +476,17 @@
               <a-col :xs="24" :sm="12">
                 <a-form-item label="Email" required>
                   <a-input v-model:value="editForm.parent.email" type="email" />
+                </a-form-item>
+              </a-col>
+            </a-row>
+            <a-row :gutter="16">
+              <a-col :xs="24" :sm="12">
+                <a-form-item label="Relația" required>
+                  <a-select v-model:value="editForm.parent.relationship" style="width: 100%">
+                    <a-select-option value="mother">Mamă</a-select-option>
+                    <a-select-option value="father">Tată</a-select-option>
+                    <a-select-option value="guardian">Tutore</a-select-option>
+                  </a-select>
                 </a-form-item>
               </a-col>
             </a-row>
@@ -434,12 +592,13 @@ import {
   EditOutlined,
   DeleteOutlined
 } from '@ant-design/icons-vue'
-import { message } from 'ant-design-vue'
+import { message, Table } from 'ant-design-vue'
 import * as XLSX from 'xlsx'
 import dayjs, { type Dayjs } from 'dayjs'
 
 const loading = ref(false)
 const registrations = ref<any[]>([])
+const expandedRowKeys = ref<(string | number)[]>([])
 const filters = ref({
   activityType: '',
   status: '',
@@ -460,7 +619,8 @@ const editForm = ref({
     firstName: '',
     lastName: '',
     phone: '',
-    email: ''
+    email: '',
+    relationship: ''
   },
   activityType: '',
   status: '',
@@ -473,10 +633,11 @@ const editForm = ref({
 })
 
 const columns = [
+  Table.EXPAND_COLUMN,
   { title: 'Copil', key: 'childName' },
-  { title: 'Vârstă', dataIndex: ['child', 'age'] },
+  { title: 'Vârstă', key: 'age', width: 100 },
   { title: 'Părinte', key: 'parentName' },
-  { title: 'Telefon', dataIndex: ['parent', 'phone'] },
+  { title: 'Telefon', key: 'phone' },
   { title: 'Tip Activitate', key: 'activityType' },
   { title: 'Status', key: 'status' },
   { title: 'Acțiuni', key: 'actions', width: 150 }
@@ -527,6 +688,15 @@ const getActivityTypeLabel = (type: string) => {
   return labels[type] || type
 }
 
+const getRelationshipLabel = (relationship: string) => {
+  const labels: Record<string, string> = {
+    'mother': 'Mamă',
+    'father': 'Tată',
+    'guardian': 'Tutore'
+  }
+  return labels[relationship?.toLowerCase()] || relationship || 'Părinte'
+}
+
 const filteredRegistrations = computed(() => {
   let filtered = registrations.value
 
@@ -564,7 +734,33 @@ const filteredRegistrations = computed(() => {
     })
   }
 
-  return filtered
+  // Filter out empty registrations and ensure each registration has a unique ID
+  // CRITICAL: Only return parent registrations, never individual children as rows
+  filtered = filtered.filter((r, index, self) => {
+    if (!r || !r.id) return false
+    // Remove duplicates based on ID
+    const firstIndex = self.findIndex(reg => reg.id === r.id)
+    if (firstIndex !== index) return false
+    // Ensure this is a parent registration object, not a child object
+    // A parent registration should have either 'children' array or 'parent' object
+    // A child object would not have these properties
+    const isParentRegistration = !!(r.children || r.parent || r.child)
+    // Additional check: if it has children array, make sure children are not being treated as rows
+    if (r.children && Array.isArray(r.children)) {
+      // Ensure children don't have 'id' that matches parent registrations
+      // This prevents children from being treated as separate rows
+      return isParentRegistration && !r.children.some((child: any) => child.id && self.some(reg => reg.id === child.id))
+    }
+    return isParentRegistration
+  })
+
+  // Return only parent registrations - children should only appear in expandedRowRender
+  // Make absolutely sure we're not returning children as separate rows
+  return filtered.filter(r => {
+    // Double check: ensure this is not a child object
+    // Children should not have 'parent' or 'children' properties in a way that makes them look like registrations
+    return !!(r.id && (r.parent || r.children || r.child))
+  })
 })
 
 const loadRegistrations = async () => {
@@ -575,9 +771,17 @@ const loadRegistrations = async () => {
     if (filters.value.status) query.status = filters.value.status
 
     const response = await $fetch('/api/registrations', { query })
-    registrations.value = Array.isArray(response) ? response : []
+    // Filter out any empty or invalid registrations
+    // CRITICAL: Only keep parent registrations, never individual children
+    registrations.value = (Array.isArray(response) ? response : []).filter(r => {
+      if (!r || !r.id) return false
+      // Only keep registrations that have parent info (these are parent registrations)
+      // Children should not have parent info, so they won't be included
+      return !!(r.parent || (r.children && r.children.length > 0) || r.child)
+    })
   } catch (error) {
     console.error('Failed to load registrations:', error)
+    registrations.value = []
   } finally {
     loading.value = false
   }
@@ -612,7 +816,8 @@ const editRegistration = (registration: any) => {
       firstName: registration.parent?.firstName || '',
       lastName: registration.parent?.lastName || '',
       phone: registration.parent?.phone || '',
-      email: registration.parent?.email || ''
+      email: registration.parent?.email || '',
+      relationship: registration.parent?.relationship || ''
     },
     activityType: registration.activityType || '',
     status: registration.status || 'pending',
@@ -634,7 +839,7 @@ const handleModalCancel = () => {
   editForm.value = {
     children: [],
     child: { firstName: '', lastName: '', age: 0 },
-    parent: { firstName: '', lastName: '', phone: '', email: '' },
+    parent: { firstName: '', lastName: '', phone: '', email: '', relationship: '' },
     activityType: '',
     status: '',
     afterschool: {
@@ -753,23 +958,23 @@ const deleteRegistration = async (id: string) => {
 
 const exportToExcel = () => {
   const data = filteredRegistrations.value.map(reg => ({
-    'Children': reg.children && reg.children.length > 0 
+    'Copii': reg.children && reg.children.length > 0 
       ? reg.children.map((c: any, i: number) => `${i + 1}. ${c.firstName} ${c.lastName} (${c.age || 'N/A'} ani)`).join('; ')
       : reg.child 
         ? `${reg.child.firstName} ${reg.child.lastName}`
         : 'N/A',
-    'Number of Children': reg.children ? reg.children.length : (reg.child ? 1 : 0),
-    'Parent Name': reg.parent ? `${reg.parent.firstName || ''} ${reg.parent.lastName || ''}`.trim() : 'N/A',
-    'Phone': reg.parent?.phone || 'N/A',
+    'Număr Copii': reg.children ? reg.children.length : (reg.child ? 1 : 0),
+    'Nume Părinte': reg.parent ? `${reg.parent.firstName || ''} ${reg.parent.lastName || ''}`.trim() : 'N/A',
+    'Telefon': reg.parent?.phone || 'N/A',
     'Email': reg.parent?.email || 'N/A',
-    'Activity Type': reg.activityType,
-    'Status': reg.status
+    'Tip Activitate': getActivityTypeLabel(reg.activityType),
+    'Status': getStatusLabel(reg.status)
   }))
 
   const ws = XLSX.utils.json_to_sheet(data)
   const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, 'Registrations')
-  XLSX.writeFile(wb, `registrations_${dayjs().format('YYYY-MM-DD')}.xlsx`)
+  XLSX.utils.book_append_sheet(wb, ws, 'Înscrieri')
+  XLSX.writeFile(wb, `inscrieri_${dayjs().format('YYYY-MM-DD')}.xlsx`)
 }
 
 onMounted(() => {
