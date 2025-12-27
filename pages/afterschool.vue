@@ -36,6 +36,9 @@
               <strong>Mențiune*:</strong> În perioada vacanțelor școlare Luni-Vineri 8:00-17:30
             </p>
 
+            <h3>Contact:</h3>
+            <p><strong>Telefon:</strong> <a href="tel:0732919429" style="color: #667eea; text-decoration: none;">0732919429</a></p>
+
             <h3>Flexibilitate:</h3>
             <p>
               Puteți alege numărul de zile pe săptămână (1-5 zile) și zilele preferate (Luni-Vineri).
@@ -60,12 +63,22 @@
               <h3>Contact</h3>
             </template>
             <p><strong>Adresă:</strong> Str. Albatrosului Nr. 11, Avantgarden, Bartolomeu, Brașov</p>
-            <p><strong>Telefon:</strong> <a href="tel:0724428883">0724428883</a></p>
+            <p><strong>Telefon:</strong> <a href="tel:0732919429">0732919429</a></p>
             <p> <a href="https://www.facebook.com/profile.php?id=61551620890862" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 8px;">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#1877F2" style="vertical-align: middle;">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
               </svg>
             </a></p>
+          </a-card>
+
+          <a-card class="payment-card" style="margin-top: 24px;">
+            <template #title>
+              <h3>💰 Plata</h3>
+            </template>
+            <p><strong>Plata se face prin transfer în contul:</strong></p>
+            <p style="font-size: 1.1rem; font-weight: 600; color: #667eea; word-break: break-all;">
+              RO94BTRLRONCRT0CP8518801
+            </p>
           </a-card>
         </a-col>
       </a-row>
@@ -138,7 +151,8 @@ const navigateToRegistration = () => {
 
 .info-card,
 .registration-card,
-.contact-card {
+.contact-card,
+.payment-card {
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
@@ -176,7 +190,8 @@ const navigateToRegistration = () => {
 }
 
 .registration-card h3,
-.contact-card h3 {
+.contact-card h3,
+.payment-card h3 {
   color: #2c3e50;
   font-size: 1.3rem;
   font-weight: 600;
@@ -184,7 +199,8 @@ const navigateToRegistration = () => {
 }
 
 .registration-card p,
-.contact-card p {
+.contact-card p,
+.payment-card p {
   color: #666;
   line-height: 1.6;
   margin-bottom: 16px;

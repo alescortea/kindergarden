@@ -90,6 +90,25 @@
         <a-form-item label="Participanți Maxim" v-if="lessonForm.type === 'group'">
           <a-input-number v-model:value="lessonForm.maxParticipants" style="width: 100%" :min="1" />
         </a-form-item>
+        <a-form-item label="Imagine Principală">
+          <a-upload
+            v-model:file-list="imageFileList"
+            :before-upload="beforeUpload"
+            :custom-request="handleImageUpload"
+            list-type="picture-card"
+            :max-count="1"
+            accept="image/*"
+          >
+            <div v-if="imageFileList.length < 1">
+              <PlusOutlined />
+              <div style="margin-top: 8px">Upload</div>
+            </div>
+          </a-upload>
+          <div v-if="lessonForm.gallery && lessonForm.gallery.length > 0" style="margin-top: 16px;">
+            <p style="margin-bottom: 8px; color: #666;">Imagine actuală:</p>
+            <img :src="lessonForm.gallery[0]" alt="Preview" style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 1px solid #d9d9d9;" />
+          </div>
+        </a-form-item>
         <a-form-item label="Descriere" required>
           <a-textarea v-model:value="lessonForm.description" :rows="4" />
         </a-form-item>
@@ -101,6 +120,7 @@
 <script setup lang="ts">
 import { PlusOutlined, EditOutlined, DeleteOutlined, TrophyOutlined } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
+import type { UploadProps } from 'ant-design-vue'
 
 const loading = ref(false)
 const lessons = ref<any[]>([])
@@ -133,6 +153,44 @@ const lessonForm = ref<{
   videos: [],
   availableDates: []
 })
+
+const imageFileList = ref<any[]>([])
+const uploading = ref(false)
+
+const beforeUpload: UploadProps['beforeUpload'] = (file: File) => {
+  const isImage = file.type.startsWith('image/')
+  if (!isImage) {
+    message.error('Poți încărca doar imagini!')
+    return false
+  }
+  const isLt10M = file.size / 1024 / 1024 < 10
+  if (!isLt10M) {
+    message.error('Imaginea trebuie să fie mai mică de 10MB!')
+    return false
+  }
+  return false // Previne upload-ul automat
+}
+
+const handleImageUpload = async (options: any) => {
+  const { file } = options
+  
+  try {
+    // Nu facem upload acum, doar păstrăm fișierul pentru upload la salvare
+    imageFileList.value = [{
+      uid: '-1',
+      name: file.name,
+      status: 'uploading',
+      originFileObj: file // Păstrăm fișierul original pentru upload la salvare
+    }]
+    
+    message.success('Imaginea a fost selectată! Va fi încărcată la salvare.')
+    console.log('Image selected for upload:', file.name)
+  } catch (error) {
+    console.error('Error selecting image:', error)
+    message.error('Eroare la selectarea imaginii')
+    imageFileList.value = []
+  }
+}
 
 const loadLessons = async () => {
   loading.value = true
@@ -194,6 +252,17 @@ const editLesson = (lesson: any) => {
   lessonForm.value = {
     ...lesson
   }
+  // Setează file list pentru imaginea existentă
+  if (lesson.gallery && lesson.gallery.length > 0) {
+    imageFileList.value = [{
+      uid: '-1',
+      name: 'imagine-actuala.jpg',
+      status: 'done',
+      url: lesson.gallery[0]
+    }]
+  } else {
+    imageFileList.value = []
+  }
   modalVisible.value = true
 }
 
@@ -211,6 +280,8 @@ const resetForm = () => {
     videos: [],
     availableDates: []
   }
+  imageFileList.value = []
+  isEditing.value = false
 }
 
 const saveLesson = async () => {
@@ -220,16 +291,62 @@ const saveLesson = async () => {
   }
 
   try {
+    // Upload image if there's a new file to upload
+    let imageUrl = null
+    if (imageFileList.value.length > 0 && imageFileList.value[0].originFileObj) {
+      const file = imageFileList.value[0].originFileObj
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('folder', 'ski')
+      
+      const uploadResponse = await $fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      })
+      
+      if (uploadResponse.uploads && uploadResponse.uploads.length > 0) {
+        imageUrl = uploadResponse.uploads[0].url
+        console.log('Image uploaded during save, URL:', imageUrl)
+      }
+    }
+    
     // Get county name
     const selectedCounty = counties.value.find(c => c.id === lessonForm.value.countyId)
     
+    // Build gallery array - use uploaded image or existing gallery
+    let galleryArray = []
+    if (imageUrl) {
+      // New image uploaded
+      galleryArray = [imageUrl]
+    } else if (Array.isArray(lessonForm.value.gallery) && lessonForm.value.gallery.length > 0) {
+      // Use existing gallery
+      galleryArray = [...lessonForm.value.gallery]
+    }
+    
+    // Convert reactive arrays to plain arrays
+    const videosArray = Array.isArray(lessonForm.value.videos) 
+      ? [...lessonForm.value.videos] 
+      : []
+    const availableDatesArray = Array.isArray(lessonForm.value.availableDates) 
+      ? [...lessonForm.value.availableDates] 
+      : []
+    
     const data = {
-      ...lessonForm.value,
-      countyName: selectedCounty?.name || lessonForm.value.countyName || ''
+      type: lessonForm.value.type,
+      duration: lessonForm.value.duration,
+      price: lessonForm.value.price,
+      description: lessonForm.value.description,
+      maxParticipants: lessonForm.value.maxParticipants,
+      countyId: lessonForm.value.countyId,
+      countyName: selectedCounty?.name || lessonForm.value.countyName || '',
+      gallery: galleryArray,
+      videos: videosArray,
+      availableDates: availableDatesArray
     }
 
-    // Remove undefined fields
-    delete data.id
+    // Debug: log data before sending
+    console.log('Saving lesson with data:', data)
+    console.log('Gallery array:', galleryArray)
 
     if (isEditing.value && lessonForm.value.id) {
       await $fetch(`/api/ski/${lessonForm.value.id}`, {
@@ -283,6 +400,23 @@ onMounted(() => {
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.lesson-card :deep(.ant-card-body) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.lesson-card :deep(.ant-card-meta) {
+  flex: 1;
+}
+
+.lesson-card :deep(.ant-card-actions) {
+  margin-top: auto;
 }
 
 .lesson-image {

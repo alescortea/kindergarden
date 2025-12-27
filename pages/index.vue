@@ -1,39 +1,46 @@
 <template>
-  <!-- Hero Section -->
+  <!-- Hero Section with Carousel -->
     <div class="hero-section">
-      <a-row :gutter="24" align="middle">
-        <a-col :xs="24" :lg="12">
-          <div class="hero-content">
-            <h1 class="hero-title">
-              Roseli - Sport & Aventură pentru Copii 🏔️
-            </h1>
-            <p class="hero-tagline">
-              Cresc prin sport, zâmbesc prin aventură!
-            </p>
-            <p class="hero-description">
-              Oferim experiențe unice de sport și aventură pentru copii: tabere, drumeții, excursii, 
-              lecții de ski și înot.
-            </p>
-            <div class="hero-actions">
-              <a-button type="primary" size="large" @click="navigateTo('/activities')">
-                <TrophyOutlined />
-                Vezi Activități
-              </a-button>
-              <a-button size="large" @click="navigateTo('/registration')">
-                <FormOutlined />
-                Înscrie-te Acum
-              </a-button>
+      <a-carousel 
+        :autoplay="true" 
+        :autoplay-speed="3000"
+        :dots="showDots"
+        :fade="true"
+        :infinite="true"
+        :touchable="true"
+        :swipe="true"
+        class="hero-carousel"
+      >
+        <div v-for="(image, index) in carouselImages" :key="index" class="carousel-slide">
+          <div class="carousel-image-wrapper">
+            <img :src="image.src" :alt="image.alt" class="carousel-image" />
+            <div class="carousel-overlay">
+              <div class="hero-content-overlay">
+                <h1 class="hero-title">
+                  Roseli - Sport & Aventură pentru Copii 🏔️
+                </h1>
+                <p class="hero-tagline">
+                  Cresc prin sport, zâmbesc prin aventură!
+                </p>
+                <p class="hero-description">
+                  Oferim experiențe unice de sport și aventură pentru copii: tabere, drumeții, excursii, 
+                  lecții de ski și înot.
+                </p>
+                <div class="hero-actions">
+                  <a-button type="primary" size="large" @click="navigateTo('/activities')">
+                    <TrophyOutlined />
+                    Vezi Activități
+                  </a-button>
+                  <a-button size="large" @click="navigateTo('/registration')">
+                    <FormOutlined />
+                    Înscrie-te Acum
+                  </a-button>
+                </div>
+              </div>
             </div>
           </div>
-        </a-col>
-        <a-col :xs="24" :lg="12">
-          <div class="hero-image">
-            <div class="image-placeholder">
-              <img :src="logoImage" alt="Roseli Logo" class="hero-logo-image" />
-            </div>
-          </div>
-        </a-col>
-      </a-row>
+        </div>
+      </a-carousel>
     </div>
 
     <!-- Features Section -->
@@ -77,27 +84,42 @@
     <div class="gallery-section">
       <h2 class="section-title">Galerie Foto</h2>
       <p class="section-subtitle">Momente din activitățile noastre</p>
-      <a-row :gutter="[16, 16]">
-        <a-col 
-          :xs="12" 
-          :sm="8" 
-          :md="6" 
-          v-for="(image, index) in galleryImages" 
-          :key="index"
-        >
-          <div class="gallery-item" @click="viewImage(image)">
-            <img :src="image.src" :alt="image.alt" />
-            <div class="gallery-overlay">
-              <EyeOutlined />
+      <a-spin :spinning="loadingGallery">
+        <a-row :gutter="[16, 16]">
+          <a-col 
+            :xs="12" 
+            :sm="8" 
+            :md="6" 
+            v-for="(image, index) in galleryImages" 
+            :key="index"
+          >
+            <div class="gallery-item" @click="viewImage(image)">
+              <img :src="image.src" :alt="image.alt" />
+              <div class="gallery-overlay">
+                <EyeOutlined />
+              </div>
             </div>
-          </div>
-        </a-col>
-      </a-row>
+          </a-col>
+        </a-row>
+        <div v-if="!loadingGallery && galleryImages.length === 0" class="empty-gallery">
+          <PictureOutlined />
+          <p>Nu există imagini în galerie momentan.</p>
+        </div>
+      </a-spin>
     </div>
 
     <!-- Contact Footer Section -->
     <div class="stats-section contact-footer-section">
-      <a-row :gutter="24" justify="center">
+      <!-- Statistics Section -->
+      <div class="footer-stats">
+        <div class="stat-item" v-for="stat in stats" :key="stat.id">
+          <div class="stat-number-large">{{ stat.number }}</div>
+          <div class="stat-label-large">{{ stat.label }}</div>
+        </div>
+      </div>
+      
+      <!-- Contact Information -->
+      <a-row :gutter="24" justify="center" style="margin-top: 40px;">
         <a-col :xs="24" :sm="12" :md="8">
           <div class="stat-item">
             <div class="stat-label"><strong>Adresă</strong></div>
@@ -108,17 +130,30 @@
           <div class="stat-item">
             <div class="stat-label"><strong>Telefon</strong></div>
             <div class="stat-number" style="font-size: 1.2rem; margin-top: 8px;">
-              <a href="tel:0724428883" style="color: #ffd700; text-decoration: none;">0724428883</a>
+              <a href="https://wa.me/40724428883" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 8px; color: white; text-decoration: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#25D366">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.98 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                </svg>
+                <span>0724428883</span>
+              </a>
             </div>
           </div>
         </a-col>
         <a-col :xs="24" :sm="12" :md="8">
           <div class="stat-item">
-            <div class="stat-number" style="font-size: 1.2rem; margin-top: 8px;">
-              <a href="https://www.facebook.com/profile.php?id=61551620890862" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; color: #ffd700; text-decoration: none;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="#1877F2">
+            <div class="stat-label"><strong>Facebook</strong></div>
+            <div class="stat-number" style="font-size: 1.2rem; margin-top: 8px; display: flex; flex-direction: column; gap: 12px; align-items: center;">
+              <a href="https://www.facebook.com/profile.php?id=61551620890862" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; color: white; text-decoration: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#1877F2">
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                 </svg>
+                <span>Sport & Aventură</span>
+              </a>
+              <a href="https://www.facebook.com/profile.php?id=61551620890862" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; color: white; text-decoration: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#1877F2">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+                <span>Afterschool</span>
               </a>
             </div>
           </div>
@@ -152,9 +187,23 @@
         <img :src="selectedImage" alt="Gallery Image" style="width: 100%; height: auto; border-radius: 8px;" />
       </div>
     </a-modal>
+
+    <!-- WhatsApp Floating Button -->
+    <a-button
+      type="primary"
+      class="whatsapp-float"
+      @click="openWhatsApp"
+      shape="circle"
+      size="large"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.98 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+      </svg>
+    </a-button>
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import {
   CarOutlined,
   FormOutlined,
@@ -171,17 +220,12 @@ import {
 } from '@ant-design/icons-vue'
 import logoImage from '~/assets/photo/Roseli_logo.png'
 import swimmingBannerImage from '~/assets/photo/banner_swim.jpeg'
-import beachImage from '~/assets/photo/beach.jpg'
-import boatImage from '~/assets/photo/boat.jpg'
-import bucharestTripImage from '~/assets/photo/bucharest_trip.jpg'
-import bucharestImage from '~/assets/photo/bucharest.jpg'
-import danubeImage from '~/assets/photo/danube.jpg'
-import mountainsImage from '~/assets/photo/mountains.jpg'
-import raftingImage from '~/assets/photo/rafting.jpeg'
-import skiBrasovImage from '~/assets/photo/ski_brasov.jpg'
-import skiImage from '~/assets/photo/ski.jpg'
 import anpcSalRoImage from '~/assets/photo/apnc_sal_ro.png'
 import anpcSalEuImage from '~/assets/photo/apnc_sol_eu.png'
+import carouselImage1 from '~/assets/photo/adrian-mag-Oe1LAdljP18-unsplash.jpg'
+import carouselImage2 from '~/assets/photo/artem-kniaz-bC7zaV3j7S4-unsplash.jpg'
+import carouselImage3 from '~/assets/photo/karine-avetisyan-fYYB1ZiMqXw-unsplash.jpg'
+import carouselImage4 from '~/assets/photo/ruxandra-gogea-nEH_xpuuZt4-unsplash.jpg'
 
 const router = useRouter()
 
@@ -261,36 +305,130 @@ const activities = [
   }
 ]
 
-const galleryImages = [
-  { src: beachImage, alt: 'Tabere la plajă' },
-  { src: boatImage, alt: 'Excursie cu barca' },
-  { src: bucharestTripImage, alt: 'Excursie la București' },
-  { src: bucharestImage, alt: 'București' },
-  { src: danubeImage, alt: 'Delta Dunării' },
-  { src: mountainsImage, alt: 'Drumeții în munți' },
-  { src: raftingImage, alt: 'Rafting' },
-  { src: skiBrasovImage, alt: 'Lecții de ski în Brașov' },
-  { src: skiImage, alt: 'Lecții de ski' }
+const galleryImages = ref<Array<{ src: string, alt: string }>>([])
+const loadingGallery = ref(false)
+
+const stats = [
+  { id: 1, number: '500+', label: 'Copii Fericiți' },
+  { id: 2, number: '10+', label: 'Ani Experiență' },
+  { id: 3, number: '100+', label: 'Activități Anuale' },
+  { id: 4, number: '100%', label: 'Părinți Mulțumiți' }
+]
+
+const carouselImages = [
+  { src: carouselImage1, alt: 'Aventură montană pentru copii' },
+  { src: carouselImage2, alt: 'Copii în natură' },
+  { src: carouselImage3, alt: 'Sport și aventură' },
+  { src: carouselImage4, alt: 'Activități outdoor pentru copii' }
 ]
 
 const imageViewerVisible = ref(false)
 const selectedImage = ref<string>('')
 
+// Hide dots on mobile
+const showDots = ref(true)
+
+const loadGallery = async () => {
+  loadingGallery.value = true
+  try {
+    const response = await $fetch('/api/gallery')
+    const items = Array.isArray(response) ? response : []
+    
+    // Flatten all images from all gallery items into a single array
+    const allImages: Array<{ src: string, alt: string }> = []
+    items.forEach((item: any) => {
+      if (item.images && Array.isArray(item.images)) {
+        item.images.forEach((imageUrl: string) => {
+          allImages.push({
+            src: imageUrl,
+            alt: item.title || 'Imagine din galerie'
+          })
+        })
+      }
+    })
+    
+    galleryImages.value = allImages
+  } catch (error) {
+    console.error('Failed to load gallery:', error)
+    // Fallback to empty array if API fails
+    galleryImages.value = []
+  } finally {
+    loadingGallery.value = false
+  }
+}
+
+onMounted(() => {
+  const checkMobile = () => {
+    showDots.value = window.innerWidth > 768
+  }
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
+  
+  // Load gallery images from Firestore
+  loadGallery()
+})
+
 const viewImage = (image: { src: string, alt: string }) => {
   selectedImage.value = image.src
   imageViewerVisible.value = true
+}
+
+const openWhatsApp = () => {
+  const phoneNumber = '40724428883' // Numărul de WhatsApp
+  const message = encodeURIComponent('Bună ziua! Am o întrebare despre activitățile Roseli.')
+  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`
+  window.open(whatsappUrl, '_blank')
 }
 </script>
 
 <style scoped>
 .hero-section {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 100px 40px;
+  position: relative;
   margin: 0 -24px 60px -24px;
   border-radius: 0 0 20px 20px;
+  overflow: hidden;
+}
+
+.hero-carousel {
+  height: 600px;
+}
+
+.carousel-slide {
   position: relative;
-  z-index: 1;
+  height: 600px;
+}
+
+.carousel-image-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.carousel-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.hero-content-overlay {
+  max-width: 800px;
+  text-align: center;
+  color: white;
+  z-index: 2;
 }
 
 .hero-title {
@@ -299,6 +437,7 @@ const viewImage = (image: { src: string, alt: string }) => {
   margin-bottom: 16px;
   margin-top: 0;
   line-height: 1.2;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .hero-tagline {
@@ -307,6 +446,7 @@ const viewImage = (image: { src: string, alt: string }) => {
   margin-bottom: 24px;
   font-style: italic;
   opacity: 0.95;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .hero-description {
@@ -315,12 +455,14 @@ const viewImage = (image: { src: string, alt: string }) => {
   margin-top: 0;
   opacity: 0.9;
   line-height: 1.6;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .hero-actions {
   display: flex;
   gap: 20px;
   flex-wrap: wrap;
+  justify-content: center;
   margin-top: 24px;
 }
 
@@ -334,29 +476,32 @@ const viewImage = (image: { src: string, alt: string }) => {
   vertical-align: middle;
 }
 
-.hero-image {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
+/* Carousel dots styling */
+:deep(.ant-carousel .slick-dots) {
+  bottom: 20px;
+  z-index: 10;
 }
 
-.image-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  color: white;
-  text-align: center;
+:deep(.ant-carousel .slick-dots li button) {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  width: 12px;
+  height: 12px;
 }
 
-.hero-logo-image {
-  height: 200px;
-  width: auto;
-  object-fit: contain;
-  display: block;
-  margin: -20px auto 0 auto;
+:deep(.ant-carousel .slick-dots li.slick-active button) {
+  background: white;
+}
+
+:deep(.ant-carousel .slick-dots li) {
+  margin: 0 4px;
+}
+
+/* Hide carousel dots on mobile */
+@media (max-width: 768px) {
+  :deep(.ant-carousel .slick-dots) {
+    display: none !important;
+  }
 }
 
 /* SVG icons margin */
@@ -511,6 +656,24 @@ svg {
   color: white;
 }
 
+.empty-gallery {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+}
+
+.empty-gallery :deep(.anticon) {
+  font-size: 64px;
+  color: #ddd;
+  margin-bottom: 16px;
+}
+
+.empty-gallery p {
+  font-size: 16px;
+  color: #999;
+  margin: 0;
+}
+
 .image-viewer {
   text-align: center;
 }
@@ -553,150 +716,150 @@ svg {
   color: #667eea;
 }
 
-/* Colori pentru cardurile "De ce să ne alegi?" - aceleași culori ca activity cards, dar mult mai opace */
+/* Colori pentru cardurile "De ce să ne alegi?" - Albastru cer și Verde pădure */
 .feature-1 {
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.4) 0%, rgba(255, 165, 0, 0.4) 100%);
-  color: white;
+  background: linear-gradient(135deg, rgba(74, 144, 226, 0.6) 0%, rgba(91, 155, 213, 0.6) 100%);
+  color: #000;
   border: none;
 }
 
 .feature-1 h3,
 .feature-1 p {
-  color: white;
+  color: #000;
 }
 
 .feature-1 .feature-icon :deep(.anticon) {
-  color: white;
+  color: #000;
 }
 
 .feature-2 {
-  background: linear-gradient(135deg, rgba(74, 144, 226, 0.4) 0%, rgba(53, 122, 189, 0.4) 100%);
-  color: white;
+  background: linear-gradient(135deg, rgba(46, 125, 50, 0.6) 0%, rgba(56, 142, 60, 0.6) 100%);
+  color: #000;
   border: none;
 }
 
 .feature-2 h3,
 .feature-2 p {
-  color: white;
+  color: #000;
 }
 
 .feature-2 .feature-icon :deep(.anticon) {
-  color: white;
+  color: #000;
 }
 
 .feature-3 {
-  background: linear-gradient(135deg, rgba(46, 204, 113, 0.4) 0%, rgba(39, 174, 96, 0.4) 100%);
-  color: white;
+  background: linear-gradient(135deg, rgba(74, 144, 226, 0.6) 0%, rgba(91, 155, 213, 0.6) 100%);
+  color: #000;
   border: none;
 }
 
 .feature-3 h3,
 .feature-3 p {
-  color: white;
+  color: #000;
 }
 
 .feature-3 .feature-icon :deep(.anticon) {
-  color: white;
+  color: #000;
 }
 
 .feature-4 {
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.4) 0%, rgba(255, 165, 0, 0.4) 100%);
-  color: white;
+  background: linear-gradient(135deg, rgba(46, 125, 50, 0.6) 0%, rgba(56, 142, 60, 0.6) 100%);
+  color: #000;
   border: none;
 }
 
 .feature-4 h3,
 .feature-4 p {
-  color: white;
+  color: #000;
 }
 
 .feature-4 .feature-icon :deep(.anticon) {
-  color: white;
+  color: #000;
 }
 
-/* Colori pentru cardurile de activități - doar primele 3 culori repetate, cu opacitate mai mică */
+/* Colori pentru cardurile de activități - Albastru cer și Verde pădure alternativ */
 .activity-1 {
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.4) 0%, rgba(255, 165, 0, 0.4) 100%);
-  color: white;
+  background: linear-gradient(135deg, rgba(74, 144, 226, 0.6) 0%, rgba(91, 155, 213, 0.6) 100%);
+  color: #000;
 }
 
 .activity-1 h3,
 .activity-1 p {
-  color: white;
+  color: #000;
 }
 
 .activity-1 .activity-image :deep(.anticon) {
-  color: white;
+  color: #000;
 }
 
 .activity-2 {
-  background: linear-gradient(135deg, rgba(74, 144, 226, 0.4) 0%, rgba(53, 122, 189, 0.4) 100%);
-  color: white;
+  background: linear-gradient(135deg, rgba(46, 125, 50, 0.6) 0%, rgba(56, 142, 60, 0.6) 100%);
+  color: #000;
 }
 
 .activity-2 h3,
 .activity-2 p {
-  color: white;
+  color: #000;
 }
 
 .activity-2 .activity-image :deep(.anticon) {
-  color: white;
+  color: #000;
 }
 
 .activity-3 {
-  background: linear-gradient(135deg, rgba(46, 204, 113, 0.4) 0%, rgba(39, 174, 96, 0.4) 100%);
-  color: white;
+  background: linear-gradient(135deg, rgba(74, 144, 226, 0.6) 0%, rgba(91, 155, 213, 0.6) 100%);
+  color: #000;
 }
 
 .activity-3 h3,
 .activity-3 p {
-  color: white;
+  color: #000;
 }
 
 .activity-3 .activity-image :deep(.anticon) {
-  color: white;
+  color: #000;
 }
 
 .activity-4 {
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.4) 0%, rgba(255, 165, 0, 0.4) 100%);
-  color: white;
+  background: linear-gradient(135deg, rgba(46, 125, 50, 0.6) 0%, rgba(56, 142, 60, 0.6) 100%);
+  color: #000;
 }
 
 .activity-4 h3,
 .activity-4 p {
-  color: white;
+  color: #000;
 }
 
 .activity-4 .activity-image :deep(.anticon) {
-  color: white;
+  color: #000;
 }
 
 .activity-5 {
-  background: linear-gradient(135deg, rgba(74, 144, 226, 0.4) 0%, rgba(53, 122, 189, 0.4) 100%);
-  color: white;
+  background: linear-gradient(135deg, rgba(74, 144, 226, 0.6) 0%, rgba(91, 155, 213, 0.6) 100%);
+  color: #000;
 }
 
 .activity-5 h3,
 .activity-5 p {
-  color: white;
+  color: #000;
 }
 
 .activity-5 .activity-image :deep(.anticon) {
-  color: white;
+  color: #000;
 }
 
 .activity-6 {
-  background: linear-gradient(135deg, rgba(46, 204, 113, 0.4) 0%, rgba(39, 174, 96, 0.4) 100%);
-  color: white;
+  background: linear-gradient(135deg, rgba(46, 125, 50, 0.6) 0%, rgba(56, 142, 60, 0.6) 100%);
+  color: #000;
 }
 
 .activity-6 h3,
 .activity-6 p {
-  color: white;
+  color: #000;
 }
 
 .activity-6 .activity-image :deep(.anticon) {
-  color: white;
+  color: #000;
 }
 
 .feature-card h3,
@@ -735,28 +898,62 @@ svg {
   line-height: 1.6;
 }
 
+.footer-stats {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 60px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.stat-number-large {
+  font-size: 3rem;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 8px;
+}
+
+.stat-label-large {
+  font-size: 1.2rem;
+  color: white;
+  opacity: 0.9;
+}
+
 .contact-footer-section .stat-label {
   font-size: 1.3rem;
   font-weight: 600;
   opacity: 1;
   margin-bottom: 12px;
-  color: #ffd700;
+  color: white;
+}
+
+.contact-footer-section .stat-label strong {
+  color: white;
+}
+
+.contact-footer-section .stat-number {
+  color: white;
 }
 
 .contact-footer-section .stat-number a {
-  color: #ffd700;
+  color: white !important;
   text-decoration: none;
   transition: opacity 0.3s ease;
 }
 
 .contact-footer-section .stat-number a:hover {
   text-decoration: underline;
-  opacity: 0.9;
+  opacity: 0.8;
 }
 
 @media (max-width: 992px) {
-  .hero-section {
-    padding: 80px 30px;
+  .hero-carousel {
+    height: 550px;
+  }
+  
+  .carousel-slide {
+    height: 550px;
   }
   
   .hero-title {
@@ -787,13 +984,28 @@ svg {
 }
 
 @media (max-width: 768px) {
+  .hero-carousel {
+    height: 500px;
+  }
+  
+  .carousel-slide {
+    height: 500px;
+  }
+  
+  .carousel-overlay {
+    padding: 20px;
+  }
+  
   .hero-section {
-    padding: 60px 20px;
     margin: 0 -16px 40px -16px;
   }
   
   .hero-title {
     font-size: 2rem;
+  }
+  
+  .hero-tagline {
+    font-size: 1.2rem;
   }
   
   .hero-description {
@@ -810,6 +1022,89 @@ svg {
   
   .section-title {
     font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-carousel {
+    height: 400px;
+  }
+  
+  .carousel-slide {
+    height: 400px;
+  }
+  
+  .carousel-overlay {
+    padding: 16px;
+  }
+  
+  .hero-title {
+    font-size: 1.5rem;
+  }
+  
+  .hero-tagline {
+    font-size: 1rem;
+  }
+  
+  .hero-description {
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+  }
+  
+  .hero-actions {
+    gap: 12px;
+  }
+  
+  .hero-actions .ant-btn {
+    font-size: 0.9rem;
+    padding: 8px 16px;
+  }
+}
+
+/* WhatsApp Floating Button */
+.whatsapp-float {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  background: #25D366 !important;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.whatsapp-float:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.6);
+}
+
+.whatsapp-float:focus {
+  background: #25D366 !important;
+}
+
+.whatsapp-float svg {
+  width: 28px;
+  height: 28px;
+}
+
+@media (max-width: 768px) {
+  .whatsapp-float {
+    bottom: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+  }
+  
+  .whatsapp-float svg {
+    width: 24px;
+    height: 24px;
   }
 }
 </style>

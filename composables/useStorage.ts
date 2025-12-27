@@ -1,11 +1,23 @@
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 import type { FirebaseStorage } from 'firebase/storage'
+import { useFirebase } from '~/composables/useFirebase'
 
 // Helper function to get Storage instance
 const getStorageInstance = () => {
-  const { storage } = useFirebase()
-  if (!storage) throw new Error('Storage not initialized')
-  return storage
+  try {
+    const { storage } = useFirebase()
+    if (!storage) {
+      console.error('Storage not initialized. Firebase config:', {
+        isServer: import.meta.server,
+        isClient: import.meta.client
+      })
+      throw new Error('Storage not initialized')
+    }
+    return storage
+  } catch (error) {
+    console.error('Error getting storage instance:', error)
+    throw error
+  }
 }
 
 // Export direct functions for server-side usage

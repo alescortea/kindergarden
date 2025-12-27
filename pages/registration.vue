@@ -42,7 +42,7 @@
                     <a-select-option v-if="availableActivityTypes.trip" value="trip">Excursie</a-select-option>
                     <a-select-option v-if="availableActivityTypes.ski" value="ski">Lecție de Ski</a-select-option>
                     <a-select-option v-if="availableActivityTypes.swimming" value="swimming">Lecție de Înot</a-select-option>
-                    <a-select-option v-if="availableActivityTypes.afterschool" value="afterschool">Centru Afterschool (9-17)</a-select-option>
+                    <a-select-option v-if="availableActivityTypes.afterschool" value="afterschool">Centru Afterschool</a-select-option>
                     <a-select-option v-if="availableActivityTypes['school-offer']" value="school-offer">Ofertă Școlară</a-select-option>
                   </a-select>
                 </a-form-item>
@@ -73,15 +73,14 @@
 
                 <!-- Afterschool Program Specific Fields -->
                 <template v-if="formData.activityType === 'afterschool'">
-                  <a-form-item label="Program Zilnic" name="afterschool.schedule">
+                  <a-form-item label="Program" name="afterschool.schedule">
                     <a-select
                       v-model:value="formData.afterschool.schedule"
-                      placeholder="Selectați programul zilnic"
+                      placeholder="Selectați programul"
                       style="width: 100%"
                     >
-                      <a-select-option value="full-time">Program Complet (9:00 - 17:00)</a-select-option>
-                      <a-select-option value="morning">Dimineață (9:00 - 13:00)</a-select-option>
-                      <a-select-option value="afternoon">După-amiază (13:00 - 17:00)</a-select-option>
+                      <a-select-option value="daily">Zilnic (12:00-17:30)</a-select-option>
+                      <a-select-option value="vacation">Vacanță (08:00-17:30)</a-select-option>
                     </a-select>
                   </a-form-item>
                   
@@ -90,6 +89,7 @@
                       v-model:value="formData.afterschool.daysPerWeek"
                       placeholder="Selectați numărul de zile"
                       style="width: 100%"
+                      @change="onDaysPerWeekChange"
                     >
                       <a-select-option value="1">1 zi/săptămână</a-select-option>
                       <a-select-option value="2">2 zile/săptămână</a-select-option>
@@ -99,7 +99,11 @@
                     </a-select>
                   </a-form-item>
 
-                  <a-form-item label="Zile Preferate" name="afterschool.preferredDays">
+                  <a-form-item 
+                    v-if="formData.afterschool.daysPerWeek !== '5'"
+                    label="Zile Preferate" 
+                    name="afterschool.preferredDays"
+                  >
                     <a-checkbox-group v-model:value="formData.afterschool.preferredDays">
                       <a-row>
                         <a-col :span="8">
@@ -392,19 +396,37 @@
               <div class="form-section">
                 <h3>📋 Acorduri și Autorizații</h3>
                 
-                <a-form-item :name="['agreements', 'medicalTreatment']">
+                <a-form-item 
+                  :name="['agreements', 'participation']"
+                  :rules="agreementRules.participation"
+                >
+                  <a-checkbox v-model:checked="formData.agreements.participation">
+                    Sunt de acord ca fiul/fiica mea să participe la activitatea menționată
+                  </a-checkbox>
+                </a-form-item>
+
+                <a-form-item 
+                  :name="['agreements', 'medicalTreatment']"
+                  :rules="agreementRules.medicalTreatment"
+                >
                   <a-checkbox v-model:checked="formData.agreements.medicalTreatment">
                     Sunt de acord cu tratamentul medical de urgență dacă este necesar
                   </a-checkbox>
                 </a-form-item>
 
-                <a-form-item :name="['agreements', 'photos']">
+                <a-form-item 
+                  :name="['agreements', 'photos']"
+                  :rules="agreementRules.photos"
+                >
                   <a-checkbox v-model:checked="formData.agreements.photos">
                     Sunt de acord cu fotografia și utilizarea imaginilor copilului în scopuri educaționale
                   </a-checkbox>
                 </a-form-item>
 
-                <a-form-item :name="['agreements', 'terms']">
+                <a-form-item 
+                  :name="['agreements', 'terms']"
+                  :rules="agreementRules.terms"
+                >
                   <a-checkbox v-model:checked="formData.agreements.terms">
                     Am citit și sunt de acord cu termenii și condițiile
                   </a-checkbox>
@@ -437,7 +459,7 @@
 
               <div class="info-item">
                 <h4>💰 Plata</h4>
-                <p>Plata se face la locația noastră, cu cel puțin 3 zile înainte de activitate.</p>
+                <p>Plata se face prin transfer în contul <strong style="color: #667eea; word-break: break-all;">RO94BTRLRONCRT0CP8518801</strong></p>
               </div>
 
               <div class="info-item">
@@ -478,6 +500,46 @@ const availableActivityTypes = ref({
   'school-offer': false
 })
 
+// Agreement validation rules
+const agreementRules = {
+  participation: [{
+    required: true,
+    validator: (_rule: any, value: boolean) => {
+      if (!value) {
+        return Promise.reject('Trebuie să fiți de acord cu participarea copilului')
+      }
+      return Promise.resolve()
+    }
+  }],
+  medicalTreatment: [{
+    required: true,
+    validator: (_rule: any, value: boolean) => {
+      if (!value) {
+        return Promise.reject('Trebuie să fiți de acord cu tratamentul medical')
+      }
+      return Promise.resolve()
+    }
+  }],
+  photos: [{
+    required: true,
+    validator: (_rule: any, value: boolean) => {
+      if (!value) {
+        return Promise.reject('Trebuie să fiți de acord cu fotografia')
+      }
+      return Promise.resolve()
+    }
+  }],
+  terms: [{
+    required: true,
+    validator: (_rule: any, value: boolean) => {
+      if (!value) {
+        return Promise.reject('Trebuie să fiți de acord cu termenii și condițiile')
+      }
+      return Promise.resolve()
+    }
+  }]
+}
+
 const formData = ref({
   activityType: '',
   activityId: null as string | null,
@@ -510,6 +572,7 @@ const formData = ref({
     relationship: ''
   },
   agreements: {
+    participation: false,
     medicalTreatment: false,
     photos: false,
     transport: false,
@@ -667,6 +730,13 @@ const calculateAge = (index: number) => {
   }
 }
 
+const onDaysPerWeekChange = (value: string) => {
+  // Dacă se selectează 5 zile, resetează zilele preferate (toate zilele sunt incluse)
+  if (value === '5') {
+    formData.value.afterschool.preferredDays = []
+  }
+}
+
 const resetForm = () => {
   formRef.value?.resetFields()
   formData.value = {
@@ -701,6 +771,7 @@ const resetForm = () => {
       relationship: ''
     },
     agreements: {
+      participation: false,
       medicalTreatment: false,
       photos: false,
       transport: false,

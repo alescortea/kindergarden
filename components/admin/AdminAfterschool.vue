@@ -3,12 +3,56 @@
     <div class="info-section">
       <a-card>
         <template #title>
-          <h2>📚 Centru Afterschool</h2>
+          <div class="card-title-wrapper">
+            <h2>📚 Centru Afterschool</h2>
+            <a-button @click="editProgramInfo" type="primary" class="edit-info-btn">
+              <EditOutlined />
+              <span class="edit-btn-text">Editează Informații</span>
+            </a-button>
+          </div>
         </template>
-        <div class="program-info">
-          <p><strong>Program:</strong> Luni-Vineri (12:00-17:30)</p>
-          <p><strong>Mențiune*:</strong> În perioada vacanțelor școlare Luni-Vineri 8:00-17:30</p>
-          <p><strong>Flexibilitate:</strong> Părinții pot alege numărul de zile pe săptămână (1-5 zile) și zilele preferate.</p>
+        <div class="program-info" v-if="!isEditingProgramInfo">
+          <p><strong>Program:</strong> {{ programInfo.normalSchedule }}</p>
+          <p><strong>Mențiune*:</strong> {{ programInfo.holidaySchedule }}</p>
+          <p><strong>Flexibilitate:</strong> {{ programInfo.flexibility }}</p>
+        </div>
+        <div v-else class="program-info-edit">
+          <a-form :model="programInfo" layout="vertical">
+            <a-form-item label="Program Normal">
+              <a-input v-model:value="programInfo.normalSchedule" placeholder="ex: Luni-Vineri (12:00-17:30)" />
+            </a-form-item>
+            <a-form-item label="Program Vacanță">
+              <a-input v-model:value="programInfo.holidaySchedule" placeholder="ex: În perioada vacanțelor școlare Luni-Vineri 8:00-17:30" />
+            </a-form-item>
+            <a-form-item label="Flexibilitate">
+              <a-textarea v-model:value="programInfo.flexibility" :rows="2" placeholder="ex: Părinții pot alege numărul de zile pe săptămână (1-5 zile) și zilele preferate." />
+            </a-form-item>
+            <a-form-item label="Imagine pentru Card">
+              <a-upload
+                v-model:file-list="afterschoolImageFileList"
+                :before-upload="beforeUpload"
+                :custom-request="handleImageUpload"
+                list-type="picture-card"
+                :max-count="1"
+                accept="image/*"
+              >
+                <div v-if="afterschoolImageFileList.length < 1">
+                  <PlusOutlined />
+                  <div style="margin-top: 8px">Upload</div>
+                </div>
+              </a-upload>
+              <div v-if="programInfo.cardImage" style="margin-top: 16px;">
+                <p style="margin-bottom: 8px; color: #666;">Imagine actuală:</p>
+                <img :src="programInfo.cardImage" alt="Preview" style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 1px solid #d9d9d9;" />
+              </div>
+            </a-form-item>
+            <a-form-item>
+              <a-space>
+                <a-button @click="saveProgramInfo" type="primary">Salvează</a-button>
+                <a-button @click="cancelEditProgramInfo">Anulează</a-button>
+              </a-space>
+            </a-form-item>
+          </a-form>
         </div>
       </a-card>
     </div>
@@ -34,7 +78,7 @@
           <a-spin :spinning="loading">
             <a-table
               :columns="columns"
-              :data-source="registrations"
+              :data-source="filteredRegistrations"
               :pagination="{ 
                 pageSize: 10,
                 showSizeChanger: true,
@@ -42,11 +86,60 @@
                 showTotal: (total, range) => `${range[0]}-${range[1]} din ${total} înscrieri`
               }"
               :scroll="{ x: 'max-content' }"
-              row-key="id"
+              :row-key="(record) => String(record.id)"
+              :default-expand-all-rows="false"
+              :children-column-name="undefined"
+              :expandable="{
+                rowExpandable: (record) => {
+                  const childrenData = record._childrenData || record.children
+                  const canExpand = !!(record.id && record.parent && childrenData && Array.isArray(childrenData) && childrenData.length > 1)
+                  console.log('Afterschool row expandable check:', { id: record.id, hasParent: !!record.parent, childrenCount: childrenData?.length, canExpand })
+                  return canExpand
+                },
+                expandedRowKeys: expandedRowKeys,
+                onExpand: (expanded, record) => {
+                  if (expanded) {
+                    expandedRowKeys.value = [String(record.id)]
+                  } else {
+                    expandedRowKeys.value = []
+                  }
+                },
+                childrenColumnName: undefined,
+                indentSize: 0
+              }"
             >
+              <template #expandedRowRender="{ record }">
+                <div v-if="(record._childrenData || record.children) && Array.isArray(record._childrenData || record.children) && (record._childrenData || record.children).length > 1" style="padding: 16px; background: #fafafa; border-top: 1px solid #e8e8e8;">
+                  <h4 style="margin-bottom: 16px; color: #1890ff;">Detalii Copii</h4>
+                  <div v-for="(child, index) in (record._childrenData || record.children)" :key="`child-${record.id}-${index}`" style="margin-bottom: 16px; padding: 12px; background: white; border-radius: 8px; border: 1px solid #e8e8e8;">
+                    <div style="font-weight: bold; margin-bottom: 8px; color: #1890ff;">Copil {{ index + 1 }}</div>
+                    <div style="margin-bottom: 4px;"><strong>Nume:</strong> {{ (child.firstName || '').trim() }} {{ (child.lastName || '').trim() }}</div>
+                    <div style="margin-bottom: 4px;" v-if="child.age"><strong>Vârstă:</strong> {{ child.age }} ani</div>
+                    <div style="margin-bottom: 4px;" v-if="child.birthDate"><strong>Data Nașterii:</strong> {{ child.birthDate }}</div>
+                    <div style="margin-bottom: 4px;" v-if="child.gender"><strong>Gen:</strong> {{ child.gender === 'male' ? 'Băiat' : child.gender === 'female' ? 'Fată' : 'N/A' }}</div>
+                    <div style="margin-bottom: 4px;" v-if="child.medical?.allergies"><strong>Alergii:</strong> {{ child.medical.allergies }}</div>
+                    <div style="margin-bottom: 4px;" v-if="child.medical?.conditions"><strong>Afecțiuni Medicale:</strong> {{ child.medical.conditions }}</div>
+                    <div style="margin-bottom: 4px;" v-if="child.medical?.medications"><strong>Medicamente:</strong> {{ child.medical.medications }}</div>
+                    <div style="margin-bottom: 4px;" v-if="child.otherInfo"><strong>Alte Informații:</strong> {{ child.otherInfo }}</div>
+                  </div>
+                </div>
+              </template>
               <template #bodyCell="{ column, record }">
                 <template v-if="column.key === 'child'">
-                  {{ record.child?.firstName || record.childFirstName }} {{ record.child?.lastName || record.childLastName }} ({{ record.child?.age || record.childAge || '-' }} ani)
+                  <template v-if="(record._childrenData || record.children) && (record._childrenData || record.children).length > 0">
+                    <template v-if="(record._childrenData || record.children).length === 1">
+                      {{ ((record._childrenData || record.children)[0].firstName || '').trim() }} {{ ((record._childrenData || record.children)[0].lastName || '').trim() }} ({{ (record._childrenData || record.children)[0].age || '-' }} ani)
+                    </template>
+                    <template v-else>
+                      <a-tag color="blue">{{ (record._childrenData || record.children).length }} copii</a-tag>
+                    </template>
+                  </template>
+                  <template v-else-if="record.child && ((record.child.firstName && record.child.firstName.trim()) || (record.child.lastName && record.child.lastName.trim()))">
+                    {{ (record.child.firstName || '').trim() }} {{ (record.child.lastName || '').trim() }} ({{ record.child.age || '-' }} ani)
+                  </template>
+                  <template v-else>
+                    {{ record.childFirstName || '' }} {{ record.childLastName || '' }} ({{ record.childAge || '-' }} ani)
+                  </template>
                 </template>
                 <template v-else-if="column.key === 'parent'">
                   {{ record.parent?.firstName || record.parentFirstName }} {{ record.parent?.lastName || record.parentLastName }}<br>
@@ -90,13 +183,13 @@
         <!-- Mobile Cards -->
         <div class="mobile-cards">
           <a-spin :spinning="loading">
-            <div v-if="registrations.length === 0" class="empty-state">
+            <div v-if="filteredRegistrations.length === 0" class="empty-state">
               <p>Nu există înscrieri</p>
             </div>
             <div v-else>
               <a-pagination
                 v-model:current="mobilePage"
-                :total="registrations.length"
+                :total="filteredRegistrations.length"
                 :page-size="mobilePageSize"
                 :show-size-changer="false"
                 simple
@@ -182,7 +275,7 @@
           <a-descriptions-item label="Email">
             <a :href="`mailto:${selectedRegistration.parent?.email || selectedRegistration.parentEmail}`">{{ selectedRegistration.parent?.email || selectedRegistration.parentEmail }}</a>
           </a-descriptions-item>
-          <a-descriptions-item label="Program Zilnic">
+          <a-descriptions-item label="Program">
             {{ getScheduleLabel(selectedRegistration.afterschool?.schedule) }}
           </a-descriptions-item>
           <a-descriptions-item label="Zile pe Săptămână">
@@ -229,8 +322,40 @@
             </a-form-item>
           </a-col>
         </a-row>
-        <a-form-item label="Vârstă" required>
-          <a-input-number v-model:value="editForm.child.age" :min="1" :max="18" style="width: 100%" />
+        <a-row :gutter="16">
+          <a-col :xs="24" :sm="12">
+            <a-form-item label="Vârstă">
+              <a-input-number v-model:value="editForm.child.age" :min="1" :max="18" style="width: 100%" />
+            </a-form-item>
+          </a-col>
+          <a-col :xs="24" :sm="12">
+            <a-form-item label="Data Nașterii">
+              <a-date-picker
+                v-model:value="editForm.child.birthDate"
+                style="width: 100%"
+                format="DD.MM.YYYY"
+              />
+            </a-form-item>
+          </a-col>
+        </a-row>
+        <a-row :gutter="16">
+          <a-col :xs="24" :sm="12">
+            <a-form-item label="Gen">
+              <a-select v-model:value="editForm.child.gender" style="width: 100%">
+                <a-select-option value="">Selectează</a-select-option>
+                <a-select-option value="male">Băiat</a-select-option>
+                <a-select-option value="female">Fată</a-select-option>
+              </a-select>
+            </a-form-item>
+          </a-col>
+          <a-col :xs="24" :sm="12">
+            <a-form-item label="CNP">
+              <a-input v-model:value="editForm.child.cnp" />
+            </a-form-item>
+          </a-col>
+        </a-row>
+        <a-form-item label="Alte Informații">
+          <a-textarea v-model:value="editForm.child.otherInfo" :rows="3" placeholder="Alte informații despre copil" />
         </a-form-item>
 
         <a-divider>Date Părinte</a-divider>
@@ -258,15 +383,44 @@
             </a-form-item>
           </a-col>
         </a-row>
-
-        <a-divider>Centru Afterschool</a-divider>
-        <a-form-item label="Program Zilnic">
-          <a-select v-model:value="editForm.afterschool.schedule" style="width: 100%">
-            <a-select-option value="full-time">Program Complet (9:00 - 17:00)</a-select-option>
-            <a-select-option value="morning">Dimineață (9:00 - 13:00)</a-select-option>
-            <a-select-option value="afternoon">După-amiază (13:00 - 17:00)</a-select-option>
+        <a-form-item label="Relație">
+          <a-select v-model:value="editForm.parent.relationship" style="width: 100%">
+            <a-select-option value="">Selectează</a-select-option>
+            <a-select-option value="mother">Mamă</a-select-option>
+            <a-select-option value="father">Tată</a-select-option>
+            <a-select-option value="guardian">Tutore</a-select-option>
           </a-select>
         </a-form-item>
+
+        <a-divider>Centru Afterschool</a-divider>
+        <a-form-item label="Program">
+          <a-select v-model:value="editForm.afterschool.schedule" style="width: 100%">
+            <a-select-option value="daily">Zilnic (12:00-17:30)</a-select-option>
+            <a-select-option value="vacation">Vacanță (08:00-17:30)</a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-row :gutter="16" v-if="editForm.afterschool.schedule === 'custom'">
+          <a-col :xs="24" :sm="12">
+            <a-form-item label="Ora Începerii">
+              <a-time-picker
+                v-model:value="editForm.afterschool.startTime"
+                style="width: 100%"
+                format="HH:mm"
+                placeholder="Selectează ora"
+              />
+            </a-form-item>
+          </a-col>
+          <a-col :xs="24" :sm="12">
+            <a-form-item label="Ora Sfârșitului">
+              <a-time-picker
+                v-model:value="editForm.afterschool.endTime"
+                style="width: 100%"
+                format="HH:mm"
+                placeholder="Selectează ora"
+              />
+            </a-form-item>
+          </a-col>
+        </a-row>
         <a-form-item label="Zile pe Săptămână">
           <a-select v-model:value="editForm.afterschool.daysPerWeek" style="width: 100%">
             <a-select-option value="1">1 zi/săptămână</a-select-option>
@@ -319,10 +473,12 @@
 </template>
 
 <script setup lang="ts">
-import { ReloadOutlined, DownloadOutlined, EyeOutlined, EditOutlined } from '@ant-design/icons-vue'
+import { ReloadOutlined, DownloadOutlined, EyeOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons-vue'
+import { onMounted } from 'vue'
 import { message } from 'ant-design-vue'
 import dayjs from 'dayjs'
 import * as XLSX from 'xlsx'
+import type { UploadProps } from 'ant-design-vue'
 
 const loading = ref(false)
 const exporting = ref(false)
@@ -334,25 +490,69 @@ const isEditing = ref(false)
 const saving = ref(false)
 const mobilePage = ref(1)
 const mobilePageSize = ref(5)
+const isEditingProgramInfo = ref(false)
+
+const programInfo = ref({
+  normalSchedule: 'Luni-Vineri (12:00-17:30)',
+  holidaySchedule: 'În perioada vacanțelor școlare Luni-Vineri 8:00-17:30',
+  flexibility: 'Părinții pot alege numărul de zile pe săptămână (1-5 zile) și zilele preferate.',
+  cardImage: ''
+})
+
+const afterschoolImageFileList = ref<any[]>([])
+
+const beforeUpload: UploadProps['beforeUpload'] = (file: File) => {
+  const isImage = file.type?.startsWith('image/')
+  if (!isImage) {
+    message.error('Poți încărca doar imagini!')
+    return false
+  }
+  const isLt10M = file.size / 1024 / 1024 < 10
+  if (!isLt10M) {
+    message.error('Imaginea trebuie să fie mai mică de 10MB!')
+    return false
+  }
+  return false
+}
+
+const handleImageUpload = async (options: any) => {
+  const { file } = options
+  afterschoolImageFileList.value = [{
+    uid: '-1',
+    name: file.name,
+    status: 'done',
+    url: URL.createObjectURL(file),
+    originFileObj: file
+  }]
+  message.success('Imaginea a fost selectată! Va fi încărcată la salvare.')
+  return false
+}
 
 const editForm = ref({
   child: {
     firstName: '',
     lastName: '',
-    age: 0
+    age: 0 as number | null,
+    birthDate: null as any,
+    gender: '',
+    cnp: '',
+    otherInfo: ''
   },
   parent: {
     firstName: '',
     lastName: '',
     phone: '',
-    email: ''
+    email: '',
+    relationship: ''
   },
   status: 'pending',
   afterschool: {
     schedule: '',
     daysPerWeek: '',
     preferredDays: [] as string[],
-    startDate: null as any
+    startDate: null as any,
+    startTime: null as any,
+    endTime: null as any
   }
 })
 
@@ -390,16 +590,19 @@ const columns = [
   {
     title: 'Acțiuni',
     key: 'actions',
-    fixed: 'right'
+    fixed: 'right',
+    width: 150
   }
 ]
 
 const getScheduleLabel = (schedule: string) => {
   const labels: Record<string, string> = {
-    'full': 'Program Complet (9:00 - 17:00)',
-    'full-time': 'Program Complet (9:00 - 17:00)',
-    'morning': 'Dimineață (9:00 - 13:00)',
-    'afternoon': 'După-amiază (13:00 - 17:00)'
+    'daily': 'Zilnic (12:00-17:30)',
+    'vacation': 'Vacanță (08:00-17:30)',
+    // Backward compatibility with old values
+    'full': 'Zilnic (12:00-17:30)',
+    'full-time': 'Zilnic (12:00-17:30)',
+    'morning': 'Zilnic (12:00-17:30)'
   }
   return labels[schedule?.toLowerCase()] || 'Nespecificat'
 }
@@ -493,7 +696,7 @@ const formatDate = (date: string | Date | any) => {
 const paginatedMobileRegistrations = computed(() => {
   const start = (mobilePage.value - 1) * mobilePageSize.value
   const end = start + mobilePageSize.value
-  return registrations.value.slice(start, end)
+  return filteredRegistrations.value.slice(start, end)
 })
 
 const loadRegistrations = async () => {
@@ -506,7 +709,35 @@ const loadRegistrations = async () => {
       }
     })
     
-    registrations.value = response as any[]
+    console.log('Afterschool raw API response:', response)
+    console.log('Afterschool response length:', Array.isArray(response) ? response.length : 0)
+    
+    // Filter and transform data like in AdminRegistrations
+    const filtered = (Array.isArray(response) ? response : []).filter(r => {
+      if (!r || !r.id) {
+        console.log('Afterschool filtered out - no id:', r)
+        return false
+      }
+      const hasParent = !!(r.parent || (r.children && r.children.length > 0) || r.child)
+      const hasStatus = !!(r.status && r.status !== 'Nespecificat')
+      if (!hasParent || !hasStatus) {
+        console.log('Afterschool filtered out registration:', { id: r.id, hasParent, hasStatus, status: r.status })
+      }
+      return hasParent && hasStatus
+    })
+    
+    // Transform data to prevent Ant Design from creating rows for children
+    registrations.value = filtered.map(r => {
+      const { children, ...rest } = r
+      return {
+        ...rest,
+        _childrenData: children,
+        children: undefined
+      }
+    })
+    
+    console.log('Afterschool filtered registrations count:', registrations.value.length)
+    console.log('Afterschool sample registration:', registrations.value[0])
   } catch (error) {
     console.error('Error loading registrations:', error)
     message.error('Eroare la încărcarea înscrierilor')
@@ -514,6 +745,11 @@ const loadRegistrations = async () => {
     loading.value = false
   }
 }
+
+const filteredRegistrations = computed(() => {
+  console.log('Afterschool filteredRegistrations computed, count:', registrations.value.length)
+  return registrations.value
+})
 
 const viewRegistration = (registration: any) => {
   selectedRegistration.value = registration
@@ -527,17 +763,31 @@ const closeViewModal = () => {
 
 const editRegistration = (registration: any) => {
   selectedRegistration.value = registration
+  // Support both old (child) and new (children) structure
+  const childData = registration.children && registration.children.length > 0 
+    ? registration.children[0] 
+    : (registration.child || {})
+  
   editForm.value = {
     child: {
-      firstName: registration.child?.firstName || registration.childFirstName || '',
-      lastName: registration.child?.lastName || registration.childLastName || '',
-      age: registration.child?.age || registration.childAge || 0
+      firstName: childData.firstName || registration.childFirstName || '',
+      lastName: childData.lastName || registration.childLastName || '',
+      age: childData.age || registration.childAge || null,
+      birthDate: childData.birthDate 
+        ? (typeof childData.birthDate === 'string' 
+            ? dayjs(childData.birthDate) 
+            : dayjs(childData.birthDate))
+        : null,
+      gender: childData.gender || '',
+      cnp: childData.cnp || '',
+      otherInfo: childData.otherInfo || ''
     },
     parent: {
       firstName: registration.parent?.firstName || registration.parentFirstName || '',
       lastName: registration.parent?.lastName || registration.parentLastName || '',
       phone: registration.parent?.phone || registration.parentPhone || '',
-      email: registration.parent?.email || registration.parentEmail || ''
+      email: registration.parent?.email || registration.parentEmail || '',
+      relationship: registration.parent?.relationship || ''
     },
     status: registration.status || 'pending',
     afterschool: {
@@ -548,6 +798,16 @@ const editRegistration = (registration: any) => {
         ? (typeof registration.afterschool.startDate === 'string' 
             ? dayjs(registration.afterschool.startDate) 
             : dayjs(registration.afterschool.startDate))
+        : null,
+      startTime: registration.afterschool?.startTime 
+        ? (typeof registration.afterschool.startTime === 'string' 
+            ? dayjs(registration.afterschool.startTime, 'HH:mm') 
+            : dayjs(registration.afterschool.startTime))
+        : null,
+      endTime: registration.afterschool?.endTime 
+        ? (typeof registration.afterschool.endTime === 'string' 
+            ? dayjs(registration.afterschool.endTime, 'HH:mm') 
+            : dayjs(registration.afterschool.endTime))
         : null
     }
   }
@@ -560,14 +820,30 @@ const handleEditModalCancel = () => {
   isEditing.value = false
   selectedRegistration.value = null
   editForm.value = {
-    child: { firstName: '', lastName: '', age: 0 },
-    parent: { firstName: '', lastName: '', phone: '', email: '' },
+    child: { 
+      firstName: '', 
+      lastName: '', 
+      age: null,
+      birthDate: null,
+      gender: '',
+      cnp: '',
+      otherInfo: ''
+    },
+    parent: { 
+      firstName: '', 
+      lastName: '', 
+      phone: '', 
+      email: '',
+      relationship: ''
+    },
     status: 'pending',
     afterschool: {
       schedule: '',
       daysPerWeek: '',
       preferredDays: [],
-      startDate: null
+      startDate: null,
+      startTime: null,
+      endTime: null
     }
   }
 }
@@ -600,7 +876,14 @@ const saveRegistration = async () => {
   saving.value = true
   try {
     const updateData: any = {
-      child: editForm.value.child,
+      child: {
+        ...editForm.value.child,
+        birthDate: editForm.value.child.birthDate
+          ? (dayjs.isDayjs(editForm.value.child.birthDate)
+              ? editForm.value.child.birthDate.format('YYYY-MM-DD')
+              : editForm.value.child.birthDate)
+          : null
+      },
       parent: editForm.value.parent,
       status: editForm.value.status,
       afterschool: {
@@ -609,6 +892,16 @@ const saveRegistration = async () => {
           ? (dayjs.isDayjs(editForm.value.afterschool.startDate)
               ? editForm.value.afterschool.startDate.format('YYYY-MM-DD')
               : editForm.value.afterschool.startDate)
+          : null,
+        startTime: editForm.value.afterschool.startTime
+          ? (dayjs.isDayjs(editForm.value.afterschool.startTime)
+              ? editForm.value.afterschool.startTime.format('HH:mm')
+              : editForm.value.afterschool.startTime)
+          : null,
+        endTime: editForm.value.afterschool.endTime
+          ? (dayjs.isDayjs(editForm.value.afterschool.endTime)
+              ? editForm.value.afterschool.endTime.format('HH:mm')
+              : editForm.value.afterschool.endTime)
           : null
       }
     }
@@ -666,8 +959,90 @@ const exportToExcel = async () => {
   }
 }
 
+const loadProgramInfo = async () => {
+  try {
+    // Încarcă informațiile despre program din localStorage
+    const savedInfo = localStorage.getItem('afterschool-program-info')
+    if (savedInfo) {
+      const parsed = JSON.parse(savedInfo)
+      programInfo.value = {
+        normalSchedule: parsed.normalSchedule || 'Luni-Vineri (12:00-17:30)',
+        holidaySchedule: parsed.holidaySchedule || 'În perioada vacanțelor școlare Luni-Vineri 8:00-17:30',
+        flexibility: parsed.flexibility || 'Părinții pot alege numărul de zile pe săptămână (1-5 zile) și zilele preferate.',
+        cardImage: parsed.cardImage || ''
+      }
+      // Setează file list pentru imaginea existentă
+      if (programInfo.value.cardImage) {
+        afterschoolImageFileList.value = [{
+          uid: '-1',
+          name: 'imagine-actuala.jpg',
+          status: 'done',
+          url: programInfo.value.cardImage
+        }]
+      } else {
+        afterschoolImageFileList.value = []
+      }
+    }
+  } catch (error) {
+    console.error('Error loading program info:', error)
+  }
+}
+
+const editProgramInfo = () => {
+  isEditingProgramInfo.value = true
+}
+
+const saveProgramInfo = async () => {
+  try {
+    // Upload image if there's a new file to upload
+    let imageUrl = null
+    if (afterschoolImageFileList.value.length > 0 && afterschoolImageFileList.value[0].originFileObj) {
+      const file = afterschoolImageFileList.value[0].originFileObj
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('folder', 'afterschool')
+      
+      const uploadResponse = await $fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      })
+      
+      if (uploadResponse.uploads && uploadResponse.uploads.length > 0) {
+        imageUrl = uploadResponse.uploads[0].url
+        console.log('Image uploaded during save, URL:', imageUrl)
+      } else {
+        message.error('Eroare: Nu s-a primit URL-ul imaginii după upload.')
+        return
+      }
+    }
+    
+    // Use uploaded image or existing image
+    const finalImageUrl = imageUrl || programInfo.value.cardImage
+    
+    // Salvează informațiile în localStorage
+    const dataToSave = {
+      ...programInfo.value,
+      cardImage: finalImageUrl
+    }
+    localStorage.setItem('afterschool-program-info', JSON.stringify(dataToSave))
+    programInfo.value.cardImage = finalImageUrl
+    message.success('Informațiile au fost salvate cu succes')
+    isEditingProgramInfo.value = false
+  } catch (error) {
+    console.error('Error saving program info:', error)
+    message.error('Eroare la salvarea informațiilor')
+  }
+}
+
+const cancelEditProgramInfo = () => {
+  // Reîncarcă informațiile originale
+  loadProgramInfo()
+  isEditingProgramInfo.value = false
+}
+
 onMounted(() => {
   loadRegistrations()
+  loadProgramInfo()
 })
 </script>
 
@@ -783,7 +1158,40 @@ onMounted(() => {
   border-top: 1px solid #f0f0f0;
 }
 
+.card-title-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.card-title-wrapper h2 {
+  margin: 0;
+  flex: 1;
+  min-width: 200px;
+}
+
+.edit-info-btn {
+  white-space: nowrap;
+}
+
 @media (max-width: 768px) {
+  .card-title-wrapper {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  
+  .card-title-wrapper h2 {
+    margin-bottom: 0;
+  }
+  
+  .edit-info-btn {
+    width: 100%;
+    margin-top: 8px;
+  }
+  
   .actions-section {
     flex-direction: column;
   }
@@ -804,5 +1212,6 @@ onMounted(() => {
     width: 100%;
   }
 }
+
 </style>
 

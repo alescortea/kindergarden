@@ -50,7 +50,8 @@
             <a-card class="activity-card activity-afterschool" hoverable>
               <template #cover>
                 <div class="activity-image">
-                  <BookOutlined />
+                  <img v-if="afterschoolCardImage" :src="afterschoolCardImage" alt="Centru Afterschool" />
+                  <BookOutlined v-else />
                 </div>
               </template>
               <a-card-meta>
@@ -323,6 +324,7 @@ const trips = ref<any[]>([])
 const skiLessons = ref<any[]>([])
 const swimmingLessons = ref<any[]>([])
 const schoolOffers = ref<any[]>([])
+const afterschoolCardImage = ref<string>('')
 
 const goHome = () => {
   router.push('/')
@@ -405,7 +407,7 @@ const availableActivityTypes = computed(() => {
   const types: Array<{ value: string; label: string }> = []
   
   // Afterschool este întotdeauna disponibil
-  types.push({ value: 'afterschool', label: 'Centru Afterschool (9-17)' })
+  types.push({ value: 'afterschool', label: 'Centru Afterschool' })
   
   // Verificăm ce activități au date
   if (camps.value.length > 0) {
@@ -513,8 +515,23 @@ const navigateToRegistration = (activityType: string, activityId: string) => {
   })
 }
 
+const loadAfterschoolImage = () => {
+  try {
+    const savedInfo = localStorage.getItem('afterschool-program-info')
+    if (savedInfo) {
+      const parsed = JSON.parse(savedInfo)
+      if (parsed.cardImage) {
+        afterschoolCardImage.value = parsed.cardImage
+      }
+    }
+  } catch (error) {
+    console.error('Error loading afterschool image:', error)
+  }
+}
+
 onMounted(() => {
   loadActivities()
+  loadAfterschoolImage()
 })
 </script>
 

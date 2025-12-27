@@ -156,15 +156,31 @@
 
     <a-layout-footer class="footer">
       <div class="footer-content">
+        <div class="footer-stats">
+          <div class="stat-item">
+            <div class="stat-number">500+</div>
+            <div class="stat-label">Activități</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">1000+</div>
+            <div class="stat-label">Copii Înscriși</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">15+</div>
+            <div class="stat-label">Ani Experiență</div>
+          </div>
+        </div>
         <div class="footer-info">
           <div class="footer-section">
             <p><strong>Adresă:</strong> Str. Albatrosului Nr. 11, Avantgarden, Bartolomeu, Brașov</p>
             <p><strong>Telefon:</strong> <a href="tel:0724428883">0724428883</a></p>
-            <a href="https://www.facebook.com/profile.php?id=61551620890862" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 8px;">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#1877F2" style="vertical-align: middle;">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-              </svg>
-            </a></p>
+            <p>
+              <a href="https://www.facebook.com/profile.php?id=61551620890862" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 8px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white" style="vertical-align: middle;">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+              </a>
+            </p>
           </div>
         </div>
         <p>&copy; 2024 Roseli. Toate drepturile rezervate.</p>
@@ -374,8 +390,43 @@ const handleMobileMenuClick = ({ key }: { key: string }) => {
   padding-right: var(--app-margin-desktop, 24px);
 }
 
+.footer-content {
+  color: white;
+}
+
 .footer-content p {
   margin: 4px 0;
+  color: white !important;
+  opacity: 1;
+}
+
+.footer-content strong {
+  color: white !important;
+}
+
+.footer-stats {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  font-size: 1rem;
+  color: white;
   opacity: 0.9;
 }
 
@@ -385,21 +436,27 @@ const handleMobileMenuClick = ({ key }: { key: string }) => {
 
 .footer-section {
   text-align: center;
+  color: white;
 }
 
 .footer-section p {
   margin: 8px 0;
-  opacity: 0.9;
+  color: white !important;
+  opacity: 1;
+}
+
+.footer-section strong {
+  color: white !important;
 }
 
 .footer-section a {
-  color: #64b5f6;
+  color: white !important;
   text-decoration: none;
-  transition: color 0.3s ease;
+  transition: opacity 0.3s ease;
 }
 
 .footer-section a:hover {
-  color: #90caf9;
+  opacity: 0.8;
   text-decoration: underline;
 }
 

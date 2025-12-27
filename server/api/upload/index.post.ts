@@ -1,4 +1,4 @@
-import { uploadImage, uploadVideo } from '~/composables/useStorage'
+import { getAdmin } from '~/server/utils/firebaseAdmin'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -11,44 +11,72 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    const uploads = []
+    // Extract folder from formData if provided
+    let folderName = 'general'
+    const folderField = formData.find(f => f.name === 'folder' && !f.filename)
+    if (folderField && folderField.data) {
+      folderName = Buffer.from(folderField.data).toString('utf-8')
+      console.log('Folder extracted from formData:', folderName)
+    }
     
-    for (const file of formData) {
-      if (!file.filename || !file.data) continue
-      
-      const folder = file.name || 'general'
-      // Convert Buffer to Uint8Array for File constructor
-      const uint8Array = new Uint8Array(file.data)
-      const fileObj = new File([uint8Array], file.filename, {
-        type: file.type || 'application/octet-stream'
+    // Find file in formData
+    const file = formData.find(f => f.name === 'file' && f.filename && f.data)
+    
+    if (!file || !file.data || !file.filename) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Missing file'
       })
-      
-      let url: string
-      
-      if (file.type?.startsWith('image/')) {
-        url = await uploadImage(folder, fileObj)
-      } else if (file.type?.startsWith('video/')) {
-        url = await uploadVideo(folder, fileObj)
-      } else {
-        continue
+    }
+    
+    console.log('Processing file:', { filename: file.filename, type: file.type, folder: folderName })
+    
+    // Initialize Firebase Admin
+    const admin = getAdmin()
+    const bucket = admin.storage().bucket()
+    
+    // Generate file path
+    const fileName = `${Date.now()}_${file.filename}`
+    const filePath = `${folderName}/${fileName}`
+    
+    console.log('Uploading to path:', filePath)
+    
+    // Upload file using Admin SDK
+    const fileRef = bucket.file(filePath)
+    await fileRef.save(file.data, {
+      contentType: file.type || 'application/octet-stream',
+      resumable: false,
+      metadata: {
+        contentType: file.type || 'application/octet-stream',
       }
-      
-      uploads.push({
+    })
+    
+    console.log('File uploaded successfully to:', filePath)
+    
+    // Make file publicly accessible and get URL
+    await fileRef.makePublic()
+    
+    // Get public URL
+    const url = `https://storage.googleapis.com/${bucket.name}/${filePath}`
+    
+    console.log('File URL:', url)
+    
+    return {
+      uploads: [{
         filename: file.filename,
         url,
         type: file.type,
-        size: file.data.length
-      })
+        size: file.data.length,
+        path: filePath
+      }],
+      message: 'File uploaded successfully'
     }
-    
-    return {
-      uploads,
-      message: 'Files uploaded successfully'
-    }
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Upload error:', error)
     throw createError({
-      statusCode: 500,
-      statusMessage: 'Failed to upload files'
+      statusCode: error.statusCode || 500,
+      statusMessage: error.message || 'Failed to upload files',
+      data: error
     })
   }
 })

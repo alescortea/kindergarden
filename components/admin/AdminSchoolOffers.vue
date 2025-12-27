@@ -94,6 +94,25 @@
             Transport inclus
           </a-checkbox>
         </a-form-item>
+        <a-form-item label="Imagine Principală">
+          <a-upload
+            v-model:file-list="imageFileList"
+            :before-upload="beforeUpload"
+            :custom-request="handleImageUpload"
+            list-type="picture-card"
+            :max-count="1"
+            accept="image/*"
+          >
+            <div v-if="imageFileList.length < 1">
+              <PlusOutlined />
+              <div style="margin-top: 8px">Upload</div>
+            </div>
+          </a-upload>
+          <div v-if="offerForm.gallery && offerForm.gallery.length > 0" style="margin-top: 16px;">
+            <p style="margin-bottom: 8px; color: #666;">Imagine actuală:</p>
+            <img :src="offerForm.gallery[0]" alt="Preview" style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 1px solid #d9d9d9;" />
+          </div>
+        </a-form-item>
       </a-form>
     </a-modal>
   </div>
@@ -102,6 +121,7 @@
 <script setup lang="ts">
 import { PlusOutlined, EditOutlined, DeleteOutlined, BookOutlined } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
+import type { UploadProps } from 'ant-design-vue'
 
 const loading = ref(false)
 const offers = ref<any[]>([])
@@ -131,6 +151,36 @@ const offerForm = ref<{
   videos: []
 })
 
+const imageFileList = ref<any[]>([])
+const uploading = ref(false)
+
+const beforeUpload: UploadProps['beforeUpload'] = (file: File) => {
+  const isImage = file.type?.startsWith('image/')
+  if (!isImage) {
+    message.error('Poți încărca doar imagini!')
+    return false
+  }
+  const isLt10M = file.size / 1024 / 1024 < 10
+  if (!isLt10M) {
+    message.error('Imaginea trebuie să fie mai mică de 10MB!')
+    return false
+  }
+  return false
+}
+
+const handleImageUpload = async (options: any) => {
+  const { file } = options
+  imageFileList.value = [{
+    uid: '-1',
+    name: file.name,
+    status: 'done',
+    url: URL.createObjectURL(file),
+    originFileObj: file
+  }]
+  message.success('Imaginea a fost selectată! Va fi încărcată la salvare.')
+  return false
+}
+
 const loadOffers = async () => {
   loading.value = true
   try {
@@ -157,6 +207,17 @@ const editOffer = (offer: any) => {
   offerForm.value = {
     ...offer
   }
+  // Setează file list pentru imaginea existentă
+  if (offer.gallery && offer.gallery.length > 0) {
+    imageFileList.value = [{
+      uid: '-1',
+      name: 'imagine-actuala.jpg',
+      status: 'done',
+      url: offer.gallery[0]
+    }]
+  } else {
+    imageFileList.value = []
+  }
   modalVisible.value = true
 }
 
@@ -173,6 +234,8 @@ const resetForm = () => {
     gallery: [],
     videos: []
   }
+  imageFileList.value = []
+  isEditing.value = false
 }
 
 const saveOffer = async () => {
@@ -182,8 +245,39 @@ const saveOffer = async () => {
   }
 
   try {
+    // Upload image if there's a new file to upload
+    let imageUrl = null
+    if (imageFileList.value.length > 0 && imageFileList.value[0].originFileObj) {
+      const file = imageFileList.value[0].originFileObj
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('folder', 'school-offers')
+      
+      const uploadResponse = await $fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      })
+      
+      if (uploadResponse.uploads && uploadResponse.uploads.length > 0) {
+        imageUrl = uploadResponse.uploads[0].url
+        console.log('Image uploaded during save, URL:', imageUrl)
+      } else {
+        message.error('Eroare: Nu s-a primit URL-ul imaginii după upload.')
+        return
+      }
+    }
+    
+    // Build gallery array - use uploaded image or existing gallery
+    let galleryArray = []
+    if (imageUrl) {
+      galleryArray = [imageUrl]
+    } else if (Array.isArray(offerForm.value.gallery) && offerForm.value.gallery.length > 0) {
+      galleryArray = [...offerForm.value.gallery]
+    }
+    
     const data = {
-      ...offerForm.value
+      ...offerForm.value,
+      gallery: galleryArray
     }
 
     // Remove undefined fields
@@ -248,6 +342,23 @@ onMounted(() => {
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.offer-card :deep(.ant-card-body) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.offer-card :deep(.ant-card-meta) {
+  flex: 1;
+}
+
+.offer-card :deep(.ant-card-actions) {
+  margin-top: auto;
 }
 
 .offer-image {

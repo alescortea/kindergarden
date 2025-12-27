@@ -35,10 +35,19 @@ const registrationSchema = z.object({
     relationship: z.string().min(1, 'Relația este obligatorie'),
   }),
   agreements: z.object({
-    medicalTreatment: z.boolean(),
-    photos: z.boolean(),
+    participation: z.boolean().refine((val) => val === true, {
+      message: 'Trebuie să fiți de acord cu participarea copilului'
+    }),
+    medicalTreatment: z.boolean().refine((val) => val === true, {
+      message: 'Trebuie să fiți de acord cu tratamentul medical'
+    }),
+    photos: z.boolean().refine((val) => val === true, {
+      message: 'Trebuie să fiți de acord cu fotografia'
+    }),
     transport: z.boolean().optional(),
-    terms: z.boolean(),
+    terms: z.boolean().refine((val) => val === true, {
+      message: 'Trebuie să fiți de acord cu termenii și condițiile'
+    }),
   }),
   afterschool: z.object({
     schedule: z.string().optional(),

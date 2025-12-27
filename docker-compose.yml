@@ -20,10 +20,13 @@ services:
       - FIREBASE_MESSAGING_SENDER_ID=${FIREBASE_MESSAGING_SENDER_ID}
       - FIREBASE_APP_ID=${FIREBASE_APP_ID}
       - FIREBASE_MEASUREMENT_ID=${FIREBASE_MEASUREMENT_ID}
+      # Firebase Admin SDK Configuration
       - FIREBASE_ADMIN_KEY=${FIREBASE_ADMIN_KEY}
+      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
+      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
     env_file:
       - .env
-    command: sh -c "npm ci && npx nuxt prepare && npm run dev -- --host 0.0.0.0 --port 3000"
+    command: sh -c "npm install && npx nuxt prepare && npm run dev -- --host 0.0.0.0 --port 3000"
 
 volumes:
   node_modules:

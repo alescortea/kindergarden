@@ -1,4 +1,5 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+// @ts-ignore - defineNuxtConfig is auto-imported by Nuxt
 export default defineNuxtConfig({
   devtools: { enabled: false },
   
@@ -31,6 +32,9 @@ export default defineNuxtConfig({
     // Private keys (only available on server-side)
     firebaseAdminKey: process.env.FIREBASE_ADMIN_KEY,
     firebaseProjectId: process.env.FIREBASE_PROJECT_ID,
+    // Firebase Admin SDK credentials (alternative to FIREBASE_ADMIN_KEY)
+    firebaseClientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    firebasePrivateKey: process.env.FIREBASE_PRIVATE_KEY,
     
     // Public keys (exposed to client-side)
     public: {

@@ -16,7 +16,7 @@
             <a-select-option value="trip">Excursie</a-select-option>
             <a-select-option value="ski">Ski</a-select-option>
             <a-select-option value="swimming">Înot</a-select-option>
-            <a-select-option value="afterschool">Centrul Afterschool (9-17)</a-select-option>
+            <a-select-option value="afterschool">Centru Afterschool</a-select-option>
             <a-select-option value="school-offer">Ofertă Școlară</a-select-option>
           </a-select>
         </a-col>
@@ -69,11 +69,14 @@
             :scroll="{ x: 'max-content' }"
             :row-key="(record) => String(record.id)"
             :default-expand-all-rows="false"
+            :children-column-name="undefined"
             :expandable="{
               rowExpandable: (record) => {
                 // Only allow expansion for registrations with multiple children
                 // Make sure this is a parent registration, not a child
-                const canExpand = !!(record.id && record.parent && record.children && Array.isArray(record.children) && record.children.length > 1)
+                const childrenData = record._childrenData || record.children
+                const canExpand = !!(record.id && record.parent && childrenData && Array.isArray(childrenData) && childrenData.length > 1)
+                console.log('Row expandable check:', { id: record.id, hasParent: !!record.parent, childrenCount: childrenData?.length, canExpand })
                 return canExpand
               },
               expandedRowKeys: expandedRowKeys,
@@ -86,13 +89,15 @@
                 }
               },
               // Prevent nested expansion - children should not be expandable
-              childrenColumnName: undefined
+              childrenColumnName: undefined,
+              // Ensure no child rows are created
+              indentSize: 0
             }"
           >
             <template #expandedRowRender="{ record }">
-              <div v-if="record.children && Array.isArray(record.children) && record.children.length > 1" style="padding: 16px; background: #fafafa; border-top: 1px solid #e8e8e8; display: block;">
+              <div v-if="(record._childrenData || record.children) && Array.isArray(record._childrenData || record.children) && (record._childrenData || record.children).length > 1" style="padding: 16px; background: #fafafa; border-top: 1px solid #e8e8e8;">
                 <h4 style="margin-bottom: 16px; color: #1890ff;">Detalii Copii</h4>
-                <div v-for="(child, index) in record.children" :key="`child-${record.id}-${index}`" style="margin-bottom: 16px; padding: 12px; background: white; border-radius: 8px; border: 1px solid #e8e8e8; display: block;">
+                <div v-for="(child, index) in (record._childrenData || record.children)" :key="`child-${record.id}-${index}`" style="margin-bottom: 16px; padding: 12px; background: white; border-radius: 8px; border: 1px solid #e8e8e8;">
                   <div style="font-weight: bold; margin-bottom: 8px; color: #1890ff;">Copil {{ index + 1 }}</div>
                   <div style="margin-bottom: 4px;"><strong>Nume:</strong> {{ (child.firstName || '').trim() }} {{ (child.lastName || '').trim() }}</div>
                   <div style="margin-bottom: 4px;" v-if="child.age"><strong>Vârstă:</strong> {{ child.age }} ani</div>
@@ -110,17 +115,17 @@
             </template>
             <template #bodyCell="{ column, record }">
               <template v-if="column.key === 'childName'">
-                <template v-if="record.children && record.children.length > 0">
-                  <template v-if="record.children.length === 1">
-                    <template v-if="record.children[0].firstName || record.children[0].lastName">
-                      {{ (record.children[0].firstName || '').trim() }} {{ (record.children[0].lastName || '').trim() }}
+                <template v-if="(record._childrenData || record.children) && (record._childrenData || record.children).length > 0">
+                  <template v-if="(record._childrenData || record.children).length === 1">
+                    <template v-if="(record._childrenData || record.children)[0].firstName || (record._childrenData || record.children)[0].lastName">
+                      {{ ((record._childrenData || record.children)[0].firstName || '').trim() }} {{ ((record._childrenData || record.children)[0].lastName || '').trim() }}
                     </template>
                     <template v-else>
                       -
                     </template>
                   </template>
                   <template v-else>
-                    <a-tag color="blue">{{ record.children.length }} copii</a-tag>
+                    <a-tag color="blue">{{ (record._childrenData || record.children).length }} copii</a-tag>
                   </template>
                 </template>
                 <template v-else-if="record.child && ((record.child.firstName && record.child.firstName.trim()) || (record.child.lastName && record.child.lastName.trim()))">
@@ -131,10 +136,10 @@
                 </template>
               </template>
               <template v-if="column.key === 'age'">
-                <template v-if="record.children && record.children.length > 0">
-                  <template v-if="record.children.length === 1">
-                    <template v-if="record.children[0].age">
-                      {{ record.children[0].age }} ani
+                <template v-if="(record._childrenData || record.children) && (record._childrenData || record.children).length > 0">
+                  <template v-if="(record._childrenData || record.children).length === 1">
+                    <template v-if="(record._childrenData || record.children)[0].age">
+                      {{ (record._childrenData || record.children)[0].age }} ani
                     </template>
                     <template v-else>
                       -
@@ -225,8 +230,8 @@
             >
               <div class="card-header">
                 <h3>
-                  <template v-if="record.children && record.children.length > 0">
-                    {{ record.children.length }} copil{{ record.children.length > 1 ? 'i' : '' }}
+                  <template v-if="(record._childrenData || record.children) && (record._childrenData || record.children).length > 0">
+                    {{ (record._childrenData || record.children).length }} copil{{ (record._childrenData || record.children).length > 1 ? 'i' : '' }}
                   </template>
                   <template v-else-if="record.child">
                     {{ record.child.firstName }} {{ record.child.lastName }}
@@ -240,8 +245,8 @@
                 </a-tag>
               </div>
               <div class="card-content">
-                <template v-if="record.children && record.children.length > 0">
-                  <div v-for="(child, index) in record.children" :key="index" class="card-item">
+                <template v-if="(record._childrenData || record.children) && (record._childrenData || record.children).length > 0">
+                  <div v-for="(child, index) in (record._childrenData || record.children)" :key="index" class="card-item">
                     <strong>Copil {{ index + 1 }}:</strong> {{ child.firstName }} {{ child.lastName }} 
                     <span v-if="child.age">({{ child.age }} ani)</span>
                   </div>
@@ -367,7 +372,7 @@
           </a-descriptions-item>
           <!-- Afterschool Program Details -->
           <template v-if="selectedRegistration.afterschool">
-            <a-descriptions-item label="Program Zilnic">
+            <a-descriptions-item label="Program">
               {{ getScheduleLabel(selectedRegistration.afterschool.schedule) }}
             </a-descriptions-item>
             <a-descriptions-item label="Zile pe Săptămână">
@@ -500,7 +505,7 @@
                     <a-select-option value="trip">Excursie</a-select-option>
                     <a-select-option value="ski">Ski</a-select-option>
                     <a-select-option value="swimming">Înot</a-select-option>
-                    <a-select-option value="afterschool">Centru Afterschool (9-17)</a-select-option>
+                    <a-select-option value="afterschool">Centru Afterschool</a-select-option>
                     <a-select-option value="school-offer">Ofertă Școlară</a-select-option>
                   </a-select>
                 </a-form-item>
@@ -520,11 +525,10 @@
               <a-divider>Detalii Centru Afterschool</a-divider>
               <a-row :gutter="16">
                 <a-col :xs="24" :sm="12">
-                  <a-form-item label="Program Zilnic">
+                  <a-form-item label="Program">
                     <a-select v-model:value="editForm.afterschool.schedule" style="width: 100%">
-                      <a-select-option value="full-time">Program Complet (9:00 - 17:00)</a-select-option>
-                      <a-select-option value="morning">Dimineață (9:00 - 13:00)</a-select-option>
-                      <a-select-option value="afternoon">După-amiază (13:00 - 17:00)</a-select-option>
+                      <a-select-option value="daily">Zilnic (12:00-17:30)</a-select-option>
+                      <a-select-option value="vacation">Vacanță (08:00-17:30)</a-select-option>
                     </a-select>
                   </a-form-item>
                 </a-col>
@@ -682,7 +686,7 @@ const getActivityTypeLabel = (type: string) => {
     'trip': 'Excursie',
     'ski': 'Ski',
     'swimming': 'Înot',
-    'afterschool': 'Centru Afterschool (9-17)',
+    'afterschool': 'Centru Afterschool',
     'school-offer': 'Ofertă Școlară'
   }
   return labels[type] || type
@@ -756,11 +760,36 @@ const filteredRegistrations = computed(() => {
 
   // Return only parent registrations - children should only appear in expandedRowRender
   // Make absolutely sure we're not returning children as separate rows
-  return filtered.filter(r => {
+  const finalFiltered = filtered.filter(r => {
     // Double check: ensure this is not a child object
     // Children should not have 'parent' or 'children' properties in a way that makes them look like registrations
-    return !!(r.id && (r.parent || r.children || r.child))
+    // Also ensure the registration has a valid status (not undefined/null)
+    const isValid = !!(r.id && (r.parent || r.children || r.child) && r.status)
+    if (!isValid) {
+      console.log('Filtered out invalid registration:', r)
+    }
+    return isValid
   })
+  
+  // CRITICAL: Transform data to prevent Ant Design from creating rows for children
+  // Remove children property temporarily and store it separately, or ensure children is not treated as nested rows
+  const transformedData = finalFiltered.map(r => {
+    // Create a copy without the children property that Ant Design might interpret as nested rows
+    const { children, ...rest } = r
+    // Store children in a different property name that Ant Design won't recognize
+    return {
+      ...rest,
+      _childrenData: children, // Store children data separately
+      // Explicitly set children to undefined to prevent Ant Design from creating nested rows
+      children: undefined
+    }
+  })
+  
+  console.log('Filtered registrations count:', finalFiltered.length)
+  console.log('Transformed data sample:', transformedData.slice(0, 2))
+  console.log('First registration children:', finalFiltered[0]?.children)
+  
+  return transformedData
 })
 
 const loadRegistrations = async () => {
@@ -777,7 +806,10 @@ const loadRegistrations = async () => {
       if (!r || !r.id) return false
       // Only keep registrations that have parent info (these are parent registrations)
       // Children should not have parent info, so they won't be included
-      return !!(r.parent || (r.children && r.children.length > 0) || r.child)
+      // Also ensure it has a valid status
+      const hasParent = !!(r.parent || (r.children && r.children.length > 0) || r.child)
+      const hasStatus = !!(r.status && r.status !== 'Nespecificat')
+      return hasParent && hasStatus
     })
   } catch (error) {
     console.error('Failed to load registrations:', error)
@@ -853,10 +885,12 @@ const handleModalCancel = () => {
 
 const getScheduleLabel = (schedule: string) => {
   const labels: Record<string, string> = {
-    'full': 'Program Complet (9:00 - 17:00)',
-    'full-time': 'Program Complet (9:00 - 17:00)',
-    'morning': 'Dimineață (9:00 - 13:00)',
-    'afternoon': 'După-amiază (13:00 - 17:00)'
+    'daily': 'Zilnic (12:00-17:30)',
+    'vacation': 'Vacanță (08:00-17:30)',
+    // Backward compatibility with old values
+    'full': 'Zilnic (12:00-17:30)',
+    'full-time': 'Zilnic (12:00-17:30)',
+    'morning': 'Zilnic (12:00-17:30)'
   }
   return labels[schedule?.toLowerCase()] || 'Nespecificat'
 }

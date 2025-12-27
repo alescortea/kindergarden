@@ -16,6 +16,7 @@
     "ant-design-vue": "^4.0.0",
     "dayjs": "^1.11.9",
     "firebase": "^10.14.1",
+    "firebase-admin": "^13.6.0",
     "nuxt": "^3.8.0",
     "vue": "^3.3.4",
     "xlsx": "^0.18.5",

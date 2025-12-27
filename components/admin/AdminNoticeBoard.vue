@@ -222,6 +222,23 @@ onMounted(() => {
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.notice-card :deep(.ant-card-body) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.notice-card :deep(.ant-card-meta) {
+  flex: 1;
+}
+
+.notice-card :deep(.ant-card-actions) {
+  margin-top: auto;
 }
 
 .notice-image {

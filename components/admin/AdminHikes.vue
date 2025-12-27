@@ -124,6 +124,25 @@
         <a-form-item label="Detalii Suplimentare">
           <a-textarea v-model:value="hikeForm.details" :rows="3" placeholder="Informații suplimentare" />
         </a-form-item>
+        <a-form-item label="Imagine Principală">
+          <a-upload
+            v-model:file-list="imageFileList"
+            :before-upload="beforeUpload"
+            :custom-request="handleImageUpload"
+            list-type="picture-card"
+            :max-count="1"
+            accept="image/*"
+          >
+            <div v-if="imageFileList.length < 1">
+              <PlusOutlined />
+              <div style="margin-top: 8px">Upload</div>
+            </div>
+          </a-upload>
+          <div v-if="hikeForm.gallery && hikeForm.gallery.length > 0" style="margin-top: 16px;">
+            <p style="margin-bottom: 8px; color: #666;">Imagine actuală:</p>
+            <img :src="hikeForm.gallery[0]" alt="Preview" style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 1px solid #d9d9d9;" />
+          </div>
+        </a-form-item>
       </a-form>
     </a-modal>
   </div>
@@ -132,6 +151,7 @@
 <script setup lang="ts">
 import { PlusOutlined, EditOutlined, DeleteOutlined, EnvironmentOutlined } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
+import type { UploadProps } from 'ant-design-vue'
 
 const loading = ref(false)
 const hikes = ref<any[]>([])
@@ -176,6 +196,36 @@ const hikeForm = ref<{
   program: '',
   details: ''
 })
+
+const imageFileList = ref<any[]>([])
+const uploading = ref(false)
+
+const beforeUpload: UploadProps['beforeUpload'] = (file: File) => {
+  const isImage = file.type?.startsWith('image/')
+  if (!isImage) {
+    message.error('Poți încărca doar imagini!')
+    return false
+  }
+  const isLt10M = file.size / 1024 / 1024 < 10
+  if (!isLt10M) {
+    message.error('Imaginea trebuie să fie mai mică de 10MB!')
+    return false
+  }
+  return false
+}
+
+const handleImageUpload = async (options: any) => {
+  const { file } = options
+  imageFileList.value = [{
+    uid: '-1',
+    name: file.name,
+    status: 'done',
+    url: URL.createObjectURL(file),
+    originFileObj: file
+  }]
+  message.success('Imaginea a fost selectată! Va fi încărcată la salvare.')
+  return false
+}
 
 const loadHikes = async () => {
   loading.value = true
@@ -241,6 +291,17 @@ const editHike = (hike: any) => {
   hikeForm.value = {
     ...hike
   }
+  // Setează file list pentru imaginea existentă
+  if (hike.gallery && hike.gallery.length > 0) {
+    imageFileList.value = [{
+      uid: '-1',
+      name: 'imagine-actuala.jpg',
+      status: 'done',
+      url: hike.gallery[0]
+    }]
+  } else {
+    imageFileList.value = []
+  }
   modalVisible.value = true
 }
 
@@ -264,6 +325,8 @@ const resetForm = () => {
     program: '',
     details: ''
   }
+  imageFileList.value = []
+  isEditing.value = false
 }
 
 const saveHike = async () => {
@@ -273,12 +336,43 @@ const saveHike = async () => {
   }
 
   try {
+    // Upload image if there's a new file to upload
+    let imageUrl = null
+    if (imageFileList.value.length > 0 && imageFileList.value[0].originFileObj) {
+      const file = imageFileList.value[0].originFileObj
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('folder', 'hikes')
+      
+      const uploadResponse = await $fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      })
+      
+      if (uploadResponse.uploads && uploadResponse.uploads.length > 0) {
+        imageUrl = uploadResponse.uploads[0].url
+        console.log('Image uploaded during save, URL:', imageUrl)
+      } else {
+        message.error('Eroare: Nu s-a primit URL-ul imaginii după upload.')
+        return
+      }
+    }
+    
     // Get county name
     const selectedCounty = counties.value.find(c => c.id === hikeForm.value.countyId)
     
+    // Build gallery array - use uploaded image or existing gallery
+    let galleryArray = []
+    if (imageUrl) {
+      galleryArray = [imageUrl]
+    } else if (Array.isArray(hikeForm.value.gallery) && hikeForm.value.gallery.length > 0) {
+      galleryArray = [...hikeForm.value.gallery]
+    }
+    
     const data = {
       ...hikeForm.value,
-      countyName: selectedCounty?.name || hikeForm.value.countyName || ''
+      countyName: selectedCounty?.name || hikeForm.value.countyName || '',
+      gallery: galleryArray
     }
 
     // Remove undefined fields
@@ -299,6 +393,7 @@ const saveHike = async () => {
     }
 
     modalVisible.value = false
+    resetForm()
     await loadHikes()
   } catch (error) {
     console.error('Failed to save hike:', error)
@@ -336,6 +431,23 @@ onMounted(() => {
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.hike-card :deep(.ant-card-body) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.hike-card :deep(.ant-card-meta) {
+  flex: 1;
+}
+
+.hike-card :deep(.ant-card-actions) {
+  margin-top: auto;
 }
 
 .hike-image {
