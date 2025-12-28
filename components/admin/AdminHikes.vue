@@ -129,11 +129,12 @@
             v-model:file-list="imageFileList"
             :before-upload="beforeUpload"
             :custom-request="handleImageUpload"
-            list-type="picture-card"
+            :list-type="isMobile ? 'picture' : 'picture-card'"
             :max-count="1"
             accept="image/*"
+            :show-upload-list="true"
           >
-            <div v-if="imageFileList.length < 1">
+            <div v-if="imageFileList.length < 1" :class="isMobile ? 'mobile-upload-btn' : ''">
               <PlusOutlined />
               <div style="margin-top: 8px">Upload</div>
             </div>
@@ -152,6 +153,7 @@
 import { PlusOutlined, EditOutlined, DeleteOutlined, EnvironmentOutlined } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
 import type { UploadProps } from 'ant-design-vue'
+import { computed } from 'vue'
 
 const loading = ref(false)
 const hikes = ref<any[]>([])
@@ -200,6 +202,14 @@ const hikeForm = ref<{
 const imageFileList = ref<any[]>([])
 const uploading = ref(false)
 
+// Detect mobile device
+const isMobile = computed(() => {
+  if (process.client) {
+    return window.innerWidth <= 768
+  }
+  return false
+})
+
 const beforeUpload: UploadProps['beforeUpload'] = (file: File) => {
   const isImage = file.type?.startsWith('image/')
   if (!isImage) {
@@ -216,12 +226,16 @@ const beforeUpload: UploadProps['beforeUpload'] = (file: File) => {
 
 const handleImageUpload = async (options: any) => {
   const { file } = options
+  // Pe mobile, file poate fi direct File object sau poate fi într-un wrapper
+  const fileObj = file.originFileObj || file
+  
   imageFileList.value = [{
-    uid: '-1',
-    name: file.name,
+    uid: file.uid || '-1',
+    name: file.name || fileObj.name,
     status: 'done',
-    url: URL.createObjectURL(file),
-    originFileObj: file
+    url: file.url || (fileObj ? URL.createObjectURL(fileObj) : ''),
+    originFileObj: fileObj, // Păstrăm referința la fișierul original
+    file: fileObj // Backup pentru mobile
   }]
   message.success('Imaginea a fost selectată! Va fi încărcată la salvare.')
   return false
@@ -338,22 +352,44 @@ const saveHike = async () => {
   try {
     // Upload image if there's a new file to upload
     let imageUrl = null
-    if (imageFileList.value.length > 0 && imageFileList.value[0].originFileObj) {
-      const file = imageFileList.value[0].originFileObj
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('folder', 'hikes')
+    if (imageFileList.value.length > 0) {
+      const fileItem = imageFileList.value[0]
+      let f: any = fileItem?.originFileObj || fileItem?.file || fileItem
       
-      const uploadResponse = await $fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      })
+      // Acceptă și Blob (iOS uneori livrează Blob / wrapper)
+      const isFileOrBlob = f && (f instanceof File || f instanceof Blob)
+      if (!isFileOrBlob) {
+        message.error('Fișier invalid pentru upload.')
+        return
+      }
       
-      if (uploadResponse.uploads && uploadResponse.uploads.length > 0) {
-        imageUrl = uploadResponse.uploads[0].url
-        console.log('Image uploaded during save, URL:', imageUrl)
-      } else {
-        message.error('Eroare: Nu s-a primit URL-ul imaginii după upload.')
+      // iOS/Safari poate da Blob -> îl transformăm în File cu nume
+      if (!(f instanceof File)) {
+        const ext = (f.type?.split('/')?.[1] || 'jpg').replace('jpeg', 'jpg')
+        f = new File([f], `upload_${Date.now()}.${ext}`, { type: f.type || 'image/jpeg' })
+      }
+      
+      try {
+        const formData = new FormData()
+        // IMPORTANT: filename explicit (fix pentru iOS Safari)
+        formData.append('file', f, f.name)
+        formData.append('folder', 'hikes')
+        
+        const uploadResponse: any = await $fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        })
+        
+        if (uploadResponse?.uploads?.length) {
+          imageUrl = uploadResponse.uploads[0].url
+          console.log('Image uploaded during save, URL:', imageUrl)
+        } else {
+          message.error('Eroare: nu s-a primit URL după upload.')
+          return
+        }
+      } catch (uploadError: any) {
+        console.error('Upload error:', uploadError)
+        message.error(`Eroare la încărcarea imaginii: ${uploadError?.message || 'Eroare necunoscută'}`)
         return
       }
     }
@@ -475,6 +511,49 @@ onMounted(() => {
   font-weight: 600;
   margin-bottom: 16px;
   color: #2c3e50;
+}
+
+/* Mobile upload button styles */
+.mobile-upload-btn {
+  width: 100% !important;
+  min-height: 80px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 16px !important;
+  border: 2px dashed #d9d9d9 !important;
+  border-radius: 8px !important;
+  background: #fafafa !important;
+  cursor: pointer !important;
+}
+
+.mobile-upload-btn:hover {
+  border-color: #1890ff !important;
+  background: #f0f7ff !important;
+}
+
+/* Ensure upload component is touch-friendly on mobile */
+@media (max-width: 768px) {
+  .admin-hikes :deep(.ant-upload-select) {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 80px !important;
+  }
+  
+  .admin-hikes :deep(.ant-upload-select-picture-card) {
+    width: 100% !important;
+    height: 80px !important;
+  }
+  
+  .admin-hikes :deep(.ant-upload-list-picture) {
+    width: 100% !important;
+  }
+  
+  .admin-hikes :deep(.ant-upload-list-item) {
+    width: 100% !important;
+    margin-top: 16px !important;
+  }
 }
 </style>
 
