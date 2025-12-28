@@ -9,7 +9,7 @@
 
     <a-spin :spinning="loading">
       <a-row :gutter="[16, 16]">
-        <a-col :xs="12" :sm="8" :md="6" v-for="item in galleryItems" :key="item.id">
+        <a-col :xs="24" :sm="12" :md="8" :lg="6" v-for="item in galleryItems" :key="item.id">
           <a-card class="gallery-card" hoverable>
             <template #cover>
               <div class="gallery-item-image">
@@ -29,17 +29,21 @@
             </a-card-meta>
 
             <template #actions>
-              <a-button @click="editItem(item)">
-                <EditOutlined />
-              </a-button>
-              <a-popconfirm
-                title="Ești sigur că vrei să ștergi acest element din galerie?"
-                @confirm="deleteItem(item.id)"
-              >
-                <a-button danger>
-                  <DeleteOutlined />
+              <a-space :size="8" wrap>
+                <a-button @click="editItem(item)" size="small">
+                  <EditOutlined />
+                  <span class="action-text">Editează</span>
                 </a-button>
-              </a-popconfirm>
+                <a-popconfirm
+                  title="Ești sigur că vrei să ștergi acest element din galerie?"
+                  @confirm="deleteItem(item.id)"
+                >
+                  <a-button danger size="small">
+                    <DeleteOutlined />
+                    <span class="action-text">Șterge</span>
+                  </a-button>
+                </a-popconfirm>
+              </a-space>
             </template>
           </a-card>
         </a-col>
@@ -312,27 +316,62 @@ onMounted(() => {
 
 <style scoped>
 .admin-gallery {
-  padding: 24px;
+  padding: 16px;
 }
 
 .actions-section {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
+}
+
+.actions-section :deep(.ant-btn) {
+  width: 100%;
 }
 
 .gallery-card {
   height: 100%;
   display: flex;
   flex-direction: column;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .gallery-card :deep(.ant-card-body) {
   flex: 1;
   display: flex;
   flex-direction: column;
+  padding: 12px;
 }
 
 .gallery-card :deep(.ant-card-meta) {
   flex: 1;
+}
+
+.gallery-card :deep(.ant-card-meta-title) {
+  margin-bottom: 8px;
+}
+
+.gallery-card :deep(.ant-card-meta-title h3) {
+  font-size: 14px;
+  margin: 0;
+  word-break: break-word;
+}
+
+.gallery-card :deep(.ant-card-meta-description) {
+  font-size: 12px;
+}
+
+.gallery-card :deep(.ant-card-meta-description p) {
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.gallery-card :deep(.ant-card-actions) {
+  padding: 8px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.gallery-card :deep(.ant-card-actions li) {
+  margin: 4px 0;
 }
 
 .gallery-item-image {
@@ -356,20 +395,90 @@ onMounted(() => {
   color: #999;
 }
 
-/* Ensure all cards have the same height */
-.gallery-card {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+.action-text {
+  margin-left: 4px;
 }
 
-.gallery-card :deep(.ant-card-body) {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+/* Mobile styles */
+@media (max-width: 576px) {
+  .admin-gallery {
+    padding: 12px;
+  }
+
+  .actions-section {
+    margin-bottom: 12px;
+  }
+
+  .gallery-card :deep(.ant-card-body) {
+    padding: 10px;
+  }
+
+  .gallery-card :deep(.ant-card-meta-title h3) {
+    font-size: 13px;
+  }
+
+  .gallery-card :deep(.ant-card-meta-description) {
+    font-size: 11px;
+  }
+
+  .gallery-item-image {
+    height: 180px;
+  }
+
+  .gallery-item-image :deep(.anticon) {
+    font-size: 40px;
+  }
+
+  .gallery-card :deep(.ant-card-actions) {
+    padding: 6px;
+  }
+
+  .gallery-card :deep(.ant-card-actions li) {
+    margin: 2px 0;
+  }
+
+  .action-text {
+    display: none;
+  }
+
+  .gallery-card :deep(.ant-btn) {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
 }
 
-.gallery-card :deep(.ant-card-meta) {
-  flex: 1;
+/* Tablet styles */
+@media (min-width: 577px) and (max-width: 768px) {
+  .gallery-item-image {
+    height: 190px;
+  }
+
+  .action-text {
+    display: inline;
+    font-size: 12px;
+  }
+}
+
+/* Desktop styles */
+@media (min-width: 769px) {
+  .admin-gallery {
+    padding: 24px;
+  }
+
+  .actions-section {
+    margin-bottom: 24px;
+  }
+
+  .actions-section :deep(.ant-btn) {
+    width: auto;
+  }
+
+  .gallery-item-image {
+    height: 200px;
+  }
+
+  .action-text {
+    display: inline;
+  }
 }
 </style>

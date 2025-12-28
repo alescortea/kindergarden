@@ -202,14 +202,27 @@
                   class="registration-card"
                 >
                   <div class="card-header">
-                    <h3>{{ record.child?.firstName || record.childFirstName }} {{ record.child?.lastName || record.childLastName }}</h3>
+                    <h3>
+                      <template v-if="(record._childrenData || record.children) && (record._childrenData || record.children).length > 0">
+                        {{ ((record._childrenData || record.children)[0].firstName || '').trim() }} {{ ((record._childrenData || record.children)[0].lastName || '').trim() }}
+                      </template>
+                      <template v-else>
+                        {{ record.child?.firstName || record.childFirstName || '' }} {{ record.child?.lastName || record.childLastName || '' }}
+                      </template>
+                    </h3>
                     <a-tag :color="getStatusColor(record.status)">
                       {{ getStatusLabel(record.status) }}
                     </a-tag>
                   </div>
                   <div class="card-content">
                     <div class="card-item">
-                      <strong>Vârstă:</strong> {{ record.child?.age || record.childAge || '-' }} ani
+                      <strong>Vârstă:</strong> 
+                      <template v-if="(record._childrenData || record.children) && (record._childrenData || record.children).length > 0">
+                        {{ (record._childrenData || record.children)[0].age || '-' }} ani
+                      </template>
+                      <template v-else>
+                        {{ record.child?.age || record.childAge || '-' }} ani
+                      </template>
                     </div>
                     <div class="card-item">
                       <strong>Părinte:</strong> {{ record.parent?.firstName || record.parentFirstName }} {{ record.parent?.lastName || record.parentLastName }}
@@ -264,7 +277,12 @@
       <div v-if="selectedRegistration">
         <a-descriptions :column="1" bordered>
           <a-descriptions-item label="Copil">
-            {{ selectedRegistration.child?.firstName || selectedRegistration.childFirstName }} {{ selectedRegistration.child?.lastName || selectedRegistration.childLastName }} ({{ selectedRegistration.child?.age || selectedRegistration.childAge || '-' }} ani)
+            <template v-if="(selectedRegistration._childrenData || selectedRegistration.children) && (selectedRegistration._childrenData || selectedRegistration.children).length > 0">
+              {{ ((selectedRegistration._childrenData || selectedRegistration.children)[0].firstName || '').trim() }} {{ ((selectedRegistration._childrenData || selectedRegistration.children)[0].lastName || '').trim() }} ({{ (selectedRegistration._childrenData || selectedRegistration.children)[0].age || '-' }} ani)
+            </template>
+            <template v-else>
+              {{ selectedRegistration.child?.firstName || selectedRegistration.childFirstName || '' }} {{ selectedRegistration.child?.lastName || selectedRegistration.childLastName || '' }} ({{ selectedRegistration.child?.age || selectedRegistration.childAge || '-' }} ani)
+            </template>
           </a-descriptions-item>
           <a-descriptions-item label="Părinte">
             {{ selectedRegistration.parent?.firstName || selectedRegistration.parentFirstName }} {{ selectedRegistration.parent?.lastName || selectedRegistration.parentLastName }}
@@ -764,8 +782,9 @@ const closeViewModal = () => {
 const editRegistration = (registration: any) => {
   selectedRegistration.value = registration
   // Support both old (child) and new (children) structure
-  const childData = registration.children && registration.children.length > 0 
-    ? registration.children[0] 
+  const childrenData = registration._childrenData || registration.children
+  const childData = childrenData && Array.isArray(childrenData) && childrenData.length > 0 
+    ? childrenData[0] 
     : (registration.child || {})
   
   editForm.value = {
@@ -875,15 +894,10 @@ const saveRegistration = async () => {
 
   saving.value = true
   try {
+    // Check if original registration has children array structure
+    const hasChildrenArray = selectedRegistration.value._childrenData || (selectedRegistration.value.children && Array.isArray(selectedRegistration.value.children))
+    
     const updateData: any = {
-      child: {
-        ...editForm.value.child,
-        birthDate: editForm.value.child.birthDate
-          ? (dayjs.isDayjs(editForm.value.child.birthDate)
-              ? editForm.value.child.birthDate.format('YYYY-MM-DD')
-              : editForm.value.child.birthDate)
-          : null
-      },
       parent: editForm.value.parent,
       status: editForm.value.status,
       afterschool: {
@@ -902,6 +916,45 @@ const saveRegistration = async () => {
           ? (dayjs.isDayjs(editForm.value.afterschool.endTime)
               ? editForm.value.afterschool.endTime.format('HH:mm')
               : editForm.value.afterschool.endTime)
+          : null
+      }
+    }
+    
+    // If original has children array, update as children array, otherwise as child object
+    if (hasChildrenArray) {
+      const childrenData = selectedRegistration.value._childrenData || selectedRegistration.value.children || []
+      // Update the first child with edited data
+      const updatedChildren = [...childrenData]
+      if (updatedChildren.length > 0) {
+        updatedChildren[0] = {
+          ...updatedChildren[0],
+          ...editForm.value.child,
+          birthDate: editForm.value.child.birthDate
+            ? (dayjs.isDayjs(editForm.value.child.birthDate)
+                ? editForm.value.child.birthDate.format('YYYY-MM-DD')
+                : editForm.value.child.birthDate)
+            : null
+        }
+      } else {
+        // If no children exist, create one
+        updatedChildren.push({
+          ...editForm.value.child,
+          birthDate: editForm.value.child.birthDate
+            ? (dayjs.isDayjs(editForm.value.child.birthDate)
+                ? editForm.value.child.birthDate.format('YYYY-MM-DD')
+                : editForm.value.child.birthDate)
+            : null
+        })
+      }
+      updateData.children = updatedChildren
+    } else {
+      // Old structure - use child object
+      updateData.child = {
+        ...editForm.value.child,
+        birthDate: editForm.value.child.birthDate
+          ? (dayjs.isDayjs(editForm.value.child.birthDate)
+              ? editForm.value.child.birthDate.format('YYYY-MM-DD')
+              : editForm.value.child.birthDate)
           : null
       }
     }
