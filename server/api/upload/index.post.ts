@@ -51,16 +51,30 @@ export default defineEventHandler(async (event) => {
 
     // Get Firebase Storage bucket (folosește Service Account din Cloud Run)
     console.log('[upload] Getting Firebase Storage bucket...')
+    console.log('[upload] Environment check - K_SERVICE:', process.env.K_SERVICE || 'not set')
+    console.log('[upload] Environment check - GOOGLE_CLOUD_PROJECT:', process.env.GOOGLE_CLOUD_PROJECT || 'not set')
+    
     let bucket
     try {
       bucket = getBucket()
-      console.log('[upload] Storage bucket:', bucket.name)
+      console.log('[upload] Storage bucket retrieved:', bucket.name)
+      console.log('[upload] Storage bucket exists:', bucket.exists ? 'checking...' : 'unknown')
     } catch (bucketError: any) {
       console.error('[upload] Bucket initialization error:', bucketError)
+      console.error('[upload] Bucket error details:', {
+        message: bucketError?.message,
+        code: bucketError?.code,
+        name: bucketError?.name,
+        stack: bucketError?.stack
+      })
       throw createError({
         statusCode: 500,
         statusMessage: `Firebase Storage bucket initialization failed: ${bucketError?.message || 'Unknown error'}`,
-        data: { originalError: bucketError?.message }
+        data: { 
+          originalError: bucketError?.message,
+          code: bucketError?.code,
+          name: bucketError?.name
+        }
       })
     }
 

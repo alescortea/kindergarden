@@ -61,16 +61,29 @@ export function getBucket() {
       // În Cloud Run, Admin SDK folosește automat Service Account-ul configurat
       // IMPORTANT: Nu folosim credentiale din env vars pe Cloud Run, chiar dacă există
       try {
+        console.log('[firebaseAdmin] Attempting to initialize with Cloud Run Service Account...')
+        console.log('[firebaseAdmin] Project ID from env:', process.env.GOOGLE_CLOUD_PROJECT)
+        
+        // Încearcă să inițializeze fără credentiale explicite (folosește Service Account implicit)
         admin.initializeApp({
           storageBucket,
         })
+        
         console.log('[firebaseAdmin] Firebase Admin initialized with Service Account from Cloud Run')
         console.log('[firebaseAdmin] Using implicit Service Account credentials')
+        
+        // Testează dacă bucket-ul este accesibil
+        const testBucket = admin.storage().bucket()
+        console.log('[firebaseAdmin] Test bucket name:', testBucket.name)
       } catch (error: any) {
         console.error('[firebaseAdmin] Error initializing with Cloud Run Service Account:', error?.message)
+        console.error('[firebaseAdmin] Error code:', error?.code)
+        console.error('[firebaseAdmin] Error name:', error?.name)
         console.error('[firebaseAdmin] Error stack:', error?.stack)
+        
         // Dacă Service Account-ul implicit nu funcționează, verifică IAM permissions
-        throw new Error(`Firebase Storage bucket initialization failed: ${error?.message}. Make sure the Cloud Run service account has 'Storage Object Admin' or 'Storage Admin' role for Firebase Storage.`)
+        const errorMessage = error?.message || 'Unknown error'
+        throw new Error(`Firebase Storage bucket initialization failed: ${errorMessage}. Make sure the Cloud Run service account has 'Storage Object Admin' or 'Storage Admin' role for Firebase Storage.`)
       }
     } else {
       // Local: folosește credentialele din .env
