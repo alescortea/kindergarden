@@ -2,8 +2,43 @@
 import admin from 'firebase-admin'
 
 /**
+ * Format private key correctly for Firebase Admin SDK
+ * Handles multiple formats: \\n (from .env), \n (after Node.js reads), and actual newlines
+ */
+function formatPrivateKey(privateKey: string): string {
+  if (!privateKey) {
+    throw new Error('Private key is empty')
+  }
+  
+  // Elimină ghilimele dacă există
+  let formatted = privateKey.trim()
+  if ((formatted.startsWith('"') && formatted.endsWith('"')) || 
+      (formatted.startsWith("'") && formatted.endsWith("'"))) {
+    formatted = formatted.slice(1, -1)
+  }
+  
+  // Înlocuiește toate variantele de newline escape-uri
+  // \\n (două backslash-uri din .env) -> \n
+  // \n (un backslash după ce Node.js citește) -> \n
+  formatted = formatted.replace(/\\\\n/g, '\n')  // Două backslash-uri
+  formatted = formatted.replace(/\\n/g, '\n')     // Un backslash
+  
+  // Asigură-te că cheia începe cu -----BEGIN PRIVATE KEY-----
+  if (!formatted.includes('BEGIN PRIVATE KEY') && !formatted.includes('BEGIN RSA PRIVATE KEY')) {
+    throw new Error('Invalid private key format: missing BEGIN PRIVATE KEY header')
+  }
+  
+  // Asigură-te că cheia se termină cu -----END PRIVATE KEY-----
+  if (!formatted.includes('END PRIVATE KEY') && !formatted.includes('END RSA PRIVATE KEY')) {
+    throw new Error('Invalid private key format: missing END PRIVATE KEY footer')
+  }
+  
+  return formatted
+}
+
+/**
  * Get Firebase Storage bucket
- * - În Cloud Run: folosește Service Account-ul implicit
+ * - În Cloud Run: folosește Service Account-ul implicit (NU folosește credentiale din env vars)
  * - Local: folosește credentialele din .env (FIREBASE_CLIENT_EMAIL + FIREBASE_PRIVATE_KEY sau FIREBASE_ADMIN_KEY)
  */
 export function getBucket() {
@@ -12,18 +47,31 @@ export function getBucket() {
     const storageBucket = process.env.FIREBASE_STORAGE_BUCKET || 'kindergarden-website.firebasestorage.app'
     
     // Detectează dacă suntem în Cloud Run
-    const isCloudRun = !!process.env.K_SERVICE || !!process.env.GOOGLE_CLOUD_PROJECT
+    // K_SERVICE este setat AUTOMAT de Cloud Run și este cel mai sigur indicator
+    // Nu verificăm FIREBASE_CLIENT_EMAIL pentru că poate fi setat și pe Cloud Run din greșeală
+    const isCloudRun = !!process.env.K_SERVICE
     
     console.log('[firebaseAdmin] Initializing Firebase Admin SDK...')
     console.log('[firebaseAdmin] Environment:', isCloudRun ? 'Cloud Run' : 'Local')
     console.log('[firebaseAdmin] Storage bucket:', storageBucket)
+    console.log('[firebaseAdmin] K_SERVICE:', process.env.K_SERVICE || 'not set')
+    console.log('[firebaseAdmin] GOOGLE_CLOUD_PROJECT:', process.env.GOOGLE_CLOUD_PROJECT || 'not set')
     
     if (isCloudRun) {
       // În Cloud Run, Admin SDK folosește automat Service Account-ul configurat
-      admin.initializeApp({
-        storageBucket,
-      })
-      console.log('[firebaseAdmin] Firebase Admin initialized with Service Account from Cloud Run')
+      // IMPORTANT: Nu folosim credentiale din env vars pe Cloud Run, chiar dacă există
+      try {
+        admin.initializeApp({
+          storageBucket,
+        })
+        console.log('[firebaseAdmin] Firebase Admin initialized with Service Account from Cloud Run')
+        console.log('[firebaseAdmin] Using implicit Service Account credentials')
+      } catch (error: any) {
+        console.error('[firebaseAdmin] Error initializing with Cloud Run Service Account:', error?.message)
+        console.error('[firebaseAdmin] Error stack:', error?.stack)
+        // Dacă Service Account-ul implicit nu funcționează, verifică IAM permissions
+        throw new Error(`Firebase Storage bucket initialization failed: ${error?.message}. Make sure the Cloud Run service account has 'Storage Object Admin' or 'Storage Admin' role for Firebase Storage.`)
+      }
     } else {
       // Local: folosește credentialele din .env
       if (config.firebaseAdminKey) {
@@ -51,15 +99,22 @@ export function getBucket() {
           throw new Error('Missing FIREBASE_PROJECT_ID for local development')
         }
         
-        admin.initializeApp({
-          credential: admin.credential.cert({
-            projectId,
-            clientEmail: config.firebaseClientEmail,
-            privateKey: config.firebasePrivateKey?.replace(/\\n/g, '\n'),
-          }),
-          storageBucket,
-        })
-        console.log('[firebaseAdmin] Firebase Admin initialized with separate credentials')
+        try {
+          const formattedPrivateKey = formatPrivateKey(config.firebasePrivateKey)
+          
+          admin.initializeApp({
+            credential: admin.credential.cert({
+              projectId,
+              clientEmail: config.firebaseClientEmail,
+              privateKey: formattedPrivateKey,
+            }),
+            storageBucket,
+          })
+          console.log('[firebaseAdmin] Firebase Admin initialized with separate credentials')
+        } catch (error: any) {
+          console.error('[firebaseAdmin] Error initializing with separate credentials:', error?.message)
+          throw new Error(`Failed to parse private key: ${error?.message}`)
+        }
       } else if (process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
         // Fallback la process.env direct
         console.log('[firebaseAdmin] Using FIREBASE_CLIENT_EMAIL + FIREBASE_PRIVATE_KEY from process.env for local development')
@@ -69,15 +124,22 @@ export function getBucket() {
           throw new Error('Missing FIREBASE_PROJECT_ID in environment variables for local development')
         }
         
-        admin.initializeApp({
-          credential: admin.credential.cert({
-            projectId,
-            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-            privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-          }),
-          storageBucket,
-        })
-        console.log('[firebaseAdmin] Firebase Admin initialized with separate credentials (from env)')
+        try {
+          const formattedPrivateKey = formatPrivateKey(process.env.FIREBASE_PRIVATE_KEY)
+          
+          admin.initializeApp({
+            credential: admin.credential.cert({
+              projectId,
+              clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+              privateKey: formattedPrivateKey,
+            }),
+            storageBucket,
+          })
+          console.log('[firebaseAdmin] Firebase Admin initialized with separate credentials (from env)')
+        } catch (error: any) {
+          console.error('[firebaseAdmin] Error initializing with separate credentials (from env):', error?.message)
+          throw new Error(`Failed to parse private key: ${error?.message}`)
+        }
       } else {
         const errorMsg = 'Firebase Admin credentials not found for local development. Please set FIREBASE_ADMIN_KEY (JSON string) or FIREBASE_CLIENT_EMAIL + FIREBASE_PRIVATE_KEY in .env'
         console.error('[firebaseAdmin]', errorMsg)
@@ -88,5 +150,12 @@ export function getBucket() {
     console.log('[firebaseAdmin] Firebase Admin already initialized, reusing existing instance')
   }
   
-  return admin.storage().bucket()
+  try {
+    const bucket = admin.storage().bucket()
+    console.log('[firebaseAdmin] Storage bucket retrieved successfully')
+    return bucket
+  } catch (error: any) {
+    console.error('[firebaseAdmin] Error getting storage bucket:', error?.message)
+    throw new Error(`Failed to get storage bucket: ${error?.message}`)
+  }
 }
