@@ -39,6 +39,7 @@ function formatPrivateKey(privateKey: string): string {
 /**
  * Get Firebase Storage bucket
  * - În Cloud Run: folosește Service Account-ul implicit (NU folosește credentiale din env vars)
+ * - Pe VPS: folosește GOOGLE_APPLICATION_CREDENTIALS (fișier JSON)
  * - Local: folosește credentialele din .env (FIREBASE_CLIENT_EMAIL + FIREBASE_PRIVATE_KEY sau FIREBASE_ADMIN_KEY)
  */
 export function getBucket() {
@@ -47,17 +48,43 @@ export function getBucket() {
     const storageBucket = process.env.FIREBASE_STORAGE_BUCKET || 'kindergarden-website.firebasestorage.app'
     
     // Detectează dacă suntem în Cloud Run
-    // K_SERVICE este setat AUTOMAT de Cloud Run și este cel mai sigur indicator
-    // Nu verificăm FIREBASE_CLIENT_EMAIL pentru că poate fi setat și pe Cloud Run din greșeală
     const isCloudRun = !!process.env.K_SERVICE
     
+    // Detectează dacă avem GOOGLE_APPLICATION_CREDENTIALS (VPS cu fișier JSON)
+    const hasGoogleCredentials = !!process.env.GOOGLE_APPLICATION_CREDENTIALS
+    
     console.log('[firebaseAdmin] Initializing Firebase Admin SDK...')
-    console.log('[firebaseAdmin] Environment:', isCloudRun ? 'Cloud Run' : 'Local')
     console.log('[firebaseAdmin] Storage bucket:', storageBucket)
     console.log('[firebaseAdmin] K_SERVICE:', process.env.K_SERVICE || 'not set')
+    console.log('[firebaseAdmin] GOOGLE_APPLICATION_CREDENTIALS:', process.env.GOOGLE_APPLICATION_CREDENTIALS || 'not set')
     console.log('[firebaseAdmin] GOOGLE_CLOUD_PROJECT:', process.env.GOOGLE_CLOUD_PROJECT || 'not set')
     
-    if (isCloudRun) {
+    // Verifică mai întâi GOOGLE_APPLICATION_CREDENTIALS (prioritate pentru VPS/Docker)
+    if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+      try {
+        console.log('[firebaseAdmin] Using GOOGLE_APPLICATION_CREDENTIALS')
+        console.log('[firebaseAdmin] Credentials file:', process.env.GOOGLE_APPLICATION_CREDENTIALS)
+        
+        // Firebase Admin SDK va detecta automat GOOGLE_APPLICATION_CREDENTIALS
+        admin.initializeApp({
+          storageBucket,
+        })
+        
+        console.log('[firebaseAdmin] Firebase Admin initialized with GOOGLE_APPLICATION_CREDENTIALS')
+        
+        const bucket = admin.storage().bucket()
+        console.log('[firebaseAdmin] Storage bucket retrieved successfully:', bucket.name)
+        return bucket
+      } catch (error: any) {
+        console.error('[firebaseAdmin] Error initializing with GOOGLE_APPLICATION_CREDENTIALS:', error?.message)
+        console.error('[firebaseAdmin] Error code:', error?.code)
+        console.error('[firebaseAdmin] Error name:', error?.name)
+        console.error('[firebaseAdmin] Error stack:', error?.stack)
+        
+        const errorMessage = error?.message || 'Unknown error'
+        throw new Error(`Firebase Storage bucket initialization failed: ${errorMessage}. Make sure GOOGLE_APPLICATION_CREDENTIALS points to a valid service account JSON file and the file has correct permissions.`)
+      }
+    } else if (isCloudRun) {
       // În Cloud Run, Admin SDK folosește automat Service Account-ul configurat
       // IMPORTANT: Nu folosim credentiale din env vars pe Cloud Run, chiar dacă există
       try {
@@ -165,10 +192,24 @@ export function getBucket() {
   
   try {
     const bucket = admin.storage().bucket()
-    console.log('[firebaseAdmin] Storage bucket retrieved successfully')
+    console.log('[firebaseAdmin] Storage bucket retrieved successfully:', bucket.name)
+    
+    // Verify that we can access the bucket (this will fail if permissions are wrong)
+    if (!bucket.name) {
+      throw new Error('Bucket name is empty - Firebase Admin SDK may not be properly initialized')
+    }
+    
     return bucket
   } catch (error: any) {
     console.error('[firebaseAdmin] Error getting storage bucket:', error?.message)
-    throw new Error(`Failed to get storage bucket: ${error?.message}`)
+    console.error('[firebaseAdmin] Error code:', error?.code)
+    console.error('[firebaseAdmin] Error name:', error?.name)
+    
+    // Provide more helpful error messages
+    if (error?.code === 'PERMISSION_DENIED' || error?.message?.includes('permission')) {
+      throw new Error(`Permission denied accessing Firebase Storage. Make sure the Cloud Run service account has 'Storage Object Admin' role. Original error: ${error?.message}`)
+    }
+    
+    throw new Error(`Failed to get storage bucket: ${error?.message || 'Unknown error'}`)
   }
 }

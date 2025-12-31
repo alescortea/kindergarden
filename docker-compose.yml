@@ -5,11 +5,14 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"   # IMPORTANT: doar localhost, pentru Nginx
+    volumes:
+      - ./secrets/firebase-sa.json:/run/secrets/firebase-sa.json:ro
     env_file:
       - .env
     environment:
       - NODE_ENV=production
       - NITRO_HOST=0.0.0.0
       - NITRO_PORT=3000
+      - GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/firebase-sa.json
 
 # nu ai nevoie de volumes în prod pentru Nuxt SSR
