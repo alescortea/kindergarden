@@ -44,8 +44,12 @@
 <script setup lang="ts">
 import { LogoutOutlined } from '@ant-design/icons-vue'
 
+// Apply auth middleware to protect this page
+definePageMeta({
+  middleware: 'auth'
+})
+
 const router = useRouter()
-const { signOut, getCurrentUser, user } = useAuth()
 
 const activeTab = ref('registrations')
 
@@ -63,50 +67,25 @@ const tabs = [
 ]
 
 const logout = async () => {
-  try {
-    // Sign out from Firebase Auth
-    await signOut()
-    
-    // Also remove legacy token if exists
-    if (import.meta.client) {
-      localStorage.removeItem('adminToken')
-    }
-    
-    router.push('/login')
-  } catch (error) {
-    console.error('Logout error:', error)
-    // Even if Firebase logout fails, clear local storage and redirect
-    if (import.meta.client) {
-      localStorage.removeItem('adminToken')
-    }
-    router.push('/login')
+  // Remove admin token
+  if (import.meta.client) {
+    localStorage.removeItem('adminToken')
   }
+  
+  // Redirect to login
+  router.push('/login')
 }
 
-// Check authentication with retry logic
-onMounted(async () => {
+// Check authentication on mount (additional safety check)
+onMounted(() => {
   if (import.meta.client) {
-    // Wait a bit for Firebase Auth to sync after page load
-    await new Promise(resolve => setTimeout(resolve, 500))
+    const adminToken = localStorage.getItem('adminToken')
+    const isAuthenticated = !!adminToken && adminToken === 'admin_token_here'
     
-    let currentUser = getCurrentUser()
-    let attempts = 0
-    
-    // Try multiple times to get the user (Firebase Auth might need time to sync)
-    while (!currentUser && attempts < 3) {
-      await new Promise(resolve => setTimeout(resolve, 200))
-      currentUser = getCurrentUser()
-      attempts++
-    }
-    
-    const legacyToken = localStorage.getItem('adminToken')
-    
-    // If neither Firebase Auth nor legacy token exists, redirect to login
-    if (!currentUser && !legacyToken) {
+    // If no valid token, redirect to login
+    if (!isAuthenticated) {
       console.warn('No authentication found, redirecting to login')
       router.push('/login')
-    } else {
-      console.log('Authentication verified:', currentUser?.email || 'legacy token')
     }
   }
 })

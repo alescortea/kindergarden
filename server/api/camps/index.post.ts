@@ -3,10 +3,14 @@ import { z } from 'zod'
 
 const campSchema = z.object({
   name: z.string(),
-  location: z.enum(['straja', 'rafting', 'danube_delta', 'colibita']),
+  // New location system (county-based)
+  countyId: z.string(),
+  countyName: z.string().optional(),
+  // Old location system (for backward compatibility)
+  location: z.enum(['straja', 'rafting', 'danube_delta', 'colibita']).optional(),
   year: z.number(),
-  startDate: z.string(),
-  endDate: z.string(),
+  startDate: z.string().nullable().optional(),
+  endDate: z.string().nullable().optional(),
   description: z.string(),
   price: z.number(),
   maxParticipants: z.number(),

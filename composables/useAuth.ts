@@ -1,6 +1,4 @@
 import { 
-  signInWithPopup, 
-  GoogleAuthProvider, 
   signOut,
   onAuthStateChanged,
   type User
@@ -14,60 +12,6 @@ const getAuthInstance = (): Auth => {
     throw new Error('Firebase Auth not initialized. Make sure you are on the client side.')
   }
   return auth
-}
-
-// Google Sign In
-export const signInWithGoogle = async (): Promise<User> => {
-  if (!import.meta.client) {
-    throw new Error('Authentication is only available on the client side')
-  }
-
-  const auth = getAuthInstance()
-  const provider = new GoogleAuthProvider()
-  
-  try {
-    const result = await signInWithPopup(auth, provider)
-    
-    // Wait for auth state to be fully updated using onAuthStateChanged
-    return new Promise((resolve, reject) => {
-      const unsubscribe = onAuthStateChanged(auth, (user) => {
-        unsubscribe()
-        if (user) {
-          resolve(user)
-        } else {
-          // Fallback: use result.user if available
-          if (result.user) {
-            resolve(result.user)
-          } else {
-            reject(new Error('Authentication succeeded but user not found'))
-          }
-        }
-      }, (error) => {
-        unsubscribe()
-        // If there's an error but we have result.user, still resolve
-        if (result.user) {
-          resolve(result.user)
-        } else {
-          reject(error)
-        }
-      })
-      
-      // Timeout fallback - if auth state doesn't change in 2 seconds, use result.user
-      setTimeout(() => {
-        unsubscribe()
-        if (result.user) {
-          resolve(result.user)
-        } else if (auth.currentUser) {
-          resolve(auth.currentUser)
-        } else {
-          reject(new Error('Authentication timeout'))
-        }
-      }, 2000)
-    })
-  } catch (error: any) {
-    console.error('Google sign in error:', error)
-    throw error
-  }
 }
 
 // Sign Out
@@ -124,7 +68,6 @@ export const useAuth = () => {
   return {
     user,
     loading,
-    signInWithGoogle,
     signOut: signOutUser,
     getCurrentUser,
     isAuthenticated: computed(() => !!user.value)

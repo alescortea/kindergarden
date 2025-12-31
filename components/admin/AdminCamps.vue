@@ -369,16 +369,26 @@ const saveCamp = async () => {
       galleryArray = [...campForm.value.gallery]
     }
     
-    const data = {
-      ...campForm.value,
+    // Ensure countyId is always included
+    if (!campForm.value.countyId) {
+      message.error('Județul este obligatoriu')
+      return
+    }
+
+    const data: any = {
+      name: campForm.value.name,
+      countyId: campForm.value.countyId,
       countyName: selectedCounty?.name || campForm.value.countyName || '',
+      year: campForm.value.year,
       startDate: campForm.value.startDate ? dayjs(campForm.value.startDate).format('YYYY-MM-DD') : null,
       endDate: campForm.value.endDate ? dayjs(campForm.value.endDate).format('YYYY-MM-DD') : null,
+      description: campForm.value.description || '',
+      price: campForm.value.price || 0,
+      maxParticipants: campForm.value.maxParticipants || 0,
       gallery: galleryArray
     }
 
-    // Remove undefined fields
-    delete data.id
+    // Remove undefined/null fields that shouldn't be sent
     if (!data.location) delete data.location
 
     if (isEditing.value && campForm.value.id) {
