@@ -300,6 +300,22 @@
 </template>
 
 <script setup lang="ts">
+// SEO Meta Tags
+useHead({
+  title: 'Toate Activitățile | Activități pentru Copii | Roseli',
+  meta: [
+    { name: 'description', content: 'Descoperă toate activitățile pe care le oferim pentru copii: tabere, drumeții, excursii, lecții de ski și înot, afterschool în Brașov.' },
+    { name: 'keywords', content: 'activități copii, tabere copii, drumeții copii, lecții ski, lecții înot, afterschool, activități Brașov' },
+    { property: 'og:title', content: 'Toate Activitățile | Roseli' },
+    { property: 'og:description', content: 'Descoperă toate activitățile pe care le oferim pentru copii' },
+    { property: 'og:url', content: 'https://activitati-copii-roseli.ro/activities' },
+    { name: 'twitter:title', content: 'Toate Activitățile | Roseli' },
+    { name: 'twitter:description', content: 'Descoperă toate activitățile pe care le oferim pentru copii' }
+  ],
+  link: [
+    { rel: 'canonical', href: 'https://activitati-copii-roseli.ro/activities' }
+  ]
+})
 import {
   ArrowLeftOutlined,
   TeamOutlined,

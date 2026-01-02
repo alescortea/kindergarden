@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /login
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://activitati-copii-roseli.ro/sitemap.xml
+

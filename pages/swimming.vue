@@ -55,6 +55,22 @@
   </template>
 
 <script setup lang="ts">
+// SEO Meta Tags
+useHead({
+  title: 'Lecții de Înot pentru Copii | Cursuri Înot Brașov | Roseli',
+  meta: [
+    { name: 'description', content: 'Lecții de înot individuale și de grup pentru copii. Cursuri de înot pentru toate nivelurile la Paradisul Acvatic, Brașov.' },
+    { name: 'keywords', content: 'lecții înot copii, cursuri înot copii, înot copii Brașov, lecții înot începători, înot pentru copii' },
+    { property: 'og:title', content: 'Lecții de Înot pentru Copii | Roseli' },
+    { property: 'og:description', content: 'Lecții de înot individuale și de grup pentru toate nivelurile' },
+    { property: 'og:url', content: 'https://activitati-copii-roseli.ro/swimming' },
+    { name: 'twitter:title', content: 'Lecții de Înot pentru Copii | Roseli' },
+    { name: 'twitter:description', content: 'Lecții de înot individuale și de grup pentru toate nivelurile' }
+  ],
+  link: [
+    { rel: 'canonical', href: 'https://activitati-copii-roseli.ro/swimming' }
+  ]
+})
 import { PlayCircleOutlined, FormOutlined, ArrowLeftOutlined } from '@ant-design/icons-vue'
 
 const router = useRouter()

@@ -298,8 +298,9 @@
       :title="isEditing ? 'Editează Înscrierea' : 'Vezi Înscrierea'"
       :width="modalWidth"
       :footer="null"
-      :wrap-class-name="'registration-modal'"
+      :wrap-class-name="'registration-modal admin-modal-wrapper'"
       :class="'registration-modal-wrapper'"
+      :body-style="{ maxHeight: isMobile ? '70vh' : 'none', overflowY: 'auto', padding: isMobile ? '16px' : '24px' }"
       @cancel="handleModalCancel"
     >
       <div v-if="selectedRegistration" class="registration-details">
@@ -649,6 +650,14 @@ const columns = [
 
 const mobilePage = ref(1)
 const mobilePageSize = ref(5)
+
+// Detect mobile device
+const isMobile = computed(() => {
+  if (process.client) {
+    return window.innerWidth <= 768
+  }
+  return false
+})
 
 const modalWidth = computed(() => {
   if (typeof window !== 'undefined') {

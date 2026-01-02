@@ -105,6 +105,23 @@
 <script setup lang="ts">
 import { EnvironmentOutlined, FormOutlined, EyeOutlined, ArrowLeftOutlined } from '@ant-design/icons-vue'
 
+// SEO Meta Tags
+useHead({
+  title: 'Drumeții pentru Copii | Aventuri Montane | Roseli',
+  meta: [
+    { name: 'description', content: 'Drumeții montane și de aventură pentru copii în Munții Carpați. Descoperă natura prin drumeții captivante adaptate pentru copii.' },
+    { name: 'keywords', content: 'drumeții copii, drumeții montane copii, aventuri copii, drumeții Carpați, activități outdoor copii' },
+    { property: 'og:title', content: 'Drumeții pentru Copii | Roseli' },
+    { property: 'og:description', content: 'Drumeții montane și de aventură pentru copii în Munții Carpați' },
+    { property: 'og:url', content: 'https://activitati-copii-roseli.ro/hikes' },
+    { name: 'twitter:title', content: 'Drumeții pentru Copii | Roseli' },
+    { name: 'twitter:description', content: 'Drumeții montane și de aventură pentru copii în Munții Carpați' }
+  ],
+  link: [
+    { rel: 'canonical', href: 'https://activitati-copii-roseli.ro/hikes' }
+  ]
+})
+
 const router = useRouter()
 
 const loading = ref(false)

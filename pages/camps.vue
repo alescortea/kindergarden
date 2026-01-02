@@ -142,6 +142,23 @@
 <script setup lang="ts">
 import { TeamOutlined, FormOutlined, EyeOutlined, ArrowLeftOutlined } from '@ant-design/icons-vue'
 
+// SEO Meta Tags
+useHead({
+  title: 'Tabere pentru Copii | Tabere de Vară și Iarnă | Roseli',
+  meta: [
+    { name: 'description', content: 'Tabere de aventură pentru copii în locații frumoase din România. Tabere de vară și iarnă cu activități sportive și educaționale pentru copii.' },
+    { name: 'keywords', content: 'tabere copii, tabere vară copii, tabere iarnă copii, tabere aventură, tabere Brașov, tabere România' },
+    { property: 'og:title', content: 'Tabere pentru Copii | Roseli' },
+    { property: 'og:description', content: 'Tabere de aventură pentru copii în locații frumoase din România' },
+    { property: 'og:url', content: 'https://activitati-copii-roseli.ro/camps' },
+    { name: 'twitter:title', content: 'Tabere pentru Copii | Roseli' },
+    { name: 'twitter:description', content: 'Tabere de aventură pentru copii în locații frumoase din România' }
+  ],
+  link: [
+    { rel: 'canonical', href: 'https://activitati-copii-roseli.ro/camps' }
+  ]
+})
+
 const router = useRouter()
 
 const loading = ref(false)

@@ -42,6 +42,22 @@
   </template>
 
 <script setup lang="ts">
+// SEO Meta Tags
+useHead({
+  title: 'Anunțuri | Ultimele Actualizări | Roseli',
+  meta: [
+    { name: 'description', content: 'Ultimele actualizări, fotografii și videouri din activitățile noastre. Rămâi la curent cu noutățile despre tabere, drumeții și excursii.' },
+    { name: 'keywords', content: 'anunțuri activități copii, noutăți tabere, actualizări drumeții, știri Roseli' },
+    { property: 'og:title', content: 'Anunțuri | Roseli' },
+    { property: 'og:description', content: 'Ultimele actualizări, fotografii și videouri din activitățile noastre' },
+    { property: 'og:url', content: 'https://activitati-copii-roseli.ro/notice-board' },
+    { name: 'twitter:title', content: 'Anunțuri | Roseli' },
+    { name: 'twitter:description', content: 'Ultimele actualizări, fotografii și videouri din activitățile noastre' }
+  ],
+  link: [
+    { rel: 'canonical', href: 'https://activitati-copii-roseli.ro/notice-board' }
+  ]
+})
 import { ArrowLeftOutlined } from '@ant-design/icons-vue'
 
 const router = useRouter()

@@ -52,7 +52,9 @@
     <a-modal
       v-model:open="modalVisible"
       :title="isEditing ? 'Editează Lecție de Înot' : 'Adaugă Lecție de Înot'"
-      :width="800"
+      :width="isMobile ? '95%' : 800"
+      :wrap-class-name="'admin-modal-wrapper'"
+      :body-style="{ maxHeight: isMobile ? '70vh' : 'none', overflowY: 'auto', padding: isMobile ? '16px' : '24px' }"
       @ok="saveLesson"
       @cancel="resetForm"
     >

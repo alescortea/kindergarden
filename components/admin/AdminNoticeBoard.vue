@@ -57,7 +57,9 @@
     <a-modal
       v-model:open="modalVisible"
       :title="isEditing ? 'Editează Anunțul' : 'Adaugă Anunț'"
-      :width="800"
+      :width="isMobile ? '95%' : 800"
+      :wrap-class-name="'admin-modal-wrapper'"
+      :body-style="{ maxHeight: isMobile ? '70vh' : 'none', overflowY: 'auto', padding: isMobile ? '16px' : '24px' }"
       @ok="saveNotice"
       @cancel="resetForm"
     >
@@ -99,6 +101,15 @@
 <script setup lang="ts">
 import { PlusOutlined, EditOutlined, DeleteOutlined, FileTextOutlined } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
+import { computed } from 'vue'
+
+// Detect mobile device
+const isMobile = computed(() => {
+  if (process.client) {
+    return window.innerWidth <= 768
+  }
+  return false
+})
 
 const loading = ref(false)
 const notices = ref<any[]>([])

@@ -74,6 +74,22 @@
   </template>
 
 <script setup lang="ts">
+// SEO Meta Tags
+useHead({
+  title: 'Galerie Foto | Imagini din Activități | Roseli',
+  meta: [
+    { name: 'description', content: 'Galerie foto și video cu imagini din activitățile noastre: tabere, drumeții, excursii, lecții de ski și înot pentru copii.' },
+    { name: 'keywords', content: 'galerie foto copii, imagini activități copii, fotografii tabere, imagini drumeții, galerie Roseli' },
+    { property: 'og:title', content: 'Galerie Foto | Roseli' },
+    { property: 'og:description', content: 'Galerie foto și video cu imagini din activitățile noastre' },
+    { property: 'og:url', content: 'https://activitati-copii-roseli.ro/gallery' },
+    { name: 'twitter:title', content: 'Galerie Foto | Roseli' },
+    { name: 'twitter:description', content: 'Galerie foto și video cu imagini din activitățile noastre' }
+  ],
+  link: [
+    { rel: 'canonical', href: 'https://activitati-copii-roseli.ro/gallery' }
+  ]
+})
 import { PictureOutlined, EyeOutlined } from '@ant-design/icons-vue'
 
 const loading = ref(false)

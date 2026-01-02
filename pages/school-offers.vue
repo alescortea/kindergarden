@@ -61,6 +61,22 @@
   </template>
 
 <script setup lang="ts">
+// SEO Meta Tags
+useHead({
+  title: 'Oferte Școlare | Excursii pentru Școli | Roseli',
+  meta: [
+    { name: 'description', content: 'Oferte speciale pentru profesori și școli. Organizăm excursii educaționale și activități pentru grupuri școlare în România.' },
+    { name: 'keywords', content: 'oferte școlare, excursii școlare, activități școli, excursii grupuri, excursii educaționale școli' },
+    { property: 'og:title', content: 'Oferte Școlare | Roseli' },
+    { property: 'og:description', content: 'Oferte speciale pentru profesori și școli. Organizăm excursii educaționale și activități pentru grupuri școlare' },
+    { property: 'og:url', content: 'https://activitati-copii-roseli.ro/school-offers' },
+    { name: 'twitter:title', content: 'Oferte Școlare | Roseli' },
+    { name: 'twitter:description', content: 'Oferte speciale pentru profesori și școli' }
+  ],
+  link: [
+    { rel: 'canonical', href: 'https://activitati-copii-roseli.ro/school-offers' }
+  ]
+})
 import { BookOutlined, FormOutlined, ArrowLeftOutlined } from '@ant-design/icons-vue'
 
 const router = useRouter()

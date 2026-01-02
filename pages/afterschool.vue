@@ -87,6 +87,22 @@
 </template>
 
 <script setup lang="ts">
+// SEO Meta Tags
+useHead({
+  title: 'Centru Afterschool Brașov | Program Afterschool pentru Copii | Roseli',
+  meta: [
+    { name: 'description', content: 'Centru Afterschool în Brașov. Program complet pentru copii cu activități educaționale, recreative și sportive. Program: Luni-Vineri (12:00-17:30).' },
+    { name: 'keywords', content: 'afterschool Brașov, program afterschool, activități copii Brașov, centru afterschool, activități educaționale copii' },
+    { property: 'og:title', content: 'Centru Afterschool Brașov | Roseli' },
+    { property: 'og:description', content: 'Program complet pentru copii cu activități educaționale, recreative și sportive' },
+    { property: 'og:url', content: 'https://activitati-copii-roseli.ro/afterschool' },
+    { name: 'twitter:title', content: 'Centru Afterschool Brașov | Roseli' },
+    { name: 'twitter:description', content: 'Program complet pentru copii cu activități educaționale, recreative și sportive' }
+  ],
+  link: [
+    { rel: 'canonical', href: 'https://activitati-copii-roseli.ro/afterschool' }
+  ]
+})
 import { ArrowLeftOutlined, FormOutlined } from '@ant-design/icons-vue'
 
 const router = useRouter()

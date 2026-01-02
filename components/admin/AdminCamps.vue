@@ -51,7 +51,9 @@
     <a-modal
       v-model:open="modalVisible"
       :title="isEditing ? 'Editează Tabără' : 'Adaugă Tabără'"
-      :width="800"
+      :width="isMobile ? '95%' : 800"
+      :wrap-class-name="'admin-modal-wrapper'"
+      :body-style="{ maxHeight: isMobile ? '70vh' : 'none', overflowY: 'auto', padding: isMobile ? '16px' : '24px' }"
       @ok="saveCamp"
       @cancel="resetForm"
     >

@@ -203,6 +203,22 @@
 </template>
 
 <script setup lang="ts">
+// SEO Meta Tags
+useHead({
+  title: 'Roseli - Sport & Aventură pentru Copii | Tabere, Drumeții, Lecții de Ski și Înot',
+  meta: [
+    { name: 'description', content: 'Activități sportive și de aventură pentru copii: tabere, drumeții, excursii, lecții de ski și înot în Brașov, România. Oferim experiențe unice de sport și aventură pentru copii.' },
+    { name: 'keywords', content: 'tabere copii, drumeții copii, lecții ski copii, lecții înot copii, activități copii Brașov, afterschool Brașov, excursii educaționale, sport copii România' },
+    { property: 'og:title', content: 'Roseli - Sport & Aventură pentru Copii' },
+    { property: 'og:description', content: 'Activități sportive și de aventură pentru copii: tabere, drumeții, excursii, lecții de ski și înot în Brașov, România' },
+    { property: 'og:url', content: 'https://activitati-copii-roseli.ro' },
+    { name: 'twitter:title', content: 'Roseli - Sport & Aventură pentru Copii' },
+    { name: 'twitter:description', content: 'Activități sportive și de aventură pentru copii: tabere, drumeții, excursii, lecții de ski și înot în Brașov, România' }
+  ],
+  link: [
+    { rel: 'canonical', href: 'https://activitati-copii-roseli.ro' }
+  ]
+})
 import { onMounted } from 'vue'
 import {
   CarOutlined,

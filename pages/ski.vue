@@ -117,6 +117,22 @@
   </template>
 
 <script setup lang="ts">
+// SEO Meta Tags
+useHead({
+  title: 'Lecții de Ski pentru Copii | Cursuri Ski Brașov | Roseli',
+  meta: [
+    { name: 'description', content: 'Lecții de ski individuale și de grup pentru copii. Cursuri de ski pentru toate nivelurile în Brașov, România.' },
+    { name: 'keywords', content: 'lecții ski copii, cursuri ski copii, ski copii Brașov, lecții ski începători, ski pentru copii' },
+    { property: 'og:title', content: 'Lecții de Ski pentru Copii | Roseli' },
+    { property: 'og:description', content: 'Lecții de ski individuale și de grup pentru toate nivelurile' },
+    { property: 'og:url', content: 'https://activitati-copii-roseli.ro/ski' },
+    { name: 'twitter:title', content: 'Lecții de Ski pentru Copii | Roseli' },
+    { name: 'twitter:description', content: 'Lecții de ski individuale și de grup pentru toate nivelurile' }
+  ],
+  link: [
+    { rel: 'canonical', href: 'https://activitati-copii-roseli.ro/ski' }
+  ]
+})
 import { TrophyOutlined, FormOutlined, EyeOutlined, ArrowLeftOutlined } from '@ant-design/icons-vue'
 
 const router = useRouter()

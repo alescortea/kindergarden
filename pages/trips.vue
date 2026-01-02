@@ -107,6 +107,23 @@
 <script setup lang="ts">
 import { CarOutlined, FormOutlined, EyeOutlined, ArrowLeftOutlined } from '@ant-design/icons-vue'
 
+// SEO Meta Tags
+useHead({
+  title: 'Excursii Educaționale pentru Copii | Roseli',
+  meta: [
+    { name: 'description', content: 'Excursii educaționale pentru copii în orașele majore ale României. Descoperă România prin excursii educaționale organizate pentru copii.' },
+    { name: 'keywords', content: 'excursii copii, excursii educaționale, excursii școlare, excursii Brașov, excursii România' },
+    { property: 'og:title', content: 'Excursii Educaționale pentru Copii | Roseli' },
+    { property: 'og:description', content: 'Descoperă România prin excursii educaționale organizate pentru copii' },
+    { property: 'og:url', content: 'https://activitati-copii-roseli.ro/trips' },
+    { name: 'twitter:title', content: 'Excursii Educaționale pentru Copii | Roseli' },
+    { name: 'twitter:description', content: 'Descoperă România prin excursii educaționale organizate pentru copii' }
+  ],
+  link: [
+    { rel: 'canonical', href: 'https://activitati-copii-roseli.ro/trips' }
+  ]
+})
+
 const router = useRouter()
 
 const loading = ref(false)

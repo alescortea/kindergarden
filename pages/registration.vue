@@ -474,6 +474,22 @@
   </template>
 
 <script setup lang="ts">
+// SEO Meta Tags
+useHead({
+  title: 'Formular de Înscriere | Înscrie-te la Activități | Roseli',
+  meta: [
+    { name: 'description', content: 'Formular de înscriere pentru activitățile noastre: tabere, drumeții, excursii, lecții de ski și înot, afterschool. Înscrie-te acum!' },
+    { name: 'keywords', content: 'înscriere activități copii, formular înscriere, înscriere tabere, înscriere drumeții, înscriere lecții ski' },
+    { property: 'og:title', content: 'Formular de Înscriere | Roseli' },
+    { property: 'og:description', content: 'Înscrie-te la activitățile noastre: tabere, drumeții, excursii, lecții de ski și înot' },
+    { property: 'og:url', content: 'https://activitati-copii-roseli.ro/registration' },
+    { name: 'twitter:title', content: 'Formular de Înscriere | Roseli' },
+    { name: 'twitter:description', content: 'Înscrie-te la activitățile noastre: tabere, drumeții, excursii, lecții de ski și înot' }
+  ],
+  link: [
+    { rel: 'canonical', href: 'https://activitati-copii-roseli.ro/registration' }
+  ]
+})
 import { ReloadOutlined, SendOutlined, ArrowLeftOutlined } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
 import dayjs from 'dayjs'
@@ -1020,6 +1036,7 @@ onMounted(async () => {
     text-align: left;
     padding: 8px 16px;
     font-size: 14px;
+    min-height: 44px;
   }
 
   .page-header {
@@ -1041,6 +1058,90 @@ onMounted(async () => {
   
   .form-actions .ant-btn {
     width: 100%;
+    min-height: 44px;
+    font-size: 16px;
+  }
+  
+  /* Input-uri și select-uri touch-friendly pe mobile */
+  .registration-page :deep(.ant-input),
+  .registration-page :deep(.ant-input-number),
+  .registration-page :deep(.ant-select-selector),
+  .registration-page :deep(.ant-picker),
+  .registration-page :deep(.ant-input-number-input) {
+    min-height: 44px !important;
+    font-size: 16px !important;
+    padding: 8px 12px !important;
+  }
+  
+  /* Textarea touch-friendly */
+  .registration-page :deep(.ant-input) {
+    font-size: 16px !important;
+  }
+  
+  /* Select dropdown touch-friendly */
+  .registration-page :deep(.ant-select) {
+    font-size: 16px !important;
+  }
+  
+  .registration-page :deep(.ant-select-selection-item) {
+    line-height: 44px !important;
+    font-size: 16px !important;
+  }
+  
+  .registration-page :deep(.ant-select-selection-placeholder) {
+    line-height: 44px !important;
+    font-size: 16px !important;
+  }
+  
+  /* Date picker touch-friendly */
+  .registration-page :deep(.ant-picker-input > input) {
+    font-size: 16px !important;
+    min-height: 44px !important;
+  }
+  
+  /* Checkbox și radio touch-friendly */
+  .registration-page :deep(.ant-checkbox-wrapper),
+  .registration-page :deep(.ant-radio-wrapper) {
+    min-height: 44px !important;
+    padding: 8px 0 !important;
+    font-size: 16px !important;
+  }
+  
+  /* Form items spacing pe mobile */
+  .registration-page :deep(.ant-form-item) {
+    margin-bottom: 20px !important;
+  }
+  
+  /* Card padding pe mobile */
+  .registration-page .form-card {
+    padding: 16px !important;
+  }
+  
+  .registration-page :deep(.ant-card-body) {
+    padding: 16px !important;
+  }
+  
+  /* Section headers pe mobile */
+  .registration-page .form-section h3 {
+    font-size: 1.2rem !important;
+    margin-bottom: 16px !important;
+  }
+  
+  /* Info panel pe mobile */
+  .registration-page .info-panel {
+    margin-top: 24px !important;
+    padding: 16px !important;
+  }
+  
+  /* Previne zoom automat când se face focus pe input */
+  .registration-page input[type="text"],
+  .registration-page input[type="email"],
+  .registration-page input[type="tel"],
+  .registration-page input[type="number"],
+  .registration-page input[type="password"],
+  .registration-page textarea,
+  .registration-page select {
+    font-size: 16px !important;
   }
 }
 

@@ -54,7 +54,9 @@
     <a-modal
       v-model:open="modalVisible"
       :title="isEditing ? 'Editează Element Galerie' : 'Adaugă Imagini în Galerie'"
-      :width="800"
+      :width="isMobile ? '95%' : 800"
+      :wrap-class-name="'admin-modal-wrapper'"
+      :body-style="{ maxHeight: isMobile ? '70vh' : 'none', overflowY: 'auto', padding: isMobile ? '16px' : '24px' }"
       @ok="saveItem"
       @cancel="resetForm"
     >
@@ -104,6 +106,15 @@ import { message } from 'ant-design-vue'
 import { PlusOutlined, EditOutlined, DeleteOutlined, PictureOutlined } from '@ant-design/icons-vue'
 import type { UploadFile, UploadProps } from 'ant-design-vue'
 import { compressImage } from '~/composables/useImageCompression'
+import { computed } from 'vue'
+
+// Detect mobile device
+const isMobile = computed(() => {
+  if (process.client) {
+    return window.innerWidth <= 768
+  }
+  return false
+})
 
 const loading = ref(false)
 const galleryItems = ref<any[]>([])
