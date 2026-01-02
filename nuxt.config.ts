@@ -111,7 +111,9 @@ export default defineNuxtConfig({
               areaServed: 'RO',
               availableLanguage: 'Romanian'
             },
-            sameAs: []
+            sameAs: [
+              'https://www.facebook.com/roselisportsiaventura/'
+            ]
           })
         },
         {
