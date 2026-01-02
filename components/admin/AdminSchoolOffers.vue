@@ -71,6 +71,7 @@
             mode="tags"
             placeholder="Adaugă activități (apasă Enter pentru a adăuga)"
             style="width: 100%"
+            :getPopupContainer="getPopupContainer"
           >
           </a-select>
         </a-form-item>
@@ -166,6 +167,18 @@ const isMobile = computed(() => {
   }
   return false
 })
+
+// Helper pentru getPopupContainer - pe mobile folosește document.body
+const getPopupContainer = (trigger: HTMLElement) => {
+  if (!process.client || !document || !document.body) {
+    // Fallback pentru SSR sau când document nu e disponibil
+    return trigger?.parentElement || (process.client && document?.body ? document.body : document?.documentElement)
+  }
+  if (isMobile.value) {
+    return document.body
+  }
+  return trigger?.parentElement || document.body
+}
 
 const beforeUpload: UploadProps['beforeUpload'] = (file: File) => {
   const isImage = file.type?.startsWith('image/')

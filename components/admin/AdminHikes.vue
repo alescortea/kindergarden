@@ -68,6 +68,7 @@
             placeholder="Selectează județul"
             @change="onCountyChange"
             :loading="loadingCounties"
+            :getPopupContainer="getPopupContainer"
           >
             <a-select-option v-for="county in counties" :key="county.id" :value="county.id">
               {{ county.name }}
@@ -77,7 +78,11 @@
         <a-row :gutter="16">
           <a-col :xs="24" :sm="12">
             <a-form-item label="Dificultate" required>
-              <a-select v-model:value="hikeForm.difficulty" placeholder="Selectează dificultatea">
+              <a-select 
+                v-model:value="hikeForm.difficulty" 
+                placeholder="Selectează dificultatea"
+                :getPopupContainer="getPopupContainer"
+              >
                 <a-select-option value="easy">Ușor</a-select-option>
                 <a-select-option value="medium">Mediu</a-select-option>
                 <a-select-option value="hard">Greu</a-select-option>
@@ -212,6 +217,18 @@ const isMobile = computed(() => {
   }
   return false
 })
+
+// Helper pentru getPopupContainer - pe mobile folosește document.body
+const getPopupContainer = (trigger: HTMLElement) => {
+  if (!process.client || !document || !document.body) {
+    // Fallback pentru SSR sau când document nu e disponibil
+    return trigger?.parentElement || (process.client && document?.body ? document.body : document?.documentElement)
+  }
+  if (isMobile.value) {
+    return document.body
+  }
+  return trigger?.parentElement || document.body
+}
 
 const beforeUpload: UploadProps['beforeUpload'] = (file: File) => {
   const isImage = file.type?.startsWith('image/')

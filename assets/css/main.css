@@ -199,5 +199,152 @@ body {
   }
 }
 
+/* Fix pentru Date Picker pe mobile */
+@media (max-width: 768px) {
+  /* Previne zoom când se face focus pe date picker input */
+  .ant-picker-input > input {
+    font-size: 16px !important;
+    min-height: 44px !important;
+  }
+  
+  /* Date picker dropdown - fix poziționare și z-index */
+  .ant-picker-dropdown {
+    z-index: 1050 !important;
+    position: fixed !important;
+  }
+  
+  /* Calendar panel - fix pentru mobile */
+  .ant-picker-panel {
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+  
+  /* Calendar container - fix pentru mobile */
+  .ant-picker-panel-container {
+    width: 100% !important;
+    max-width: 100vw !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin: 0 !important;
+    transform: none !important;
+  }
+  
+  /* Calendar - fix dimensiuni pe mobile */
+  .ant-picker-calendar {
+    width: 100% !important;
+  }
+  
+  /* Calendar header - fix pe mobile */
+  .ant-picker-calendar-header {
+    padding: 8px 12px !important;
+  }
+  
+  /* Calendar cells - mai mari pe mobile pentru touch */
+  .ant-picker-cell {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+  
+  .ant-picker-cell-inner {
+    min-height: 44px !important;
+    min-width: 44px !important;
+    line-height: 44px !important;
+    font-size: 16px !important;
+  }
+  
+  /* Calendar month/year selectors - touch-friendly */
+  .ant-picker-month-panel,
+  .ant-picker-year-panel {
+    width: 100% !important;
+  }
+  
+  .ant-picker-month-panel-cell,
+  .ant-picker-year-panel-cell {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+  
+  .ant-picker-month-panel-cell-inner,
+  .ant-picker-year-panel-cell-inner {
+    min-height: 44px !important;
+    min-width: 44px !important;
+    line-height: 44px !important;
+    font-size: 16px !important;
+  }
+  
+  /* Previne overflow pe mobile */
+  .ant-picker-dropdown {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Fix pentru date picker în modale */
+  .admin-modal-wrapper .ant-picker-dropdown,
+  .registration-modal-wrapper .ant-picker-dropdown {
+    z-index: 2000 !important;
+  }
+  
+  /* Fix pentru date picker în formularul de înregistrare */
+  .registration-page .ant-picker-dropdown {
+    z-index: 1000 !important;
+  }
+  
+  /* Asigură că date picker nu provoacă scroll orizontal */
+  body.ant-picker-open {
+    overflow-x: hidden !important;
+  }
+  
+  /* Fix pentru poziționarea dropdown-ului pe mobile */
+  .ant-picker-dropdown-placement-bottomLeft,
+  .ant-picker-dropdown-placement-bottomRight,
+  .ant-picker-dropdown-placement-topLeft,
+  .ant-picker-dropdown-placement-topRight {
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    margin: 0 !important;
+    transform: none !important;
+  }
+}
+
+/* Fix pentru Select Dropdown pe mobile - previne mutarea la scroll */
+@media (max-width: 768px) {
+  /* Select dropdown - fix poziționare și z-index */
+  .ant-select-dropdown {
+    z-index: 1050 !important;
+    position: fixed !important;
+  }
+  
+  /* Previne mutarea dropdown-ului la scroll */
+  .ant-select-dropdown {
+    transform: none !important;
+  }
+  
+  /* Fix pentru select în modale */
+  .admin-modal-wrapper .ant-select-dropdown,
+  .registration-modal-wrapper .ant-select-dropdown {
+    z-index: 2000 !important;
+  }
+  
+  /* Fix pentru select în formularul de înregistrare */
+  .registration-page .ant-select-dropdown {
+    z-index: 1000 !important;
+  }
+  
+  /* Previne scroll orizontal când select-ul este deschis */
+  body.ant-select-open {
+    overflow-x: hidden !important;
+  }
+  
+  /* Asigură că dropdown-ul rămâne poziționat corect */
+  .ant-select-dropdown-placement-bottomLeft,
+  .ant-select-dropdown-placement-bottomRight,
+  .ant-select-dropdown-placement-topLeft,
+  .ant-select-dropdown-placement-topRight {
+    position: fixed !important;
+  }
+}
+
 
 

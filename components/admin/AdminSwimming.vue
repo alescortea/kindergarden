@@ -60,7 +60,11 @@
     >
       <a-form :model="lessonForm" layout="vertical">
         <a-form-item label="Tip Lecție" required>
-          <a-select v-model:value="lessonForm.type" placeholder="Selectează tipul lecției">
+          <a-select 
+            v-model:value="lessonForm.type" 
+            placeholder="Selectează tipul lecției"
+            :getPopupContainer="getPopupContainer"
+          >
             <a-select-option value="individual">Individuală</a-select-option>
             <a-select-option value="group">Grup</a-select-option>
           </a-select>
@@ -170,6 +174,18 @@ const isMobile = computed(() => {
   }
   return false
 })
+
+// Helper pentru getPopupContainer - pe mobile folosește document.body
+const getPopupContainer = (trigger: HTMLElement) => {
+  if (!process.client || !document || !document.body) {
+    // Fallback pentru SSR sau când document nu e disponibil
+    return trigger?.parentElement || (process.client && document?.body ? document.body : document?.documentElement)
+  }
+  if (isMobile.value) {
+    return document.body
+  }
+  return trigger?.parentElement || document.body
+}
 
 const beforeUpload: UploadProps['beforeUpload'] = (file: File) => {
   const isImage = file.type.startsWith('image/')

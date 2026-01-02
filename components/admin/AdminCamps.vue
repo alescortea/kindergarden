@@ -67,6 +67,7 @@
             placeholder="Selectează județul"
             @change="onCountyChange"
             :loading="loadingCounties"
+            :getPopupContainer="getPopupContainer"
           >
             <a-select-option v-for="county in counties" :key="county.id" :value="county.id">
               {{ county.name }}
@@ -88,12 +89,20 @@
         <a-row :gutter="16">
           <a-col :xs="24" :sm="12">
             <a-form-item label="Data Început" required>
-              <a-date-picker v-model:value="campForm.startDate" style="width: 100%" />
+              <a-date-picker 
+                v-model:value="campForm.startDate" 
+                style="width: 100%"
+                :getPopupContainer="getPopupContainer"
+              />
             </a-form-item>
           </a-col>
           <a-col :xs="24" :sm="12">
             <a-form-item label="Data Sfârșit" required>
-              <a-date-picker v-model:value="campForm.endDate" style="width: 100%" />
+              <a-date-picker 
+                v-model:value="campForm.endDate" 
+                style="width: 100%"
+                :getPopupContainer="getPopupContainer"
+              />
             </a-form-item>
           </a-col>
         </a-row>
@@ -180,6 +189,18 @@ const isMobile = computed(() => {
   }
   return false
 })
+
+// Helper pentru getPopupContainer - pe mobile folosește document.body
+const getPopupContainer = (trigger: HTMLElement) => {
+  if (!process.client || !document || !document.body) {
+    // Fallback pentru SSR sau când document nu e disponibil
+    return trigger?.parentElement || (process.client && document?.body ? document.body : document?.documentElement)
+  }
+  if (isMobile.value) {
+    return document.body
+  }
+  return trigger?.parentElement || document.body
+}
 
 const beforeUpload: UploadProps['beforeUpload'] = (file: File) => {
   const isImage = file.type?.startsWith('image/')

@@ -62,7 +62,11 @@
     >
       <a-form :model="galleryForm" layout="vertical">
         <a-form-item label="Tip Activitate" required>
-          <a-select v-model:value="galleryForm.activityType" placeholder="Selectează tipul activității">
+          <a-select 
+            v-model:value="galleryForm.activityType" 
+            placeholder="Selectează tipul activității"
+            :getPopupContainer="getPopupContainer"
+          >
             <a-select-option value="camp">Tabere</a-select-option>
             <a-select-option value="hike">Drumeții</a-select-option>
             <a-select-option value="trip">Excursii</a-select-option>
@@ -115,6 +119,18 @@ const isMobile = computed(() => {
   }
   return false
 })
+
+// Helper pentru getPopupContainer - pe mobile folosește document.body
+const getPopupContainer = (trigger: HTMLElement) => {
+  if (!process.client || !document || !document.body) {
+    // Fallback pentru SSR sau când document nu e disponibil
+    return trigger?.parentElement || (process.client && document?.body ? document.body : document?.documentElement)
+  }
+  if (isMobile.value) {
+    return document.body
+  }
+  return trigger?.parentElement || document.body
+}
 
 const loading = ref(false)
 const galleryItems = ref<any[]>([])

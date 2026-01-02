@@ -500,7 +500,11 @@
             <a-row :gutter="16">
               <a-col :xs="24" :sm="12">
                 <a-form-item label="Tip Activitate" required>
-                  <a-select v-model:value="editForm.activityType" style="width: 100%">
+                  <a-select 
+                    v-model:value="editForm.activityType" 
+                    style="width: 100%"
+                    :getPopupContainer="getPopupContainer"
+                  >
                     <a-select-option value="camp">Tabără</a-select-option>
                     <a-select-option value="hike">Drumeție</a-select-option>
                     <a-select-option value="trip">Excursie</a-select-option>
@@ -513,7 +517,11 @@
               </a-col>
               <a-col :xs="24" :sm="12">
                 <a-form-item label="Status" required>
-                  <a-select v-model:value="editForm.status" style="width: 100%">
+                  <a-select 
+                    v-model:value="editForm.status" 
+                    style="width: 100%"
+                    :getPopupContainer="getPopupContainer"
+                  >
                     <a-select-option value="pending">În așteptare</a-select-option>
                     <a-select-option value="confirmed">Confirmat</a-select-option>
                     <a-select-option value="cancelled">Anulat</a-select-option>
@@ -527,7 +535,11 @@
               <a-row :gutter="16">
                 <a-col :xs="24" :sm="12">
                   <a-form-item label="Program">
-                    <a-select v-model:value="editForm.afterschool.schedule" style="width: 100%">
+                    <a-select 
+                      v-model:value="editForm.afterschool.schedule" 
+                      style="width: 100%"
+                      :getPopupContainer="getPopupContainer"
+                    >
                       <a-select-option value="daily">Zilnic (12:00-17:30)</a-select-option>
                       <a-select-option value="vacation">Vacanță (08:00-17:30)</a-select-option>
                     </a-select>
@@ -535,7 +547,11 @@
                 </a-col>
                 <a-col :xs="24" :sm="12">
                   <a-form-item label="Zile pe Săptămână">
-                    <a-select v-model:value="editForm.afterschool.daysPerWeek" style="width: 100%">
+                    <a-select 
+                      v-model:value="editForm.afterschool.daysPerWeek" 
+                      style="width: 100%"
+                      :getPopupContainer="getPopupContainer"
+                    >
                       <a-select-option value="1">1 zi/săptămână</a-select-option>
                       <a-select-option value="2">2 zile/săptămână</a-select-option>
                       <a-select-option value="3">3 zile/săptămână</a-select-option>
@@ -567,6 +583,7 @@
                       v-model:value="editForm.afterschool.startDate"
                       style="width: 100%"
                       format="YYYY-MM-DD"
+                      :getPopupContainer="getPopupContainer"
                     />
                   </a-form-item>
                 </a-col>
@@ -658,6 +675,18 @@ const isMobile = computed(() => {
   }
   return false
 })
+
+// Helper pentru getPopupContainer - pe mobile folosește document.body
+const getPopupContainer = (trigger: HTMLElement) => {
+  if (!process.client || !document || !document.body) {
+    // Fallback pentru SSR sau când document nu e disponibil
+    return trigger?.parentElement || (process.client && document?.body ? document.body : document?.documentElement)
+  }
+  if (isMobile.value) {
+    return document.body
+  }
+  return trigger?.parentElement || document.body
+}
 
 const modalWidth = computed(() => {
   if (typeof window !== 'undefined') {

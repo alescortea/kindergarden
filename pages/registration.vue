@@ -36,6 +36,7 @@
                     placeholder="Selectați tipul de activitate"
                     @change="loadActivities"
                     :loading="loadingActivityTypes"
+                    :getPopupContainer="getPopupContainer"
                   >
                     <a-select-option v-if="availableActivityTypes.camp" value="camp">Tabără</a-select-option>
                     <a-select-option v-if="availableActivityTypes.hike" value="hike">Drumeție</a-select-option>
@@ -59,6 +60,7 @@
                     :loading="loadingActivities"
                     show-search
                     :filter-option="false"
+                    :getPopupContainer="getPopupContainer"
                   >
                     <a-select-option
                       v-for="activity in activities"
@@ -78,6 +80,7 @@
                       v-model:value="formData.afterschool.schedule"
                       placeholder="Selectați programul"
                       style="width: 100%"
+                      :getPopupContainer="getPopupContainer"
                     >
                       <a-select-option value="daily">Zilnic (12:00-17:30)</a-select-option>
                       <a-select-option value="vacation">Vacanță (08:00-17:30)</a-select-option>
@@ -90,6 +93,7 @@
                       placeholder="Selectați numărul de zile"
                       style="width: 100%"
                       @change="onDaysPerWeekChange"
+                      :getPopupContainer="getPopupContainer"
                     >
                       <a-select-option value="1">1 zi/săptămână</a-select-option>
                       <a-select-option value="2">2 zile/săptămână</a-select-option>
@@ -131,6 +135,8 @@
                       style="width: 100%"
                       format="DD/MM/YYYY"
                       placeholder="Selectați data începerii"
+                      :getPopupContainer="(trigger) => trigger.parentElement"
+                      :inputReadOnly="false"
                     />
                   </a-form-item>
                 </template>
@@ -145,6 +151,7 @@
                     placeholder="Selectați numărul de copii"
                     style="width: 100%"
                     @change="updateChildrenArray"
+                    :getPopupContainer="getPopupContainer"
                   >
                     <a-select-option :value="1">1</a-select-option>
                     <a-select-option :value="2">2</a-select-option>
@@ -201,6 +208,8 @@
                         format="DD/MM/YYYY"
                         placeholder="dd.mm.yyyy"
                         @change="() => calculateAge(index)"
+                        :getPopupContainer="(trigger) => trigger.parentElement"
+                        :inputReadOnly="false"
                       />
                     </a-form-item>
                   </a-col>
@@ -217,7 +226,11 @@
                   </a-col>
                   <a-col :xs="24" :sm="8">
                     <a-form-item label="Gen" :name="['children', index, 'gender']">
-                      <a-select v-model:value="child.gender" placeholder="Selectați genul">
+                      <a-select 
+                        v-model:value="child.gender" 
+                        placeholder="Selectați genul"
+                        :getPopupContainer="getPopupContainer"
+                      >
                         <a-select-option value="male">Băiat</a-select-option>
                         <a-select-option value="female">Fată</a-select-option>
                       </a-select>
@@ -339,7 +352,11 @@
                   :name="['parent', 'relationship']"
                   :rules="[{ required: true, message: 'Selectați relația' }]"
                 >
-                  <a-select v-model:value="formData.parent.relationship" placeholder="Selectați relația">
+                  <a-select 
+                    v-model:value="formData.parent.relationship" 
+                    placeholder="Selectați relația"
+                    :getPopupContainer="getPopupContainer"
+                  >
                     <a-select-option value="mother">Mamă</a-select-option>
                     <a-select-option value="father">Tată</a-select-option>
                     <a-select-option value="guardian">Tutore</a-select-option>
@@ -496,6 +513,26 @@ import dayjs from 'dayjs'
 
 const route = useRoute()
 const router = useRouter()
+
+// Detect mobile device
+const isMobile = computed(() => {
+  if (process.client) {
+    return window.innerWidth <= 768
+  }
+  return false
+})
+
+// Helper pentru getPopupContainer - pe mobile folosește document.body
+const getPopupContainer = (trigger: HTMLElement) => {
+  if (!process.client || !document || !document.body) {
+    // Fallback pentru SSR sau când document nu e disponibil
+    return trigger?.parentElement || (process.client && document?.body ? document.body : document?.documentElement)
+  }
+  if (isMobile.value) {
+    return document.body
+  }
+  return trigger?.parentElement || document.body
+}
 
 const goHome = () => {
   router.push('/')

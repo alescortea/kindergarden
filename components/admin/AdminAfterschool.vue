@@ -353,6 +353,7 @@
                 v-model:value="editForm.child.birthDate"
                 style="width: 100%"
                 format="DD.MM.YYYY"
+                :getPopupContainer="getPopupContainer"
               />
             </a-form-item>
           </a-col>
@@ -360,7 +361,11 @@
         <a-row :gutter="16">
           <a-col :xs="24" :sm="12">
             <a-form-item label="Gen">
-              <a-select v-model:value="editForm.child.gender" style="width: 100%">
+              <a-select 
+                v-model:value="editForm.child.gender" 
+                style="width: 100%"
+                :getPopupContainer="getPopupContainer"
+              >
                 <a-select-option value="">Selectează</a-select-option>
                 <a-select-option value="male">Băiat</a-select-option>
                 <a-select-option value="female">Fată</a-select-option>
@@ -403,7 +408,11 @@
           </a-col>
         </a-row>
         <a-form-item label="Relație">
-          <a-select v-model:value="editForm.parent.relationship" style="width: 100%">
+          <a-select 
+            v-model:value="editForm.parent.relationship" 
+            style="width: 100%"
+            :getPopupContainer="getPopupContainer"
+          >
             <a-select-option value="">Selectează</a-select-option>
             <a-select-option value="mother">Mamă</a-select-option>
             <a-select-option value="father">Tată</a-select-option>
@@ -413,7 +422,11 @@
 
         <a-divider>Centru Afterschool</a-divider>
         <a-form-item label="Program">
-          <a-select v-model:value="editForm.afterschool.schedule" style="width: 100%">
+          <a-select 
+            v-model:value="editForm.afterschool.schedule" 
+            style="width: 100%"
+            :getPopupContainer="getPopupContainer"
+          >
             <a-select-option value="daily">Zilnic (12:00-17:30)</a-select-option>
             <a-select-option value="vacation">Vacanță (08:00-17:30)</a-select-option>
           </a-select>
@@ -441,7 +454,11 @@
           </a-col>
         </a-row>
         <a-form-item label="Zile pe Săptămână">
-          <a-select v-model:value="editForm.afterschool.daysPerWeek" style="width: 100%">
+          <a-select 
+            v-model:value="editForm.afterschool.daysPerWeek" 
+            style="width: 100%"
+            :getPopupContainer="getPopupContainer"
+          >
             <a-select-option value="1">1 zi/săptămână</a-select-option>
             <a-select-option value="2">2 zile/săptămână</a-select-option>
             <a-select-option value="3">3 zile/săptămână</a-select-option>
@@ -480,7 +497,11 @@
 
         <a-divider>Status</a-divider>
         <a-form-item label="Status" required>
-          <a-select v-model:value="editForm.status" style="width: 100%">
+          <a-select 
+            v-model:value="editForm.status" 
+            style="width: 100%"
+            :getPopupContainer="getPopupContainer"
+          >
             <a-select-option value="pending">În Așteptare</a-select-option>
             <a-select-option value="confirmed">Confirmată</a-select-option>
             <a-select-option value="cancelled">Anulată</a-select-option>
@@ -528,6 +549,18 @@ const isMobile = computed(() => {
   }
   return false
 })
+
+// Helper pentru getPopupContainer - pe mobile folosește document.body
+const getPopupContainer = (trigger: HTMLElement) => {
+  if (!process.client || !document || !document.body) {
+    // Fallback pentru SSR sau când document nu e disponibil
+    return trigger?.parentElement || (process.client && document?.body ? document.body : document?.documentElement)
+  }
+  if (isMobile.value) {
+    return document.body
+  }
+  return trigger?.parentElement || document.body
+}
 
 const beforeUpload: UploadProps['beforeUpload'] = (file: File) => {
   const isImage = file.type?.startsWith('image/')
