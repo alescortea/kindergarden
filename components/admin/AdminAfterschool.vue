@@ -498,6 +498,7 @@ import { message } from 'ant-design-vue'
 import dayjs from 'dayjs'
 import * as XLSX from 'xlsx'
 import type { UploadProps } from 'ant-design-vue'
+import { compressImage } from '~/composables/useImageCompression'
 
 const loading = ref(false)
 const exporting = ref(false)
@@ -1080,9 +1081,19 @@ const saveProgramInfo = async () => {
       }
       
       try {
+        // Comprimă imaginea înainte de upload (reduce dimensiunea pentru a evita 413)
+        message.loading({ content: 'Se comprimă imaginea...', key: 'compressing', duration: 0 })
+        const compressedFile = await compressImage(f, {
+          maxWidth: 1920,
+          maxHeight: 1920,
+          quality: 0.8,
+          maxSizeMB: 2
+        })
+        message.destroy('compressing')
+        
         const formData = new FormData()
         // IMPORTANT: filename explicit (fix pentru iOS Safari)
-        formData.append('file', f, f.name)
+        formData.append('file', compressedFile, compressedFile.name)
         formData.append('folder', 'afterschool')
         
         const uploadResponse: any = await $fetch('/api/upload', {

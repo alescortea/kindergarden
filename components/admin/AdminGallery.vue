@@ -103,6 +103,7 @@
 import { message } from 'ant-design-vue'
 import { PlusOutlined, EditOutlined, DeleteOutlined, PictureOutlined } from '@ant-design/icons-vue'
 import type { UploadFile, UploadProps } from 'ant-design-vue'
+import { compressImage } from '~/composables/useImageCompression'
 
 const loading = ref(false)
 const galleryItems = ref<any[]>([])
@@ -239,21 +240,46 @@ const saveItem = async () => {
     
     imageUrls.push(...existingImages)
     
-    // Upload new images
-    for (const fileItem of imageFileList.value) {
+    // Upload new images (cu compresie)
+    for (let i = 0; i < imageFileList.value.length; i++) {
+      const fileItem = imageFileList.value[i]
       if (fileItem.originFileObj) {
         const file = fileItem.originFileObj
-        const formData = new FormData()
-        formData.append('file', file)
-        formData.append('folder', 'gallery')
         
-        const uploadResponse = await $fetch('/api/upload', {
-          method: 'POST',
-          body: formData
-        })
-        
-        if (uploadResponse.uploads && uploadResponse.uploads.length > 0) {
-          imageUrls.push(uploadResponse.uploads[0].url)
+        try {
+          // Comprimă imaginea înainte de upload (reduce dimensiunea pentru a evita 413)
+          message.loading({ 
+            content: `Se comprimă imaginea ${i + 1}/${imageFileList.value.filter(f => f.originFileObj).length}...`, 
+            key: 'compressing', 
+            duration: 0 
+          })
+          
+          const compressedFile = await compressImage(file, {
+            maxWidth: 1920,
+            maxHeight: 1920,
+            quality: 0.8,
+            maxSizeMB: 2
+          })
+          
+          message.destroy('compressing')
+          
+          const formData = new FormData()
+          formData.append('file', compressedFile, compressedFile.name)
+          formData.append('folder', 'gallery')
+          
+          const uploadResponse = await $fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+          })
+          
+          if (uploadResponse.uploads && uploadResponse.uploads.length > 0) {
+            imageUrls.push(uploadResponse.uploads[0].url)
+          }
+        } catch (uploadError: any) {
+          console.error(`Upload error for image ${i + 1}:`, uploadError)
+          message.destroy('compressing')
+          message.error(`Eroare la încărcarea imaginii ${i + 1}: ${uploadError?.message || 'Eroare necunoscută'}`)
+          // Continuă cu următoarea imagine
         }
       }
     }
