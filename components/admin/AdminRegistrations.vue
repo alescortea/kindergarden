@@ -504,14 +504,36 @@
                     v-model:value="editForm.activityType" 
                     style="width: 100%"
                     :getPopupContainer="getPopupContainer"
+                    @change="loadActivitiesForEdit"
                   >
-                    <a-select-option value="camp">Tabără</a-select-option>
-                    <a-select-option value="hike">Drumeție</a-select-option>
-                    <a-select-option value="trip">Excursie</a-select-option>
-                    <a-select-option value="ski">Ski</a-select-option>
-                    <a-select-option value="swimming">Înot</a-select-option>
-                    <a-select-option value="afterschool">Centru Afterschool</a-select-option>
-                    <a-select-option value="school-offer">Ofertă Școlară</a-select-option>
+                    <a-select-option v-if="availableActivityTypes.camp" value="camp">Tabără</a-select-option>
+                    <a-select-option v-if="availableActivityTypes.hike" value="hike">Drumeție</a-select-option>
+                    <a-select-option v-if="availableActivityTypes.trip" value="trip">Excursie</a-select-option>
+                    <a-select-option v-if="availableActivityTypes.ski" value="ski">Ski</a-select-option>
+                    <a-select-option v-if="availableActivityTypes.swimming" value="swimming">Înot</a-select-option>
+                    <a-select-option v-if="availableActivityTypes.afterschool" value="afterschool">Centru Afterschool</a-select-option>
+                    <a-select-option v-if="availableActivityTypes['school-offer']" value="school-offer">Ofertă Școlară</a-select-option>
+                  </a-select>
+                </a-form-item>
+              </a-col>
+              <a-col :xs="24" :sm="12" v-if="editForm.activityType && editForm.activityType !== 'afterschool'">
+                <a-form-item label="Activitatea" required>
+                  <a-select 
+                    v-model:value="editForm.activityId" 
+                    style="width: 100%"
+                    :loading="loadingActivities"
+                    :getPopupContainer="getPopupContainer"
+                    show-search
+                    :filter-option="false"
+                    placeholder="Selectați activitatea"
+                  >
+                    <a-select-option
+                      v-for="activity in availableActivities"
+                      :key="activity.id"
+                      :value="activity.id"
+                    >
+                      {{ getActivityName(activity) }}
+                    </a-select-option>
                   </a-select>
                 </a-form-item>
               </a-col>
@@ -630,6 +652,18 @@ const modalVisible = ref(false)
 const selectedRegistration = ref<any>(null)
 const isEditing = ref(false)
 const saving = ref(false)
+const loadingActivities = ref(false)
+const loadingActivityTypes = ref(false)
+const availableActivities = ref<any[]>([])
+const availableActivityTypes = ref({
+  camp: false,
+  hike: false,
+  trip: false,
+  ski: false,
+  swimming: false,
+  'afterschool': true, // Afterschool este întotdeauna disponibil
+  'school-offer': false
+})
 
 const editForm = ref({
   child: {
@@ -645,6 +679,7 @@ const editForm = ref({
     relationship: ''
   },
   activityType: '',
+  activityId: null as string | null,
   status: '',
   afterschool: {
     schedule: '',
@@ -872,16 +907,93 @@ const viewRegistration = (registration: any) => {
   modalVisible.value = true
 }
 
-const editRegistration = (registration: any) => {
+const editRegistration = async (registration: any) => {
   selectedRegistration.value = { ...registration }
   // Initialize edit form with current values
   // Support both old (child) and new (children) structure
-  const children = registration.children || (registration.child ? [registration.child] : [])
-  const firstChild = registration.child || (children && children.length > 0 ? children[0] : { firstName: '', lastName: '', age: 0 })
+  // IMPORTANT: Check _childrenData first (from transformed data), then children, then child
+  const childrenData = registration._childrenData || registration.children || (registration.child ? [registration.child] : [])
+  
+  // Get first child with all fields
+  let firstChild: any = {}
+  if (registration.child) {
+    firstChild = { ...registration.child }
+  } else if (childrenData && Array.isArray(childrenData) && childrenData.length > 0) {
+    firstChild = { ...childrenData[0] }
+  } else if (childrenData && !Array.isArray(childrenData)) {
+    firstChild = { ...childrenData }
+  }
+  
+  // Ensure all child fields are populated
+  const populatedFirstChild = {
+    firstName: firstChild.firstName || '',
+    lastName: firstChild.lastName || '',
+    age: firstChild.age || null,
+    birthDate: firstChild.birthDate || null,
+    gender: firstChild.gender || '',
+    cnp: firstChild.cnp || '',
+    otherInfo: firstChild.otherInfo || '',
+    skiLevel: firstChild.skiLevel || '',
+    skiEquipment: firstChild.skiEquipment || [],
+    swimmingLevel: firstChild.swimmingLevel || '',
+    medical: firstChild.medical || {
+      allergies: '',
+      conditions: '',
+      medications: '',
+      notes: ''
+    }
+  }
+  
+  // Ensure children is an array with all fields populated
+  let children: any[] = []
+  if (Array.isArray(childrenData) && childrenData.length > 0) {
+    children = childrenData.map((child: any) => ({
+      firstName: child.firstName || '',
+      lastName: child.lastName || '',
+      age: child.age || null,
+      birthDate: child.birthDate || null,
+      gender: child.gender || '',
+      cnp: child.cnp || '',
+      otherInfo: child.otherInfo || '',
+      skiLevel: child.skiLevel || '',
+      skiEquipment: child.skiEquipment || [],
+      swimmingLevel: child.swimmingLevel || '',
+      medical: child.medical || {
+        allergies: '',
+        conditions: '',
+        medications: '',
+        notes: ''
+      }
+    }))
+  } else if (childrenData && !Array.isArray(childrenData)) {
+    children = [{
+      firstName: childrenData.firstName || '',
+      lastName: childrenData.lastName || '',
+      age: childrenData.age || null,
+      birthDate: childrenData.birthDate || null,
+      gender: childrenData.gender || '',
+      cnp: childrenData.cnp || '',
+      otherInfo: childrenData.otherInfo || '',
+      skiLevel: childrenData.skiLevel || '',
+      skiEquipment: childrenData.skiEquipment || [],
+      swimmingLevel: childrenData.swimmingLevel || '',
+      medical: childrenData.medical || {
+        allergies: '',
+        conditions: '',
+        medications: '',
+        notes: ''
+      }
+    }]
+  }
+  
+  // If no children found, use populatedFirstChild
+  if (children.length === 0 && (populatedFirstChild.firstName || populatedFirstChild.lastName)) {
+    children = [populatedFirstChild]
+  }
   
   editForm.value = {
-    children: children,
-    child: firstChild, // Keep for backward compatibility
+    children: children.length > 0 ? children : [populatedFirstChild],
+    child: populatedFirstChild, // Keep for backward compatibility
     parent: {
       firstName: registration.parent?.firstName || '',
       lastName: registration.parent?.lastName || '',
@@ -890,6 +1002,7 @@ const editRegistration = (registration: any) => {
       relationship: registration.parent?.relationship || ''
     },
     activityType: registration.activityType || '',
+    activityId: registration.activityId || null,
     status: registration.status || 'pending',
     afterschool: {
       schedule: registration.afterschool?.schedule || '',
@@ -898,6 +1011,14 @@ const editRegistration = (registration: any) => {
       startDate: registration.afterschool?.startDate ? dayjs(registration.afterschool.startDate) : null
     }
   }
+  
+  console.log('Edit registration - children data:', children)
+  console.log('Edit registration - first child:', firstChild)
+  console.log('Edit form children:', editForm.value.children)
+  
+  // Load activities for the selected activity type
+  await loadActivitiesForEdit()
+  
   isEditing.value = true
   modalVisible.value = true
 }
@@ -911,6 +1032,7 @@ const handleModalCancel = () => {
     child: { firstName: '', lastName: '', age: 0 },
     parent: { firstName: '', lastName: '', phone: '', email: '', relationship: '' },
     activityType: '',
+    activityId: null,
     status: '',
     afterschool: {
       schedule: '',
@@ -919,6 +1041,95 @@ const handleModalCancel = () => {
       startDate: null
     }
   }
+}
+
+const loadActivitiesForEdit = async () => {
+  if (!editForm.value.activityType || editForm.value.activityType === 'afterschool') {
+    availableActivities.value = []
+    if (editForm.value.activityType === 'afterschool') {
+      editForm.value.activityId = 'afterschool-program'
+    } else {
+      editForm.value.activityId = null
+    }
+    return
+  }
+
+  loadingActivities.value = true
+  try {
+    let endpoint = ''
+    switch (editForm.value.activityType) {
+      case 'camp':
+        endpoint = '/api/camps'
+        break
+      case 'hike':
+        endpoint = '/api/hikes'
+        break
+      case 'trip':
+        endpoint = '/api/trips'
+        break
+      case 'ski':
+        endpoint = '/api/ski'
+        break
+      case 'swimming':
+        endpoint = '/api/swimming'
+        break
+      case 'school-offer':
+        endpoint = '/api/school-offers'
+        break
+    }
+
+    if (endpoint) {
+      const response = await $fetch(endpoint)
+      availableActivities.value = Array.isArray(response) ? response : []
+    }
+  } catch (error) {
+    console.error('Failed to load activities:', error)
+    availableActivities.value = []
+  } finally {
+    loadingActivities.value = false
+  }
+}
+
+const checkAvailableActivityTypes = async () => {
+  loadingActivityTypes.value = true
+  try {
+    const checks = await Promise.all([
+      $fetch('/api/camps').then((r: any) => Array.isArray(r) && r.length > 0).catch(() => false),
+      $fetch('/api/hikes').then((r: any) => Array.isArray(r) && r.length > 0).catch(() => false),
+      $fetch('/api/trips').then((r: any) => Array.isArray(r) && r.length > 0).catch(() => false),
+      $fetch('/api/ski').then((r: any) => Array.isArray(r) && r.length > 0).catch(() => false),
+      $fetch('/api/swimming').then((r: any) => Array.isArray(r) && r.length > 0).catch(() => false),
+      $fetch('/api/school-offers').then((r: any) => Array.isArray(r) && r.length > 0).catch(() => false)
+    ])
+
+    availableActivityTypes.value = {
+      camp: checks[0],
+      hike: checks[1],
+      trip: checks[2],
+      ski: checks[3],
+      swimming: checks[4],
+      'afterschool': true, // Afterschool este întotdeauna disponibil
+      'school-offer': checks[5]
+    }
+  } catch (error) {
+    console.error('Failed to check available activity types:', error)
+  } finally {
+    loadingActivityTypes.value = false
+  }
+}
+
+const getActivityName = (activity: any) => {
+  if (activity.name) return activity.name
+  if (activity.title) return activity.title
+  if (activity.type) {
+    const typeLabels: Record<string, string> = {
+      'individual': 'Individuală',
+      'group': 'Grup'
+    }
+    const translatedType = typeLabels[activity.type?.toLowerCase()] || activity.type
+    return `Lecție ${translatedType}`
+  }
+  return activity.id || 'Activitate Necunoscută'
 }
 
 const getScheduleLabel = (schedule: string) => {
@@ -979,6 +1190,17 @@ const saveRegistration = async () => {
     message.warning('Te rog introdu adresa de email')
     return
   }
+  
+  // Validate activityId if activityType is not afterschool
+  if (editForm.value.activityType && editForm.value.activityType !== 'afterschool') {
+    if (!editForm.value.activityId) {
+      message.warning('Te rog selectați activitatea')
+      return
+    }
+  } else if (editForm.value.activityType === 'afterschool') {
+    // For afterschool, set activityId to default value
+    editForm.value.activityId = 'afterschool-program'
+  }
 
   saving.value = true
   try {
@@ -988,6 +1210,7 @@ const saveRegistration = async () => {
       child: editForm.value.child, // Keep for backward compatibility
       parent: editForm.value.parent,
       activityType: editForm.value.activityType,
+      activityId: editForm.value.activityId,
       status: editForm.value.status
     }
 
@@ -1049,8 +1272,9 @@ const exportToExcel = () => {
   XLSX.writeFile(wb, `inscrieri_${dayjs().format('YYYY-MM-DD')}.xlsx`)
 }
 
-onMounted(() => {
-  loadRegistrations()
+onMounted(async () => {
+  await checkAvailableActivityTypes()
+  await loadRegistrations()
 })
 </script>
 
