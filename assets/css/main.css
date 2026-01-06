@@ -148,6 +148,34 @@ body {
     font-size: 16px !important;
   }
   
+  /* Fix pentru select selector - aliniere corectă */
+  .admin-modal-wrapper .ant-select-selector {
+    display: flex !important;
+    align-items: center !important;
+    padding: 4px 11px !important;
+  }
+  
+  .admin-modal-wrapper .ant-select-selection-item {
+    line-height: normal !important;
+    font-size: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    height: auto !important;
+  }
+  
+  .admin-modal-wrapper .ant-select-selection-placeholder {
+    line-height: normal !important;
+    font-size: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    height: auto !important;
+  }
+  
+  .admin-modal-wrapper .ant-select-selection-search {
+    display: flex !important;
+    align-items: center !important;
+  }
+  
   /* Textarea mai mare pe mobile */
   .admin-modal-wrapper .ant-input {
     font-size: 16px !important;
@@ -313,12 +341,6 @@ body {
   /* Select dropdown - fix poziționare și z-index */
   .ant-select-dropdown {
     z-index: 1050 !important;
-    position: fixed !important;
-  }
-  
-  /* Previne mutarea dropdown-ului la scroll */
-  .ant-select-dropdown {
-    transform: none !important;
   }
   
   /* Fix pentru select în modale */
@@ -335,14 +357,6 @@ body {
   /* Previne scroll orizontal când select-ul este deschis */
   body.ant-select-open {
     overflow-x: hidden !important;
-  }
-  
-  /* Asigură că dropdown-ul rămâne poziționat corect */
-  .ant-select-dropdown-placement-bottomLeft,
-  .ant-select-dropdown-placement-bottomRight,
-  .ant-select-dropdown-placement-topLeft,
-  .ant-select-dropdown-placement-topRight {
-    position: fixed !important;
   }
 }
 

@@ -258,6 +258,10 @@ onMounted(() => {
   margin-top: 12px;
   color: #666;
   line-height: 1.6;
+  max-height: 150px;
+  overflow-y: auto;
+  word-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 .trip-details-modal {

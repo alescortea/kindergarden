@@ -61,6 +61,7 @@
                     show-search
                     :filter-option="false"
                     :getPopupContainer="getPopupContainer"
+                    @change="() => {}"
                   >
                     <a-select-option
                       v-for="activity in activities"
@@ -72,6 +73,18 @@
                     </a-select-option>
                   </a-select>
                 </a-form-item>
+
+                <!-- Activity Description Display -->
+                <div v-if="selectedActivity && selectedActivity.description" class="activity-description-section">
+                  <a-card size="small" class="activity-info-card">
+                    <template #title>
+                      <span>ℹ️ Despre activitate: {{ getActivityName(selectedActivity) }}</span>
+                    </template>
+                    <div class="activity-description-text">
+                      {{ selectedActivity.description }}
+                    </div>
+                  </a-card>
+                </div>
 
                 <!-- Afterschool Program Specific Fields -->
                 <template v-if="formData.activityType === 'afterschool'">
@@ -753,6 +766,14 @@ const checkAvailableActivityTypes = async () => {
   }
 }
 
+// Computed property pentru activitatea selectată
+const selectedActivity = computed(() => {
+  if (!formData.value.activityId || !formData.value.activityType) {
+    return null
+  }
+  return activities.value.find((a: any) => a.id === formData.value.activityId) || null
+})
+
 const getActivityName = (activity: any) => {
   // For camps, trips, hikes - use 'name'
   if (activity.name) {
@@ -1120,14 +1141,37 @@ onMounted(async () => {
     font-size: 16px !important;
   }
   
+  /* Fix pentru select - aliniere corectă a textului */
+  .registration-page :deep(.ant-select-selector) {
+    display: flex !important;
+    align-items: center !important;
+    padding: 4px 11px !important;
+  }
+  
   .registration-page :deep(.ant-select-selection-item) {
-    line-height: 44px !important;
+    line-height: normal !important;
     font-size: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    height: auto !important;
   }
   
   .registration-page :deep(.ant-select-selection-placeholder) {
-    line-height: 44px !important;
+    line-height: normal !important;
     font-size: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    height: auto !important;
+  }
+  
+  .registration-page :deep(.ant-select-selection-search) {
+    display: flex !important;
+    align-items: center !important;
+  }
+  
+  .registration-page :deep(.ant-select-selection-search-input) {
+    height: auto !important;
+    line-height: normal !important;
   }
   
   /* Date picker touch-friendly */
@@ -1191,6 +1235,25 @@ onMounted(async () => {
 svg {
   margin-top: -6px !important;
   vertical-align: middle;
+}
+
+/* Activity Description Section */
+.activity-description-section {
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.activity-info-card {
+  background: #f0f7ff;
+  border: 1px solid #91caff;
+}
+
+.activity-description-text {
+  color: #666;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-size: 14px;
 }
 </style>
 

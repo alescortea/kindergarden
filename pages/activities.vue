@@ -657,10 +657,9 @@ onMounted(() => {
   margin-top: 12px;
   color: #666;
   line-height: 1.6;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  max-height: 150px;
+  overflow-y: auto;
+  word-wrap: break-word;
 }
 
 .no-activities {
