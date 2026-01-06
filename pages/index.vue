@@ -205,12 +205,12 @@
 <script setup lang="ts">
 // SEO Meta Tags
 useHead({
-  title: 'Roseli - Sport & Aventură pentru Copii | Tabere, Drumeții, Lecții de Ski și Înot',
+  title: 'Activități Copii Brașov | Tabere Copii Brașov | Afterschool Brașov | Roseli',
   meta: [
-    { name: 'description', content: 'Activități sportive și de aventură pentru copii: tabere, drumeții, excursii, lecții de ski și înot în Brașov, România. Oferim experiențe unice de sport și aventură pentru copii.' },
-    { name: 'keywords', content: 'tabere copii, drumeții copii, lecții ski copii, lecții înot copii, activități copii Brașov, afterschool Brașov, excursii educaționale, sport copii România' },
+    { name: 'description', content: 'Activități copii Brașov: tabere copii Brașov, afterschool Brașov, drumeții, excursii, lecții de ski și înot pentru copii în Brașov, România. Oferim experiențe unice de sport și aventură pentru copii.' },
+    { name: 'keywords', content: 'activități copii Brașov, tabere copii Brașov, afterschool Brașov, tabere copii, drumeții copii, lecții ski copii, lecții înot copii, activități copii, afterschool, tabere, excursii educaționale, sport copii România, centru afterschool Brașov' },
     { property: 'og:title', content: 'Roseli - Sport & Aventură pentru Copii' },
-    { property: 'og:description', content: 'Activități sportive și de aventură pentru copii: tabere, drumeții, excursii, lecții de ski și înot în Brașov, România' },
+    { property: 'og:description', content: 'Activități copii Brașov: tabere copii Brașov, afterschool Brașov, drumeții, excursii, lecții de ski și înot pentru copii în Brașov' },
     { property: 'og:url', content: 'https://activitati-copii-roseli.ro' },
     { name: 'twitter:title', content: 'Roseli - Sport & Aventură pentru Copii' },
     { name: 'twitter:description', content: 'Activități sportive și de aventură pentru copii: tabere, drumeții, excursii, lecții de ski și înot în Brașov, România' }

@@ -89,10 +89,10 @@
 <script setup lang="ts">
 // SEO Meta Tags
 useHead({
-  title: 'Centru Afterschool Brașov | Program Afterschool pentru Copii | Roseli',
+  title: 'Afterschool Brașov | Centru Afterschool Brașov | Program Afterschool pentru Copii | Roseli',
   meta: [
-    { name: 'description', content: 'Centru Afterschool în Brașov. Program complet pentru copii cu activități educaționale, recreative și sportive. Program: Luni-Vineri (12:00-17:30).' },
-    { name: 'keywords', content: 'afterschool Brașov, program afterschool, activități copii Brașov, centru afterschool, activități educaționale copii' },
+    { name: 'description', content: 'Afterschool Brașov: Centru Afterschool în Brașov cu program complet pentru copii. Activități educaționale, recreative și sportive. Program: Luni-Vineri (12:00-17:30). Vacanțe: 8:00-17:30.' },
+    { name: 'keywords', content: 'afterschool Brașov, afterschool, centru afterschool Brașov, program afterschool Brașov, activități copii Brașov, centru afterschool, activități educaționale copii, afterschool copii Brașov' },
     { property: 'og:title', content: 'Centru Afterschool Brașov | Roseli' },
     { property: 'og:description', content: 'Program complet pentru copii cu activități educaționale, recreative și sportive' },
     { property: 'og:url', content: 'https://activitati-copii-roseli.ro/afterschool' },

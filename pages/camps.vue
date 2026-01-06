@@ -144,10 +144,10 @@ import { TeamOutlined, FormOutlined, EyeOutlined, ArrowLeftOutlined } from '@ant
 
 // SEO Meta Tags
 useHead({
-  title: 'Tabere pentru Copii | Tabere de Vară și Iarnă | Roseli',
+  title: 'Tabere Copii Brașov | Tabere pentru Copii | Tabere de Vară și Iarnă | Roseli',
   meta: [
-    { name: 'description', content: 'Tabere de aventură pentru copii în locații frumoase din România. Tabere de vară și iarnă cu activități sportive și educaționale pentru copii.' },
-    { name: 'keywords', content: 'tabere copii, tabere vară copii, tabere iarnă copii, tabere aventură, tabere Brașov, tabere România' },
+    { name: 'description', content: 'Tabere copii Brașov: tabere de aventură pentru copii în locații frumoase din România. Tabere de vară și iarnă cu activități sportive și educaționale pentru copii. Organizăm tabere copii Brașov și în toată România.' },
+    { name: 'keywords', content: 'tabere copii Brașov, tabere copii, tabere vară copii, tabere iarnă copii, tabere aventură, tabere Brașov, tabere România, activități copii Brașov' },
     { property: 'og:title', content: 'Tabere pentru Copii | Roseli' },
     { property: 'og:description', content: 'Tabere de aventură pentru copii în locații frumoase din România' },
     { property: 'og:url', content: 'https://activitati-copii-roseli.ro/camps' },

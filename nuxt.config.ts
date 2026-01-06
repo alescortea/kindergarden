@@ -58,8 +58,8 @@ export default defineNuxtConfig({
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes' },
-        { name: 'description', content: 'Activități sportive și de aventură pentru copii: tabere, drumeții, excursii, lecții de ski și înot în Brașov, România. Oferim experiențe unice de sport și aventură pentru copii.' },
-        { name: 'keywords', content: 'tabere copii, drumeții copii, lecții ski copii, lecții înot copii, activități copii Brașov, afterschool Brașov, excursii educaționale, sport copii România' },
+        { name: 'description', content: 'Activități copii Brașov: tabere copii Brașov, afterschool Brașov, drumeții, excursii, lecții de ski și înot pentru copii în Brașov, România. Oferim experiențe unice de sport și aventură pentru copii.' },
+        { name: 'keywords', content: 'activități copii Brașov, tabere copii Brașov, afterschool Brașov, tabere copii, drumeții copii, lecții ski copii, lecții înot copii, activități copii, afterschool, tabere, excursii educaționale, sport copii România, centru afterschool Brașov' },
         { name: 'author', content: 'Roseli - Sport & Aventură pentru Copii' },
         { name: 'robots', content: 'index, follow' },
         { name: 'googlebot', content: 'index, follow' },
@@ -68,8 +68,11 @@ export default defineNuxtConfig({
         { property: 'og:type', content: 'website' },
         { property: 'og:url', content: 'https://activitati-copii-roseli.ro' },
         { property: 'og:title', content: 'Roseli - Sport & Aventură pentru Copii' },
-        { property: 'og:description', content: 'Activități sportive și de aventură pentru copii: tabere, drumeții, excursii, lecții de ski și înot în Brașov, România' },
+        { property: 'og:description', content: 'Activități copii Brașov: tabere copii Brașov, afterschool Brașov, drumeții, excursii, lecții de ski și înot pentru copii în Brașov' },
         { property: 'og:image', content: 'https://activitati-copii-roseli.ro/favicon.png' },
+        { property: 'og:image:type', content: 'image/png' },
+        { property: 'og:image:width', content: '512' },
+        { property: 'og:image:height', content: '512' },
         { property: 'og:locale', content: 'ro_RO' },
         { property: 'og:site_name', content: 'Roseli - Sport & Aventură pentru Copii' },
         
@@ -85,8 +88,22 @@ export default defineNuxtConfig({
         { name: 'format-detection', content: 'telephone=no' }
       ],
       link: [
-        { rel: 'icon', type: 'image/png', href: '/favicon.png' },
+        // Favicon pentru diferite browsere și dispozitive
+        { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon.png' },
+        { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon.png' },
+        { rel: 'shortcut icon', type: 'image/png', href: '/favicon.png' },
+        { rel: 'apple-touch-icon', sizes: '180x180', href: '/favicon.png' },
+        { rel: 'apple-touch-icon', sizes: '152x152', href: '/favicon.png' },
+        { rel: 'apple-touch-icon', sizes: '144x144', href: '/favicon.png' },
+        { rel: 'apple-touch-icon', sizes: '120x120', href: '/favicon.png' },
+        { rel: 'apple-touch-icon', sizes: '114x114', href: '/favicon.png' },
+        { rel: 'apple-touch-icon', sizes: '76x76', href: '/favicon.png' },
+        { rel: 'apple-touch-icon', sizes: '72x72', href: '/favicon.png' },
+        { rel: 'apple-touch-icon', sizes: '60x60', href: '/favicon.png' },
+        { rel: 'apple-touch-icon', sizes: '57x57', href: '/favicon.png' },
         { rel: 'apple-touch-icon', href: '/favicon.png' },
+        // Manifest pentru PWA
+        { rel: 'manifest', href: '/manifest.json' },
         { rel: 'canonical', href: 'https://activitati-copii-roseli.ro' }
       ],
       script: [
@@ -94,15 +111,21 @@ export default defineNuxtConfig({
           type: 'application/ld+json',
           children: JSON.stringify({
             '@context': 'https://schema.org',
-            '@type': 'Organization',
+            '@type': 'LocalBusiness',
             name: 'Roseli - Sport & Aventură pentru Copii',
+            alternateName: 'Roseli Activități Copii Brașov',
             url: 'https://activitati-copii-roseli.ro',
             logo: 'https://activitati-copii-roseli.ro/favicon.png',
-            description: 'Activități sportive și de aventură pentru copii: tabere, drumeții, excursii, lecții de ski și înot în Brașov, România',
+            description: 'Activități copii Brașov: tabere copii Brașov, afterschool Brașov, drumeții, excursii, lecții de ski și înot pentru copii în Brașov, România',
             address: {
               '@type': 'PostalAddress',
               addressCountry: 'RO',
-              addressRegion: 'Brașov'
+              addressRegion: 'Brașov',
+              addressLocality: 'Brașov'
+            },
+            areaServed: {
+              '@type': 'City',
+              name: 'Brașov'
             },
             contactPoint: {
               '@type': 'ContactPoint',

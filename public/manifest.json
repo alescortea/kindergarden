@@ -1,0 +1,25 @@
+{
+  "name": "Roseli - Sport & Aventură pentru Copii",
+  "short_name": "Roseli",
+  "description": "Activități sportive și de aventură pentru copii: tabere, drumeții, excursii, lecții de ski și înot",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1890ff",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
+
