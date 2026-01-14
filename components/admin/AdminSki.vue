@@ -330,53 +330,60 @@ const saveLesson = async () => {
     let imageUrl = null
     if (imageFileList.value.length > 0) {
       const fileItem = imageFileList.value[0]
-      let f: any = fileItem?.originFileObj || fileItem?.file || fileItem
+      // Check if there's actually a new file to upload (not just an existing URL)
+      const hasNewFile = fileItem?.originFileObj || fileItem?.file
+      if (!hasNewFile) {
+        // No new file, skip upload and use existing gallery
+        imageUrl = null
+      } else {
+        let f: any = fileItem.originFileObj || fileItem.file
       
-      // Acceptă și Blob (iOS uneori livrează Blob / wrapper)
-      const isFileOrBlob = f && (f instanceof File || f instanceof Blob)
-      if (!isFileOrBlob) {
-        message.error('Fișier invalid pentru upload.')
-        return
-      }
-      
-      // iOS/Safari poate da Blob -> îl transformăm în File cu nume
-      if (!(f instanceof File)) {
-        const ext = (f.type?.split('/')?.[1] || 'jpg').replace('jpeg', 'jpg')
-        f = new File([f], `upload_${Date.now()}.${ext}`, { type: f.type || 'image/jpeg' })
-      }
-      
-      try {
-        // Comprimă imaginea înainte de upload (reduce dimensiunea pentru a evita 413)
-        message.loading({ content: 'Se comprimă imaginea...', key: 'compressing', duration: 0 })
-        const compressedFile = await compressImage(f, {
-          maxWidth: 1920,
-          maxHeight: 1920,
-          quality: 0.8,
-          maxSizeMB: 2
-        })
-        message.destroy('compressing')
-        
-        const formData = new FormData()
-        // IMPORTANT: filename explicit (fix pentru iOS Safari)
-        formData.append('file', compressedFile, compressedFile.name)
-        formData.append('folder', 'ski')
-        
-        const uploadResponse: any = await $fetch('/api/upload', {
-          method: 'POST',
-          body: formData
-        })
-        
-        if (uploadResponse?.uploads?.length) {
-          imageUrl = uploadResponse.uploads[0].url
-          console.log('Image uploaded during save, URL:', imageUrl)
-        } else {
-          message.error('Eroare: nu s-a primit URL după upload.')
+        // Acceptă și Blob (iOS uneori livrează Blob / wrapper)
+        const isFileOrBlob = f && (f instanceof File || f instanceof Blob)
+        if (!isFileOrBlob) {
+          message.error('Fișier invalid pentru upload.')
           return
         }
-      } catch (uploadError: any) {
-        console.error('Upload error:', uploadError)
-        message.error(`Eroare la încărcarea imaginii: ${uploadError?.message || 'Eroare necunoscută'}`)
-        return
+        
+        // iOS/Safari poate da Blob -> îl transformăm în File cu nume
+        if (!(f instanceof File)) {
+          const ext = (f.type?.split('/')?.[1] || 'jpg').replace('jpeg', 'jpg')
+          f = new File([f], `upload_${Date.now()}.${ext}`, { type: f.type || 'image/jpeg' })
+        }
+        
+        try {
+          // Comprimă imaginea înainte de upload (reduce dimensiunea pentru a evita 413)
+          message.loading({ content: 'Se comprimă imaginea...', key: 'compressing', duration: 0 })
+          const compressedFile = await compressImage(f, {
+            maxWidth: 1920,
+            maxHeight: 1920,
+            quality: 0.8,
+            maxSizeMB: 2
+          })
+          message.destroy('compressing')
+          
+          const formData = new FormData()
+          // IMPORTANT: filename explicit (fix pentru iOS Safari)
+          formData.append('file', compressedFile, compressedFile.name)
+          formData.append('folder', 'ski')
+          
+          const uploadResponse: any = await $fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+          })
+          
+          if (uploadResponse?.uploads?.length) {
+            imageUrl = uploadResponse.uploads[0].url
+            console.log('Image uploaded during save, URL:', imageUrl)
+          } else {
+            message.error('Eroare: nu s-a primit URL după upload.')
+            return
+          }
+        } catch (uploadError: any) {
+          console.error('Upload error:', uploadError)
+          message.error(`Eroare la încărcarea imaginii: ${uploadError?.message || 'Eroare necunoscută'}`)
+          return
+        }
       }
     }
     
