@@ -528,9 +528,7 @@ onMounted(() => {
 
   .gallery-item-image {
     height: 200px;
-  }
-
-  .action-text {
+  }  .action-text {
     display: inline;
   }
 }

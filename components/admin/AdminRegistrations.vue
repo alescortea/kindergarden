@@ -95,21 +95,34 @@
             }"
           >
             <template #expandedRowRender="{ record }">
-              <div v-if="(record._childrenData || record.children) && Array.isArray(record._childrenData || record.children) && (record._childrenData || record.children).length > 1" style="padding: 16px; background: #fafafa; border-top: 1px solid #e8e8e8;">
-                <h4 style="margin-bottom: 16px; color: #1890ff;">Detalii Copii</h4>
-                <div v-for="(child, index) in (record._childrenData || record.children)" :key="`child-${record.id}-${index}`" style="margin-bottom: 16px; padding: 12px; background: white; border-radius: 8px; border: 1px solid #e8e8e8;">
-                  <div style="font-weight: bold; margin-bottom: 8px; color: #1890ff;">Copil {{ index + 1 }}</div>
-                  <div style="margin-bottom: 4px;"><strong>Nume:</strong> {{ (child.firstName || '').trim() }} {{ (child.lastName || '').trim() }}</div>
-                  <div style="margin-bottom: 4px;" v-if="child.age"><strong>Vârstă:</strong> {{ child.age }} ani</div>
-                  <div style="margin-bottom: 4px;" v-if="child.birthDate"><strong>Data Nașterii:</strong> {{ child.birthDate }}</div>
-                  <div style="margin-bottom: 4px;" v-if="child.gender"><strong>Gen:</strong> {{ child.gender === 'male' ? 'Băiat' : child.gender === 'female' ? 'Fată' : 'N/A' }}</div>
-                  <div style="margin-bottom: 4px;" v-if="child.skiLevel"><strong>Nivel Ski:</strong> {{ child.skiLevel }}</div>
-                  <div style="margin-bottom: 4px;" v-if="child.skiEquipment && child.skiEquipment.length > 0"><strong>Echipament Ski:</strong> {{ child.skiEquipment.join(', ') }}</div>
-                  <div style="margin-bottom: 4px;" v-if="child.swimmingLevel"><strong>Nivel Înot:</strong> {{ child.swimmingLevel }}</div>
-                  <div style="margin-bottom: 4px;" v-if="child.medical?.allergies"><strong>Alergii:</strong> {{ child.medical.allergies }}</div>
-                  <div style="margin-bottom: 4px;" v-if="child.medical?.conditions"><strong>Afecțiuni Medicale:</strong> {{ child.medical.conditions }}</div>
-                  <div style="margin-bottom: 4px;" v-if="child.medical?.medications"><strong>Medicamente:</strong> {{ child.medical.medications }}</div>
-                  <div style="margin-bottom: 4px;" v-if="child.otherInfo"><strong>Alte Informații:</strong> {{ child.otherInfo }}</div>
+              <div v-if="(record._childrenData || record.children) && Array.isArray(record._childrenData || record.children) && (record._childrenData || record.children).length > 1" style="padding: 20px; background: #fafafa; border-top: 1px solid #e8e8e8;">
+                <h4 style="margin-bottom: 20px; color: #1890ff; font-size: 18px; font-weight: 600;">👶 Detalii Copii</h4>
+                <div v-for="(child, index) in (record._childrenData || record.children)" :key="`child-${record.id}-${index}`" style="margin-bottom: 24px; padding: 16px; background: white; border-radius: 8px; border: 1px solid #e8e8e8; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                  <div style="font-weight: bold; margin-bottom: 16px; padding: 8px 12px; background: #e6f7ff; border-left: 4px solid #1890ff; border-radius: 4px; color: #1890ff; font-size: 16px;">Copil {{ index + 1 }}</div>
+                  <div style="margin-bottom: 8px; padding: 4px 0;"><strong>Nume:</strong> {{ (child.firstName || '').trim() }} {{ (child.lastName || '').trim() }}</div>
+                  <div style="margin-bottom: 8px; padding: 4px 0;" v-if="child.age"><strong>Vârstă:</strong> {{ child.age }} ani</div>
+                  <div style="margin-bottom: 8px; padding: 4px 0;" v-if="child.birthDate"><strong>Data Nașterii:</strong> {{ child.birthDate }}</div>
+                  <div style="margin-bottom: 8px; padding: 4px 0;" v-if="child.gender"><strong>Gen:</strong> {{ child.gender === 'male' ? 'Băiat' : child.gender === 'female' ? 'Fată' : 'N/A' }}</div>
+                  <div style="margin-bottom: 8px; padding: 4px 0;" v-if="child.skiLevel"><strong>Nivel Ski:</strong> {{ child.skiLevel }}</div>
+                  <div style="margin-bottom: 8px; padding: 4px 0;" v-if="child.skiEquipment && child.skiEquipment.length > 0"><strong>Echipament Ski:</strong> {{ child.skiEquipment.join(', ') }}</div>
+                  <div style="margin-bottom: 8px; padding: 4px 0;" v-if="child.swimmingLevel"><strong>Nivel Înot:</strong> {{ child.swimmingLevel }}</div>
+                  <div style="margin-bottom: 8px; padding: 4px 0;" v-if="child.otherInfo"><strong>Alte Informații:</strong> {{ child.otherInfo }}</div>
+                  <!-- Medical Information Section -->
+                  <div v-if="child.medical?.allergies || child.medical?.conditions || child.medical?.medications || child.medical?.notes" style="margin-top: 16px; padding-top: 16px; border-top: 2px solid #fff7e6;">
+                    <div style="font-weight: bold; margin-bottom: 12px; padding: 8px 12px; background: #fff7e6; border-left: 4px solid #faad14; border-radius: 4px; color: #faad14; font-size: 15px;">🏥 Informații Medicale</div>
+                    <div style="margin-bottom: 8px; padding: 8px 12px; background: #fffbe6; border-left: 3px solid #faad14; border-radius: 4px; word-break: break-word;" v-if="child.medical?.allergies">
+                      <strong>Alergii:</strong><br/>{{ child.medical.allergies }}
+                    </div>
+                    <div style="margin-bottom: 8px; padding: 8px 12px; background: #fffbe6; border-left: 3px solid #faad14; border-radius: 4px; word-break: break-word;" v-if="child.medical?.conditions">
+                      <strong>Afecțiuni Medicale:</strong><br/>{{ child.medical.conditions }}
+                    </div>
+                    <div style="margin-bottom: 8px; padding: 8px 12px; background: #fffbe6; border-left: 3px solid #faad14; border-radius: 4px; word-break: break-word;" v-if="child.medical?.medications">
+                      <strong>Medicamente:</strong><br/>{{ child.medical.medications }}
+                    </div>
+                    <div style="margin-bottom: 8px; padding: 8px 12px; background: #fffbe6; border-left: 3px solid #faad14; border-radius: 4px; word-break: break-word;" v-if="child.medical?.notes">
+                      <strong>Note Medicale:</strong><br/>{{ child.medical.notes }}
+                    </div>
+                  </div>
                 </div>
               </div>
             </template>
@@ -300,61 +313,131 @@
       :footer="null"
       :wrap-class-name="'registration-modal admin-modal-wrapper'"
       :class="'registration-modal-wrapper'"
-      :body-style="{ maxHeight: isMobile ? '70vh' : 'none', overflowY: 'auto', padding: isMobile ? '16px' : '24px' }"
+      :body-style="{ maxHeight: isMobile ? '70vh' : '80vh', overflowY: 'auto', padding: isMobile ? '16px' : '24px' }"
       @cancel="handleModalCancel"
     >
       <div v-if="selectedRegistration" class="registration-details">
         <!-- View Mode -->
         <template v-if="!isEditing">
-          <a-descriptions :column="descriptionColumns" bordered>
+          <a-descriptions :column="1" bordered :label-style="{ fontWeight: 600, width: '200px', backgroundColor: '#fafafa' }" :content-style="{ wordBreak: 'break-word', whiteSpace: 'pre-wrap' }">
             <template v-if="selectedRegistration.children && selectedRegistration.children.length > 0">
               <template v-for="(child, index) in selectedRegistration.children" :key="index">
-                <a-descriptions-item :label="`Copil ${index + 1} - Nume Complet`">
+                <a-descriptions-item v-if="index === 0 && selectedRegistration.children.length > 1" :span="1">
+                  <div style="text-align: center; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 6px; margin-bottom: 16px; font-weight: 600; font-size: 16px;">
+                    {{ selectedRegistration.children.length }} Copil{{ selectedRegistration.children.length > 1 ? 'i' : '' }}
+                  </div>
+                </a-descriptions-item>
+                <a-descriptions-item :span="1" v-if="selectedRegistration.children.length > 1">
+                  <div style="margin: 16px 0 12px 0; padding: 10px 14px; background: #e6f7ff; border-left: 4px solid #1890ff; border-radius: 4px; font-weight: 600; color: #1890ff; font-size: 15px;">
+                    👶 Copil {{ index + 1 }}
+                  </div>
+                </a-descriptions-item>
+                <a-descriptions-item :label="selectedRegistration.children.length > 1 ? `Nume Complet` : `Copil ${index + 1} - Nume Complet`">
                   {{ child.firstName }} {{ child.lastName }}
                 </a-descriptions-item>
-                <a-descriptions-item :label="`Copil ${index + 1} - Vârstă`" v-if="child.age">
+                <a-descriptions-item :label="selectedRegistration.children.length > 1 ? `Vârstă` : `Copil ${index + 1} - Vârstă`" v-if="child.age">
                   {{ child.age }} ani
                 </a-descriptions-item>
-                <a-descriptions-item :label="`Copil ${index + 1} - Data Nașterii`" v-if="child.birthDate">
+                <a-descriptions-item :label="selectedRegistration.children.length > 1 ? `Data Nașterii` : `Copil ${index + 1} - Data Nașterii`" v-if="child.birthDate">
                   {{ child.birthDate }}
                 </a-descriptions-item>
-                <a-descriptions-item :label="`Copil ${index + 1} - Gen`" v-if="child.gender">
+                <a-descriptions-item :label="selectedRegistration.children.length > 1 ? `Gen` : `Copil ${index + 1} - Gen`" v-if="child.gender">
                   {{ child.gender === 'male' ? 'Băiat' : 'Fată' }}
                 </a-descriptions-item>
-                <a-descriptions-item :label="`Copil ${index + 1} - Nivel Ski`" v-if="child.skiLevel">
+                <a-descriptions-item :label="selectedRegistration.children.length > 1 ? `Nivel Ski` : `Copil ${index + 1} - Nivel Ski`" v-if="child.skiLevel">
                   {{ child.skiLevel }}
                 </a-descriptions-item>
-                <a-descriptions-item :label="`Copil ${index + 1} - Echipament Ski`" v-if="child.skiEquipment && child.skiEquipment.length > 0">
+                <a-descriptions-item :label="selectedRegistration.children.length > 1 ? `Echipament Ski` : `Copil ${index + 1} - Echipament Ski`" v-if="child.skiEquipment && child.skiEquipment.length > 0">
                   {{ child.skiEquipment.join(', ') }}
                 </a-descriptions-item>
-                <a-descriptions-item :label="`Copil ${index + 1} - Nivel Înot`" v-if="child.swimmingLevel">
+                <a-descriptions-item :label="selectedRegistration.children.length > 1 ? `Nivel Înot` : `Copil ${index + 1} - Nivel Înot`" v-if="child.swimmingLevel">
                   {{ child.swimmingLevel }}
                 </a-descriptions-item>
-                <a-descriptions-item :label="`Copil ${index + 1} - Alergii`" v-if="child.medical?.allergies">
-                  {{ child.medical.allergies }}
+                <a-descriptions-item :span="1" v-if="child.medical?.allergies || child.medical?.conditions || child.medical?.medications || child.medical?.notes">
+                  <div style="margin: 16px 0 8px 0; padding: 10px 14px; background: #fff7e6; border-left: 4px solid #faad14; border-radius: 4px; font-weight: 600; color: #faad14; font-size: 15px;">
+                    🏥 Informații Medicale - Copil {{ selectedRegistration.children.length > 1 ? index + 1 : '' }}
+                  </div>
                 </a-descriptions-item>
-                <a-descriptions-item :label="`Copil ${index + 1} - Afecțiuni Medicale`" v-if="child.medical?.conditions">
-                  {{ child.medical.conditions }}
+                <a-descriptions-item :label="selectedRegistration.children.length > 1 ? `Alergii` : `Copil ${index + 1} - Alergii`" v-if="child.medical?.allergies">
+                  <div style="background: #fffbe6; padding: 10px 14px; border-radius: 4px; border-left: 3px solid #faad14; margin: 4px 0;">
+                    {{ child.medical.allergies }}
+                  </div>
                 </a-descriptions-item>
-                <a-descriptions-item :label="`Copil ${index + 1} - Medicamente`" v-if="child.medical?.medications">
-                  {{ child.medical.medications }}
+                <a-descriptions-item :label="selectedRegistration.children.length > 1 ? `Afecțiuni Medicale` : `Copil ${index + 1} - Afecțiuni Medicale`" v-if="child.medical?.conditions">
+                  <div style="background: #fffbe6; padding: 10px 14px; border-radius: 4px; border-left: 3px solid #faad14; margin: 4px 0;">
+                    {{ child.medical.conditions }}
+                  </div>
                 </a-descriptions-item>
-                <a-descriptions-item :label="`Copil ${index + 1} - Note`" v-if="child.medical?.notes">
-                  {{ child.medical.notes }}
+                <a-descriptions-item :label="selectedRegistration.children.length > 1 ? `Medicamente` : `Copil ${index + 1} - Medicamente`" v-if="child.medical?.medications">
+                  <div style="background: #fffbe6; padding: 10px 14px; border-radius: 4px; border-left: 3px solid #faad14; margin: 4px 0;">
+                    {{ child.medical.medications }}
+                  </div>
                 </a-descriptions-item>
-                <a-descriptions-item :label="`Copil ${index + 1} - Alte Informații`" v-if="child.otherInfo">
+                <a-descriptions-item :label="selectedRegistration.children.length > 1 ? `Note Medicale` : `Copil ${index + 1} - Note`" v-if="child.medical?.notes">
+                  <div style="background: #fffbe6; padding: 10px 14px; border-radius: 4px; border-left: 3px solid #faad14; margin: 4px 0;">
+                    {{ child.medical.notes }}
+                  </div>
+                </a-descriptions-item>
+                <a-descriptions-item :label="selectedRegistration.children.length > 1 ? `Alte Informații` : `Copil ${index + 1} - Alte Informații`" v-if="child.otherInfo">
                   {{ child.otherInfo }}
+                </a-descriptions-item>
+                <a-descriptions-item :span="1" v-if="index < selectedRegistration.children.length - 1">
+                  <div style="height: 2px; background: #e8e8e8; margin: 24px 0;"></div>
                 </a-descriptions-item>
               </template>
             </template>
             <template v-else-if="selectedRegistration.child">
+              <a-descriptions-item :span="1">
+                <div style="margin: 0 0 16px 0; padding: 10px 14px; background: #e6f7ff; border-left: 4px solid #1890ff; border-radius: 4px; font-weight: 600; color: #1890ff; font-size: 15px;">
+                  👶 Copil
+                </div>
+              </a-descriptions-item>
               <a-descriptions-item label="Copil - Nume Complet">
                 {{ selectedRegistration.child.firstName }} {{ selectedRegistration.child.lastName }}
               </a-descriptions-item>
               <a-descriptions-item label="Copil - Vârstă" v-if="selectedRegistration.child.age">
                 {{ selectedRegistration.child.age }} ani
               </a-descriptions-item>
+              <a-descriptions-item label="Copil - Data Nașterii" v-if="selectedRegistration.child.birthDate">
+                {{ selectedRegistration.child.birthDate }}
+              </a-descriptions-item>
+              <a-descriptions-item label="Copil - Gen" v-if="selectedRegistration.child.gender">
+                {{ selectedRegistration.child.gender === 'male' ? 'Băiat' : 'Fată' }}
+              </a-descriptions-item>
+              <a-descriptions-item :span="1" v-if="selectedRegistration.child.medical?.allergies || selectedRegistration.child.medical?.conditions || selectedRegistration.child.medical?.medications || selectedRegistration.child.medical?.notes">
+                <div style="margin: 16px 0 8px 0; padding: 10px 14px; background: #fff7e6; border-left: 4px solid #faad14; border-radius: 4px; font-weight: 600; color: #faad14; font-size: 15px;">
+                  🏥 Informații Medicale
+                </div>
+              </a-descriptions-item>
+              <a-descriptions-item label="Copil - Alergii" v-if="selectedRegistration.child.medical?.allergies">
+                <div style="background: #fffbe6; padding: 10px 14px; border-radius: 4px; border-left: 3px solid #faad14; margin: 4px 0;">
+                  {{ selectedRegistration.child.medical.allergies }}
+                </div>
+              </a-descriptions-item>
+              <a-descriptions-item label="Copil - Afecțiuni Medicale" v-if="selectedRegistration.child.medical?.conditions">
+                <div style="background: #fffbe6; padding: 10px 14px; border-radius: 4px; border-left: 3px solid #faad14; margin: 4px 0;">
+                  {{ selectedRegistration.child.medical.conditions }}
+                </div>
+              </a-descriptions-item>
+              <a-descriptions-item label="Copil - Medicamente" v-if="selectedRegistration.child.medical?.medications">
+                <div style="background: #fffbe6; padding: 10px 14px; border-radius: 4px; border-left: 3px solid #faad14; margin: 4px 0;">
+                  {{ selectedRegistration.child.medical.medications }}
+                </div>
+              </a-descriptions-item>
+              <a-descriptions-item label="Copil - Note Medicale" v-if="selectedRegistration.child.medical?.notes">
+                <div style="background: #fffbe6; padding: 10px 14px; border-radius: 4px; border-left: 3px solid #faad14; margin: 4px 0;">
+                  {{ selectedRegistration.child.medical.notes }}
+                </div>
+              </a-descriptions-item>
+              <a-descriptions-item label="Copil - Alte Informații" :span="descriptionColumns" v-if="selectedRegistration.child.otherInfo">
+                {{ selectedRegistration.child.otherInfo }}
+              </a-descriptions-item>
             </template>
+            <a-descriptions-item :span="1" v-if="selectedRegistration.parent">
+              <div style="margin: 24px 0 12px 0; padding: 10px 14px; background: #f6ffed; border-left: 4px solid #52c41a; border-radius: 4px; font-weight: 600; color: #52c41a; font-size: 15px;">
+                👨‍👩‍👧‍👦 Informații Părinte
+              </div>
+            </a-descriptions-item>
             <a-descriptions-item v-if="selectedRegistration.parent" label="Părinte">
               {{ selectedRegistration.parent.firstName }} {{ selectedRegistration.parent.lastName }}
             </a-descriptions-item>
@@ -367,6 +450,11 @@
               <a :href="`mailto:${selectedRegistration.parent.email}`" class="contact-link">
                 {{ selectedRegistration.parent.email }}
               </a>
+            </a-descriptions-item>
+            <a-descriptions-item :span="1">
+              <div style="margin: 24px 0 12px 0; padding: 10px 14px; background: #e6f7ff; border-left: 4px solid #1890ff; border-radius: 4px; font-weight: 600; color: #1890ff; font-size: 15px;">
+                📋 Detalii Înscriere
+              </div>
             </a-descriptions-item>
           <a-descriptions-item label="Tip Activitate">
             {{ getActivityTypeLabel(selectedRegistration.activityType) }}
@@ -430,7 +518,69 @@
                       />
                     </a-form-item>
                   </a-col>
+                  <a-col :xs="24" :sm="12">
+                    <a-form-item :label="`Data Nașterii Copil ${index + 1}`">
+                      <a-date-picker
+                        v-model:value="child.birthDate"
+                        style="width: 100%"
+                        format="DD/MM/YYYY"
+                        :getPopupContainer="getPopupContainer"
+                      />
+                    </a-form-item>
+                  </a-col>
                 </a-row>
+                <a-row :gutter="16">
+                  <a-col :xs="24" :sm="12">
+                    <a-form-item :label="`Gen Copil ${index + 1}`">
+                      <a-select 
+                        v-model:value="child.gender" 
+                        style="width: 100%"
+                        :getPopupContainer="getPopupContainer"
+                        placeholder="Selectați genul"
+                      >
+                        <a-select-option value="male">Băiat</a-select-option>
+                        <a-select-option value="female">Fată</a-select-option>
+                      </a-select>
+                    </a-form-item>
+                  </a-col>
+                </a-row>
+                <a-form-item :label="`Alte informații Copil ${index + 1}`">
+                  <a-textarea
+                    v-model:value="child.otherInfo"
+                    placeholder="Informații suplimentare despre copil"
+                    :rows="2"
+                  />
+                </a-form-item>
+                <!-- Medical Information for each child -->
+                <a-divider style="margin: 16px 0;">🏥 Informații Medicale - Copil {{ index + 1 }}</a-divider>
+                <a-form-item :label="`Alergii Cunoscute`">
+                  <a-textarea
+                    v-model:value="child.medical.allergies"
+                    placeholder="Specificați orice alergii (alimente, medicamente, etc.). Lăsați gol dacă nu există."
+                    :rows="3"
+                  />
+                </a-form-item>
+                <a-form-item :label="`Afecțiuni Medicale`">
+                  <a-textarea
+                    v-model:value="child.medical.conditions"
+                    placeholder="Specificați orice afecțiuni medicale sau tratamente în curs. Lăsați gol dacă nu există."
+                    :rows="3"
+                  />
+                </a-form-item>
+                <a-form-item :label="`Medicamente Necesare`">
+                  <a-textarea
+                    v-model:value="child.medical.medications"
+                    placeholder="Specificați medicamentele pe care copilul trebuie să le ia în timpul activității. Lăsați gol dacă nu există."
+                    :rows="2"
+                  />
+                </a-form-item>
+                <a-form-item :label="`Note Speciale`">
+                  <a-textarea
+                    v-model:value="child.medical.notes"
+                    placeholder="Orice note speciale despre copil (comportament, preferințe, restricții, etc.)"
+                    :rows="3"
+                  />
+                </a-form-item>
               </div>
             </template>
             <template v-else>
@@ -458,7 +608,69 @@
                     />
                   </a-form-item>
                 </a-col>
+                <a-col :xs="24" :sm="12">
+                  <a-form-item label="Data Nașterii">
+                    <a-date-picker
+                      v-model:value="editForm.child.birthDate"
+                      style="width: 100%"
+                      format="DD/MM/YYYY"
+                      :getPopupContainer="getPopupContainer"
+                    />
+                  </a-form-item>
+                </a-col>
               </a-row>
+              <a-row :gutter="16">
+                <a-col :xs="24" :sm="12">
+                  <a-form-item label="Gen">
+                    <a-select 
+                      v-model:value="editForm.child.gender" 
+                      style="width: 100%"
+                      :getPopupContainer="getPopupContainer"
+                      placeholder="Selectați genul"
+                    >
+                      <a-select-option value="male">Băiat</a-select-option>
+                      <a-select-option value="female">Fată</a-select-option>
+                    </a-select>
+                  </a-form-item>
+                </a-col>
+              </a-row>
+              <a-form-item label="Alte informații">
+                <a-textarea
+                  v-model:value="editForm.child.otherInfo"
+                  placeholder="Informații suplimentare despre copil"
+                  :rows="2"
+                />
+              </a-form-item>
+              <!-- Medical Information for single child -->
+              <a-divider style="margin: 16px 0;">🏥 Informații Medicale</a-divider>
+              <a-form-item label="Alergii Cunoscute">
+                <a-textarea
+                  v-model:value="editForm.child.medical.allergies"
+                  placeholder="Specificați orice alergii (alimente, medicamente, etc.). Lăsați gol dacă nu există."
+                  :rows="3"
+                />
+              </a-form-item>
+              <a-form-item label="Afecțiuni Medicale">
+                <a-textarea
+                  v-model:value="editForm.child.medical.conditions"
+                  placeholder="Specificați orice afecțiuni medicale sau tratamente în curs. Lăsați gol dacă nu există."
+                  :rows="3"
+                />
+              </a-form-item>
+              <a-form-item label="Medicamente Necesare">
+                <a-textarea
+                  v-model:value="editForm.child.medical.medications"
+                  placeholder="Specificați medicamentele pe care copilul trebuie să le ia în timpul activității. Lăsați gol dacă nu există."
+                  :rows="2"
+                />
+              </a-form-item>
+              <a-form-item label="Note Speciale">
+                <a-textarea
+                  v-model:value="editForm.child.medical.notes"
+                  placeholder="Orice note speciale despre copil (comportament, preferințe, restricții, etc.)"
+                  :rows="3"
+                />
+              </a-form-item>
             </template>
             <a-divider>Date Părinte</a-divider>
             <a-row :gutter="16">
@@ -725,16 +937,14 @@ const getPopupContainer = (trigger: HTMLElement) => {
 
 const modalWidth = computed(() => {
   if (typeof window !== 'undefined') {
-    return window.innerWidth <= 768 ? '95%' : 800
+    return window.innerWidth <= 768 ? '95%' : window.innerWidth <= 1024 ? '90%' : 1000
   }
-  return 800
+  return 1000
 })
 
 const descriptionColumns = computed(() => {
-  if (typeof window !== 'undefined') {
-    return window.innerWidth <= 768 ? 1 : 2
-  }
-  return 2
+  // Always use 1 column for vertical layout (top to bottom)
+  return 1
 })
 
 const paginatedMobileRegistrations = computed(() => {
@@ -924,12 +1134,23 @@ const editRegistration = async (registration: any) => {
     firstChild = { ...childrenData }
   }
   
+  // Helper function to convert birthDate string to dayjs
+  const convertBirthDate = (date: any) => {
+    if (!date) return null
+    if (dayjs.isDayjs(date)) return date
+    if (typeof date === 'string') {
+      const parsed = dayjs(date)
+      return parsed.isValid() ? parsed : null
+    }
+    return null
+  }
+  
   // Ensure all child fields are populated
   const populatedFirstChild = {
     firstName: firstChild.firstName || '',
     lastName: firstChild.lastName || '',
     age: firstChild.age || null,
-    birthDate: firstChild.birthDate || null,
+    birthDate: convertBirthDate(firstChild.birthDate),
     gender: firstChild.gender || '',
     cnp: firstChild.cnp || '',
     otherInfo: firstChild.otherInfo || '',
@@ -951,7 +1172,7 @@ const editRegistration = async (registration: any) => {
       firstName: child.firstName || '',
       lastName: child.lastName || '',
       age: child.age || null,
-      birthDate: child.birthDate || null,
+      birthDate: convertBirthDate(child.birthDate),
       gender: child.gender || '',
       cnp: child.cnp || '',
       otherInfo: child.otherInfo || '',
@@ -970,7 +1191,7 @@ const editRegistration = async (registration: any) => {
       firstName: childrenData.firstName || '',
       lastName: childrenData.lastName || '',
       age: childrenData.age || null,
-      birthDate: childrenData.birthDate || null,
+      birthDate: convertBirthDate(childrenData.birthDate),
       gender: childrenData.gender || '',
       cnp: childrenData.cnp || '',
       otherInfo: childrenData.otherInfo || '',
@@ -1204,10 +1425,40 @@ const saveRegistration = async () => {
 
   saving.value = true
   try {
+    // Format birthDate for children - convert dayjs to string
+    const formatChildrenData = (childrenArray: any[]) => {
+      return childrenArray.map((child: any) => ({
+        ...child,
+        birthDate: child.birthDate
+          ? (dayjs.isDayjs(child.birthDate)
+              ? child.birthDate.format('YYYY-MM-DD')
+              : child.birthDate)
+          : null
+      }))
+    }
+    
+    // Prepare children data
+    let childrenToSave: any[] = []
+    if (editForm.value.children && editForm.value.children.length > 0) {
+      childrenToSave = formatChildrenData(editForm.value.children)
+    } else if (editForm.value.child) {
+      childrenToSave = formatChildrenData([editForm.value.child])
+    }
+    
+    // Prepare single child data (backward compatibility)
+    const childToSave = editForm.value.child ? {
+      ...editForm.value.child,
+      birthDate: editForm.value.child.birthDate
+        ? (dayjs.isDayjs(editForm.value.child.birthDate)
+            ? editForm.value.child.birthDate.format('YYYY-MM-DD')
+            : editForm.value.child.birthDate)
+        : null
+    } : null
+    
     const updateData: any = {
       // Support both structures
-      children: editForm.value.children || (editForm.value.child ? [editForm.value.child] : []),
-      child: editForm.value.child, // Keep for backward compatibility
+      children: childrenToSave,
+      child: childToSave, // Keep for backward compatibility
       parent: editForm.value.parent,
       activityType: editForm.value.activityType,
       activityId: editForm.value.activityId,
@@ -1310,39 +1561,120 @@ onMounted(async () => {
   padding: 8px 0;
 }
 
+.registration-details :deep(.ant-descriptions) {
+  table-layout: auto;
+}
+
 .registration-details :deep(.ant-descriptions-item-label) {
   font-weight: 600;
   background: #fafafa;
-  width: 40%;
+  width: 200px;
+  min-width: 200px;
+  max-width: 200px;
+  padding: 12px 16px;
+  vertical-align: top;
+  word-break: break-word;
 }
 
 .registration-details :deep(.ant-descriptions-item-content) {
-  width: 60%;
+  width: auto;
+  padding: 12px 16px;
+  word-break: break-word;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.registration-details :deep(.ant-descriptions-row) {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.registration-details :deep(.ant-descriptions-row:last-child) {
+  border-bottom: none;
+}
+
+/* Ensure text doesn't truncate */
+.registration-details :deep(.ant-descriptions-item-content) {
+  max-width: none;
+  overflow: visible;
+  text-overflow: unset;
 }
 
 .contact-link {
   color: #1890ff;
   text-decoration: none;
   word-break: break-all;
+  transition: color 0.3s;
 }
 
 .contact-link:hover {
+  color: #40a9ff;
   text-decoration: underline;
 }
 
 .modal-actions {
   margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid #f0f0f0;
+  padding-top: 20px;
+  border-top: 2px solid #f0f0f0;
+  display: flex;
+  justify-content: center;
+}
+
+.modal-actions :deep(.ant-btn) {
+  min-width: 120px;
+  height: 40px;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* Desktop Modal Styles */
+@media (min-width: 769px) {
+  :deep(.registration-modal .ant-modal) {
+    top: 40px;
+    padding-bottom: 24px;
+  }
+
+  :deep(.registration-modal .ant-modal-content) {
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  :deep(.registration-modal .ant-modal-header) {
+    padding: 20px 24px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  :deep(.registration-modal .ant-modal-title) {
+    font-size: 20px;
+    font-weight: 600;
+    color: #262626;
+  }
+
+  :deep(.registration-modal .ant-modal-body) {
+    padding: 24px;
+  }
 }
 
 /* Mobile Modal Styles */
-:deep(.registration-modal) {
-  top: 20px;
-}
-
 :deep(.registration-modal-wrapper) {
   padding: 0;
+}
+
+/* Tablet and Desktop optimizations */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .registration-details :deep(.ant-descriptions) {
+    font-size: 15px;
+  }
+
+  .registration-details :deep(.ant-descriptions-item-label) {
+    min-width: 140px;
+    max-width: 180px;
+    font-size: 14px;
+  }
+
+  .registration-details :deep(.ant-descriptions-item-content) {
+    font-size: 14px;
+    padding: 12px 16px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -1351,39 +1683,49 @@ onMounted(async () => {
     padding: 4px 0;
   }
 
-  .registration-details :deep(.ant-descriptions-item-label) {
-    width: 35%;
+  .registration-details :deep(.ant-descriptions) {
     font-size: 14px;
-    padding: 8px 12px;
+  }
+
+  .registration-details :deep(.ant-descriptions-item-label) {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    font-size: 14px;
+    padding: 10px 12px;
+    margin-bottom: 4px;
+    font-weight: 600;
+    color: #666;
+    background: #f5f5f5;
+    border-bottom: 1px solid #e8e8e8;
   }
 
   .registration-details :deep(.ant-descriptions-item-content) {
-    width: 65%;
+    width: 100%;
     font-size: 14px;
-    padding: 8px 12px;
+    padding: 10px 12px;
+    padding-top: 4px;
+    word-break: break-word;
+    white-space: pre-wrap;
   }
 
   .registration-details :deep(.ant-descriptions-row) {
     display: flex;
     flex-direction: column;
+    border-bottom: 1px solid #e8e8e8;
+    margin-bottom: 0;
   }
 
   .registration-details :deep(.ant-descriptions-item) {
     display: flex;
     flex-direction: column;
-    padding-bottom: 12px;
-    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 0;
+    border-bottom: none;
+    width: 100%;
   }
 
-  .registration-details :deep(.ant-descriptions-item-label) {
-    width: 100%;
-    margin-bottom: 4px;
-    font-weight: 600;
-    color: #666;
-  }
-
-  .registration-details :deep(.ant-descriptions-item-content) {
-    width: 100%;
+  .registration-details :deep(.ant-descriptions-row:last-child) {
+    border-bottom: none;
   }
 
   :deep(.registration-modal .ant-modal) {
@@ -1408,6 +1750,12 @@ onMounted(async () => {
     padding: 16px;
     max-height: calc(100vh - 150px);
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  :deep(.registration-modal .ant-modal) {
+    top: 20px;
+    padding-bottom: 0;
   }
 
   :deep(.registration-modal .ant-modal-close) {
